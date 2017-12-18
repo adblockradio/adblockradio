@@ -1,0 +1,25 @@
+{
+  "name": "adblockradio",
+  "version": "1.0.0",
+  "description": "Distinguish ads, talk and music in radios",
+  "main": "backend.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "adblock",
+    "radio",
+    "commercials",
+    "broadcast"
+  ],
+  "author": "Alexandre Storelli <a_npm@storelli.fr>",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "loglevel": "^1.6.0",
+    "stream-audio-fingerprint": "^1.0.1",
+    "async": "^2.6.0",
+    "sqlite3": "^3.1.13",
+    "m3u8": "0.0.7",
+    "webradio-metadata": "0.1.3"
+  }
+}
