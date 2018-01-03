@@ -15,11 +15,13 @@
   "author": "Alexandre Storelli <a_npm@storelli.fr>",
   "license": "AGPL-3.0",
   "dependencies": {
-    "loglevel": "^1.6.0",
-    "stream-audio-fingerprint": "^1.0.1",
     "async": "^2.6.0",
-    "sqlite3": "^3.1.13",
+    "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
+    "loglevel": "^1.6.0",
     "m3u8": "0.0.7",
+    "node-png": "^0.4.3",
+    "sqlite3": "^3.1.13",
+    "stream-audio-fingerprint": "^1.0.1",
     "webradio-metadata": "0.1.3"
   }
 }

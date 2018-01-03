@@ -1,3 +1,5 @@
+// TODO update demo
+
 var Dl = require("./dl.js");
 
 var dl = new Dl({ country: "France", name: "Radio Nova", segDuration: 3 });

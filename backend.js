@@ -1,6 +1,6 @@
 var Db = require("./predictor-db/db.js");
 var MlPredictor = require("./predictor-ml/ml.js");
-var Dl = require("./dl/dl.js");
+var Dl = require("../adblockradio-dl/dl.js");
 var { getMeta } = require("webradio-metadata");
 var log = require("loglevel");
 log.setLevel("debug");
