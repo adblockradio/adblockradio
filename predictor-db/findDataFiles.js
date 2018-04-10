@@ -1,6 +1,5 @@
 var fs = require("fs");
-var log = require("loglevel");
-log.setLevel("debug");
+const { log } = require("../log.js")("pred-db-findDataFiles");
 var async = require("async");
 var consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "mrs", "todo"]
@@ -58,7 +57,12 @@ var getFiles = function(path, after, before, cb) {
 					var ps = path.split("/");
 					list[path1] = { class: ps[ps.length-1] };
 				}
+				/*if (spf[1].slice(-5) == ".part") {
+					list[path1]["partial"] = true;
+					list[path1][spf[1].slice(spf[1].length-5)] = true;
+				} else {*/
 				list[path1][spf[1]] = true;
+				//}
 			}
 		}
 		cb(list);
@@ -85,9 +89,10 @@ var findDataFiles = function(options, callback) {
 
 	getDirs(options.path + "/records", function(dateDirs) {
 		for (let i=dateDirs.length-1; i>=0; i--) {
-			if (timeFrame.after && dateDirs[i] < timeFrame.after) dateDirs.splice(i, 1);
-			if (timeFrame.before && dateDirs[i] > timeFrame.before) dateDirs.splice(i, 1);
+			if (timeFrame.after && dateDirs[i] < timeFrame.after.slice(0,10)) dateDirs.splice(i, 1);
+			if (timeFrame.before && dateDirs[i] > timeFrame.before.slice(0,10)) dateDirs.splice(i, 1);
 		}
+		log.debug("findDataFiles: dateDirs:" + JSON.stringify(dateDirs));
 
 		async.forEachOf(dateDirs, function(dateDir, index, dateDirCallback) {
 			getDirs(options.path + "/records/" + dateDir, function(radioDirs) {
@@ -95,7 +100,7 @@ var findDataFiles = function(options, callback) {
 				for (let i=radioDirs.length-1; i>=0; i--) {
 					if (targetRadios.indexOf(radioDirs[i]) < 0) radioDirs.splice(i, 1);
 				}
-				//log.debug("findDataFiles: radioDirs after = " + radioDirs);
+				log.debug("findDataFiles: radioDirs=" + radioDirs);
 
 				async.forEachOf(radioDirs, function(radioDir, index, radioDirCallback) {
 					async.forEachOf(consts.WLARRAY, function(dataDir, index, dataDirCallback) {
@@ -103,7 +108,7 @@ var findDataFiles = function(options, callback) {
 						fs.stat(path, function(err, stat) {
 							if (stat && stat.isDirectory()) {
 								getFiles(path, timeFrame.after, timeFrame.before, function(partialFiles) {
-									//log.debug("findDataFiles: " + dataDir + ":" + partialFiles);
+									log.debug("findDataFiles: " + dataDir + ": " + Object.keys(partialFiles).length + " files found");
 									Object.assign(files[dataDir], partialFiles); // = files[dataDir].concat(fullPathFiles);
 									dataDirCallback();
 								});

@@ -1,8 +1,7 @@
 var sqlite3 = require("sqlite3").verbose();
 var { Writable, Transform } = require("stream");
 var fs = require("fs");
-var log = require("loglevel");
-log.setLevel("debug");
+var { log } = require("../log.js")("pred-db");
 var cp = require("child_process");
 var async = require("async");
 var findDataFiles = require("./findDataFiles.js");

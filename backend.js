@@ -1,9 +1,9 @@
 var Db = require("./predictor-db/db.js");
 var MlPredictor = require("./predictor-ml/ml.js");
-var Dl = require("../adblockradio-dl/dl.js");
+const Codegen = require("stream-audio-fingerprint");
+var { StreamDl } = require("../adblockradio-dl/dl.js");
 var { getMeta } = require("webradio-metadata");
-var log = require("loglevel");
-log.setLevel("debug");
+var { log } = require("./log.js")("pred-master");
 
 var country = "France";
 var name = "RTL";
@@ -14,7 +14,7 @@ const ENABLE_PREDICTOR_ML = false;
 const SAVE_AUDIO = true;
 const FETCH_METADATA = false;
 
-var dl = new Dl({ country: country, name: name, segDuration: 10 });
+var dl = new StreamDl({ country: country, name: name, segDuration: 10 });
 dl.on("error", function(err) {
 	console.log("dl err=" + err);
 });
@@ -31,12 +31,11 @@ var decoder = require('child_process').spawn('ffmpeg', [
 //dl.pipe(decoder.stdin); //.write(data);
 
 if (ENABLE_PREDICTOR_FINGERPRINT) {
-	var Codegen = require("stream-audio-fingerprint");
 	var fingerprinter = new Codegen();
 	decoder.stdout.pipe(fingerprinter);
 }
 if (ENABLE_PREDICTOR_ML) {
-	var mlPredictor = new MlPredictor({ country: country, name: name});
+	var mlPredictor = new MlPredictor({ country: country, name: name });
 	decoder.stdout.pipe(mlPredictor);
 }
 
@@ -101,16 +100,10 @@ dl.on("metadata", function(metadata) {
 				if (ENABLE_PREDICTOR_ML) mlPredictor.pipe(dbs.metadata);
 				if (FETCH_METADATA) {
 					getMeta(country, name, function(err, parsedMeta, corsEnabled) {
-						if (err) {
-							log.warn("getMeta: error fetching title meta. err=" + err);
-						} else {
-							log.info(country + "_" + name + " meta=" + JSON.stringify(parsedMeta));
-							if (!dbs.metadata.ended) {
-								dbs.metadata.write({ type: "title", data: parsedMeta });
-							} else {
-								log.warn("getMeta: could not write metadata, stream already ended");
-							}
-						}
+						if (err) return log.warn("getMeta: error fetching title meta. err=" + err);
+						if (dbs.metadata.ended) return log.warn("getMeta: could not write metadata, stream already ended");
+						log.info(country + "_" + name + " meta=" + JSON.stringify(parsedMeta));
+						dbs.metadata.write({ type: "title", data: parsedMeta });
 					});
 				}
 				decoder.stdin.write(dataObj.data);

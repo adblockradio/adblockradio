@@ -1,2 +1,7 @@
 records/
 node_modules/
+log.js
+log/
+*.mp3
+*.log
+*.png

@@ -1,7 +1,6 @@
 var { Transform } = require("stream");
 var cp = require("child_process");
-var log = require("loglevel");
-log.setLevel("debug");
+var log = require("../log.js")("pred-ml");
 
 var consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"]
@@ -12,7 +11,7 @@ class MlPredictor extends Transform {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
 		var self = this;
-	
+
 		// spawn python subprocess
 		this.cork();
 		this.predictChild = cp.spawn('python', ['-u', 'mlpredict.py', this.canonical, 11025, 1, 16, 2], { stdio: ['pipe', 'pipe', 'pipe'], cwd: __dirname });
