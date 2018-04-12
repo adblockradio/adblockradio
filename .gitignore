@@ -1,4 +1,6 @@
 records/
+predictor-ml/model/
+predictor-db/hotlist/
 node_modules/
 log.js
 log/

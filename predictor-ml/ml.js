@@ -1,8 +1,9 @@
-var { Transform } = require("stream");
-var cp = require("child_process");
-var log = require("../log.js")("pred-ml");
+"use strict";
+const { Transform } = require("stream");
+const cp = require("child_process");
+const { log } = require("../log.js")("pred-ml");
 
-var consts = {
+const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"]
 }
 
@@ -30,7 +31,7 @@ class MlPredictor extends Transform {
 				try {
 					var results = JSON.parse(msg.slice(ijson, msg.length));
 				} catch(e) {
-					log.warn(self.canonical + " could not parse json results: " + e + " original data=" + msg.slice(ijson, msg.length));
+					log.warn(self.canonical + " could not parse json results: " + e + " original data=|" + msg.slice(ijson, msg.length) + "|");
 				}
 
 				log.info(self.canonical + " current type is " + consts.WLARRAY[results.type] + " confidence=" + Math.round(results.confidence*100)/100 + " " +
@@ -60,7 +61,7 @@ class MlPredictor extends Transform {
 					gain: results.rms
 				}
 				//stream.onNewPrediction(outData);
-				self.push({ type:"ml", data:outData });
+				self.push({ type:"ml", data: outData, array: true });
 				//}
 
 				//stream.predictBusy = false;

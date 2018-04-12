@@ -44,8 +44,8 @@ class Db {
 			//log.debug("saveAudioSegment: callback");
 
 			callback({
-				fingerWriter: new FingerWriteStream(path + ".sqlite"),
-				fingerFinder: new FingerFindStream({ country: self.country, name: self.name, path: self.path, audioFile: path, audioExt: self.ext }),
+				//fingerWriter: new FingerWriteStream(path + ".sqlite"),
+				//fingerFinder: new FingerFindStream({ country: self.country, name: self.name, path: self.path, audioFile: path, audioExt: self.ext }),
 				audio: new fs.createWriteStream(path + "." + self.ext),
 				metadata: new MetaWriteStream(path + ".json"),
 				//dir: dir,
@@ -69,13 +69,20 @@ class MetaWriteStream extends Writable {
 			return next();
 		}
 		//log.debug("MetaWriteStream: data type=" + meta.type);
-		this.meta[meta.type] = meta.data;
+
+		// some fields are saved in an array
+		if (meta.array) {
+			if (!this.meta[meta.type]) this.meta[meta.type] = [];
+			this.meta[meta.type].push(meta.data);
+		} else {
+			this.meta[meta.type] = meta.data;
+		}
 		next();
 	}
 
 	_final(next) {
 		//log.debug("MetaWriteStream: end. meta=" + JSON.stringify(this.meta));
-		this.file.end(JSON.stringify(this.meta));
+		this.file.end(JSON.stringify(this.meta, null, '\t'));
 		this.ended = true;
 		next();
 	}

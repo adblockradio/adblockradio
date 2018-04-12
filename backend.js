@@ -1,6 +1,7 @@
 var Db = require("./predictor-db/db.js");
+const Hotlist = require("./predictor-db/hotlist.js");
 var MlPredictor = require("./predictor-ml/ml.js");
-const Codegen = require("stream-audio-fingerprint");
+//const Codegen = require("stream-audio-fingerprint");
 var { StreamDl } = require("../adblockradio-dl/dl.js");
 var { getMeta } = require("webradio-metadata");
 var { log } = require("./log.js")("pred-master");
@@ -9,10 +10,44 @@ var country = "France";
 var name = "RTL";
 
 const ENABLE_PREDICTOR_FINGERPRINT = true;
-const ENABLE_MRS = true;
+const ENABLE_MRS = false;
 const ENABLE_PREDICTOR_ML = false;
 const SAVE_AUDIO = true;
 const FETCH_METADATA = false;
+
+/* overview of operations
+
+dl: fetches http data, sends "newSegment" events.
+|	|
+|	V
+|	if SAVE_AUDIO: dbs.audio.write() save to disk
+|
+V
+decoder: converts http data to PCM audio samples.
+|	|
+|	V
+|	if ENABLE_PREDICTOR_ML: mlPredictor
+|	|
+|	V
+|	dbs.metadata
+|
+V
+if ENABLE_PREDICTOR_FINGERPRINT: fingerprinter
+|
+V
+fingerFinder
+|
+V
+dbs.metadata
+
+
+if FETCH_METADATA: getMeta
+|
+V
+dbs.metadata
+
+*/
+
 
 var dl = new StreamDl({ country: country, name: name, segDuration: 10 });
 dl.on("error", function(err) {
@@ -31,12 +66,21 @@ var decoder = require('child_process').spawn('ffmpeg', [
 //dl.pipe(decoder.stdin); //.write(data);
 
 if (ENABLE_PREDICTOR_FINGERPRINT) {
-	var fingerprinter = new Codegen();
-	decoder.stdout.pipe(fingerprinter);
+	//var fingerprinter = new Codegen();
+	//decoder.stdout.pipe(fingerprinter);
+	var hotlist = new Hotlist({ country: country, name: name });
+	decoder.stdout.pipe(hotlist);
 }
 if (ENABLE_PREDICTOR_ML) {
 	var mlPredictor = new MlPredictor({ country: country, name: name });
 	decoder.stdout.pipe(mlPredictor);
+}
+
+function closeDbMetadata(refdbs) {
+	if (ENABLE_PREDICTOR_FINGERPRINT) hotlist.unpipe(refdbs.metadata);
+	//if (ENABLE_PREDICTOR_FINGERPRINT) refdbs.fingerFinder.unpipe(refdbs.metadata);
+	if (ENABLE_PREDICTOR_ML) mlPredictor.unpipe(refdbs.metadata);
+	refdbs.metadata.end();
 }
 
 var db;
@@ -65,40 +109,41 @@ dl.on("metadata", function(metadata) {
 				//if (SAVE_AUDIO) dl.unpipe(dbs.audio);
 				dbs.audio.end();
 
-				if (ENABLE_PREDICTOR_FINGERPRINT) {
-					fingerprinter.unpipe(dbs.fingerWriter);
-					fingerprinter.unpipe(dbs.fingerFinder);
-				}
-				dbs.fingerWriter.end();
-				dbs.fingerFinder.end();
-				var refdbs = dbs;
-				dbs.fingerFinder.once("end", function() {
-					if (ENABLE_PREDICTOR_FINGERPRINT) refdbs.fingerFinder.unpipe(refdbs.metadata);
-					if (ENABLE_PREDICTOR_ML) mlPredictor.unpipe(refdbs.metadata);
-					refdbs.metadata.end();
-				});
+				//if (ENABLE_PREDICTOR_FINGERPRINT) {
+					//fingerprinter.unpipe(dbs.fingerWriter);
+					//fingerprinter.unpipe(dbs.fingerFinder);
+					//dbs.fingerWriter.end();
+					//dbs.fingerFinder.end();
+					//var refdbs = dbs;
+					//dbs.fingerFinder.once("end", function() {
+					//	closeDbMetadata(refdbs);
+					//});
+				//} else {
+				closeDbMetadata(dbs);
+				//}
 			}
 			db.newAudioSegment(function(newdbs) {
 				dbs = newdbs;
 				if (ENABLE_PREDICTOR_FINGERPRINT) {
-					fingerprinter.pipe(dbs.fingerWriter);
-					fingerprinter.pipe(dbs.fingerFinder);
-					dbs.fingerFinder.pipe(dbs.metadata);
-					dbs.fingerFinder.on("data", function(obj) {
+					//fingerprinter.pipe(dbs.fingerWriter);
+					//fingerprinter.pipe(dbs.fingerFinder);
+					hotlist.pipe(dbs.metadata);
+					//dbs.fingerFinder.pipe(dbs.metadata);
+					/*dbs.fingerFinder.on("data", function(obj) {
 						if (ENABLE_MRS && obj.type === "match" && obj.data.mrs) {
 							//var file1 = dbs.prefix + "." + metadata.ext;
 							//var file2 = dbs.dir + obj.data.file["todo"] + "." + metadata.ext;
 							log.debug("Backend: should launch MRS now between " + obj.data.mrs.new + " and " + obj.data.mrs.old);
 						}
 						dbs.metadata.write(obj);
-					});
-					//dbs.fingerFinder.on("data", function(results) {
-						//log.debug("fingerprintFinder: ");
-						//log.debug(results);
-					//});
+					});*/
 				}
-				if (ENABLE_PREDICTOR_ML) mlPredictor.pipe(dbs.metadata);
+				if (ENABLE_PREDICTOR_ML) {
+					// send ML predictions results to metadata history DB
+					mlPredictor.pipe(dbs.metadata);
+				}
 				if (FETCH_METADATA) {
+					// send scraped metadata to history DB
 					getMeta(country, name, function(err, parsedMeta, corsEnabled) {
 						if (err) return log.warn("getMeta: error fetching title meta. err=" + err);
 						if (dbs.metadata.ended) return log.warn("getMeta: could not write metadata, stream already ended");
