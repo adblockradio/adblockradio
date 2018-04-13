@@ -11,6 +11,7 @@ class MlPredictor extends Transform {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
+		this.path = options.path || this.canonical;
 		var self = this;
 
 		// spawn python subprocess
