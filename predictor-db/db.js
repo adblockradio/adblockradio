@@ -26,6 +26,7 @@ class Db {
 		this.name = options.name;
 		this.path = options.path;
 		this.ext = options.ext;
+		this.saveAudio = options.saveAudio;
 	}
 
 	newAudioSegment(callback) {
@@ -46,7 +47,7 @@ class Db {
 			callback({
 				//fingerWriter: new FingerWriteStream(path + ".sqlite"),
 				//fingerFinder: new FingerFindStream({ country: self.country, name: self.name, path: self.path, audioFile: path, audioExt: self.ext }),
-				audio: new fs.createWriteStream(path + "." + self.ext),
+				audio: self.saveAudio ? new fs.createWriteStream(path + "." + self.ext) : null,
 				metadata: new MetaWriteStream(path + ".json"),
 				//dir: dir,
 				//prefix: path
