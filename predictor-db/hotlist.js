@@ -1,7 +1,7 @@
 "use strict";
 const sqlite3 = require("sqlite3").verbose();
 const { Transform } = require("stream");
-const { log } = require("../log.js")("pred-hotlist");
+const { log } = require("abr-log")("pred-hotlist");
 const Codegen = require("stream-audio-fingerprint");
 const fs = require("fs");
 const async = require("async");

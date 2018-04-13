@@ -1,5 +1,5 @@
 var fs = require("fs");
-const { log } = require("../log.js")("pred-db-findDataFiles");
+const { log } = require("abr-log")("pred-db-findDataFiles");
 var async = require("async");
 var consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "mrs", "todo"]

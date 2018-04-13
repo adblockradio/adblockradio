@@ -4,7 +4,7 @@ var MlPredictor = require("./predictor-ml/ml.js");
 //const Codegen = require("stream-audio-fingerprint");
 var { StreamDl } = require("../adblockradio-dl/dl.js");
 var { getMeta } = require("webradio-metadata");
-var { log } = require("./log.js")("pred-master");
+var { log } = require("abr-log")("pred-master");
 
 var country = "France";
 var name = "RTL";

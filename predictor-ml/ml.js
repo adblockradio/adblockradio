@@ -1,7 +1,7 @@
 "use strict";
 const { Transform } = require("stream");
 const cp = require("child_process");
-const { log } = require("../log.js")("pred-ml");
+const { log } = require("abr-log")("pred-ml");
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"]
