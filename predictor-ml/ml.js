@@ -89,7 +89,7 @@ class MlPredictor extends Transform {
 			log.warn("mlpredict child stderr error: " + err);
 		});
 		this.predictChild.stdout.on("end", function() {
-			log.debug("pc stdout end");
+			//log.debug("pc stdout end");
 			self.readyToCallFinal = true;
 			if (self.finalCallback) self.finalCallback();
 		});
@@ -100,9 +100,9 @@ class MlPredictor extends Transform {
 		this.predictChild.stdin.write(buf);
 		next();
 	}
-	
+
 	_final(next) {
-		log.debug("ml.js final");
+		//log.debug("ml.js final");
 		this.predictChild.stdin.end();
 		//if (this.readyToCallFinal) return next();
 		this.readyToCallFinal = next;
