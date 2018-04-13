@@ -95,7 +95,7 @@ class Hotlist extends Transform {
 					maxClass = res[i].class;
 				}
 			}
-			log.info("onFingers: nf=" + length + " class=" + consts.WLARRAY[maxClass] + " file=" + maxFile + " diff=" + maxDiff + " count=" + largestCount);
+			log.info("onFingers: nf=" + res.length + " class=" + consts.WLARRAY[maxClass] + " file=" + maxFile + " diff=" + maxDiff + " count=" + largestCount);
 			self.push({ type: "match", data: { file: maxFile, diff: maxDiff, count: largestCount } });
 		});
 	}
