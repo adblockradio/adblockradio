@@ -13,6 +13,8 @@ class MlPredictor extends Transform {
 		this.canonical = options.country + "_" + options.name;
 		this.fileModel = options.fileModel || "model/" + this.canonical + ".keras";
 		var self = this;
+		this.finalCallback = null;
+		this.readyToCallFinal = false;
 
 		// spawn python subprocess
 		this.cork();
@@ -86,12 +88,24 @@ class MlPredictor extends Transform {
 		this.predictChild.stderr.on("error", function(err) {
 			log.warn("mlpredict child stderr error: " + err);
 		});
+		this.predictChild.stdout.on("end", function() {
+			log.debug("pc stdout end");
+			self.readyToCallFinal = true;
+			if (self.finalCallback) self.finalCallback();
+		});
 
 	}
 
 	_write(buf, enc, next) {
 		this.predictChild.stdin.write(buf);
 		next();
+	}
+	
+	_final(next) {
+		log.debug("ml.js final");
+		this.predictChild.stdin.end();
+		//if (this.readyToCallFinal) return next();
+		this.readyToCallFinal = next;
 	}
 }
 

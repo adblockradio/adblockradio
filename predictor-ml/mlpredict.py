@@ -94,6 +94,9 @@ else:
 
 while True:
 	data = sys.stdin.read(readAmount)
+	if len(data) == 0:
+		break
+
 	duration = len(data)/bitrate
 	#logdebug("py received " + str(duration) + " s")
 	if playAudio:
