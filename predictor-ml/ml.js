@@ -11,12 +11,12 @@ class MlPredictor extends Transform {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
-		this.path = options.path || this.canonical;
+		this.path = options.path || "model/" + this.canonical + ".keras";
 		var self = this;
 
 		// spawn python subprocess
 		this.cork();
-		this.predictChild = cp.spawn('python', ['-u', 'mlpredict.py', this.canonical, 11025, 1, 16, 2], { stdio: ['pipe', 'pipe', 'pipe'], cwd: __dirname });
+		this.predictChild = cp.spawn('python', ['-u', 'mlpredict.py', this.canonical, 11025, 1, 16, 2, this.path], { stdio: ['pipe', 'pipe', 'pipe'], cwd: __dirname });
 		this.predictChild.stdout.on('data', function(msg) {
 			//log('Received message from Python worker:\n' + msg.toString());
 			if (msg[msg.length-1] == "\n") msg = msg.slice(0,msg.length-1); // remove \n at the end

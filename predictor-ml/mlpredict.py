@@ -55,11 +55,12 @@ else:
 	def logdebug(msg): return True
 
 radio = sys.argv[1]
-sampleRate = int(sys.argv[2])
-nchannels = int(sys.argv[3])
-bitdepth = int(sys.argv[4])
+fileModel = sys.argv[2]
+sampleRate = int(sys.argv[3])
+nchannels = int(sys.argv[4])
+bitdepth = int(sys.argv[5])
 bitrate = sampleRate * nchannels * bitdepth / 8
-readAmount = int(bitrate * float(sys.argv[5]))
+readAmount = int(bitrate * float(sys.argv[6]))
 
 mfccStepT = 0.02  # in seconds
 mfccWinlen = 0.05  # in seconds
@@ -81,7 +82,7 @@ if playAudio:
 
 logdebug("radio: " + radio + " samplerate: " + str(sampleRate) + " channels: " + str(nchannels) + " bitdepth: " + str(bitdepth) + " bitrate: " + str(bitrate) + " predsampling(b)=" + str(readAmount))
 
-fileModel = "model/" + radio + ".keras"
+#fileModel = "model/" + radio + ".keras"
 if not os.path.isfile(fileModel):
 	logerror("Model not found, cannot tag audio")
 	model = None
