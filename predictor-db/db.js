@@ -144,7 +144,7 @@ class FingerFindStream extends Transform {
 				var db = new sqlite3.Database(path + ".sqlite", sqlite3.OPEN_READONLY);
 				db.all("SELECT dt, finger FROM fingers WHERE finger IN " + inStr + ";", fingerVector, function(err, queryResults) {
 					if (err) {
-						log.warn("FingerFindStream: query error=" + err + " path=" + path);
+						log.warn("FingerFindStream: query error=" + err + " path=" + path + ".sqlite");
 						if (err == "Error: SQLITE_ERROR: no such table: fingers") { // in general, db was created but left empty. delete it.
 							log.warn("FingerFindStream: delete " + path + ".sqlite");
 							fs.unlink(path + ".sqlite", function(errUnlink) {
@@ -244,15 +244,20 @@ class FingerWriteStream extends Writable {
 		this.cork();
 		var self = this;
 		this.db = new sqlite3.Database(path);
-		this.db.run("CREATE TABLE IF NOT EXISTS 'fingers' (`dt` INTEGER NOT NULL, `finger` INTEGER NOT NULL)", function(errCT) {
-			if (errCT) log.error("FingerWriteStream: errCT=" + errCT + " path=" + path);
-			self.db.run("CREATE INDEX IF NOT EXISTS FingersIndex ON fingers (finger)", function(errCI) {
-				if (errCI) log.error("FingerWriteStream: errCI=" + errCI + " path=" + path);
-				self.db.run("PRAGMA journal_mode = 'wal'", function(errPJ) {
-					if (errPJ) log.error("FingerWriteStream: errPJ=" + errPJ + " path=" + path);
-					self.uncork();
-				});
-			});
+		async.waterfall([
+			function(cb) {
+				self.db.run("CREATE TABLE IF NOT EXISTS 'fingers' (`dt` INTEGER NOT NULL, `finger` INTEGER NOT NULL)", cb);
+			}, function(cb) {
+				self.db.run("CREATE INDEX IF NOT EXISTS FingersIndex ON fingers (finger)", cb);
+			}, function(cb) {
+				self.db.run("PRAGMA journal_mode = 'wal'", cb);
+			}, function(cb) {
+				self.db.run("BEGIN TRANSACTION", cb);
+			}
+		], function(err) {
+			if (err) log.error("FingerWriteStream: err=" + err + " path=" + path);
+			self.stmt = self.db.prepare("INSERT INTO fingers (dt, finger) VALUES (?,?)");
+			self.uncork();
 		});
 		this.firstTcode = null;
 	}
@@ -260,40 +265,24 @@ class FingerWriteStream extends Writable {
 	_write(fingerprints, enc, next) {
 		var self = this;
 		if (this.firstTcode == null) this.firstTcode = fingerprints.tcodes[0];
-		this.db.run("BEGIN TRANSACTION", function(errBT) {
-			if (errBT) {
-				return log.error("FingerWriteStream: errBT=" + errBT);
-			}
-			var stmt = self.db.prepare("INSERT INTO fingers (dt, finger) VALUES (?,?)");
 
-			var run = function(j, callback) {
-				if (j >= fingerprints.tcodes.length) {
-					return callback();
-				}
-				//console.log("insert " + j);
-				stmt.run([fingerprints.tcodes[j]-self.firstTcode, fingerprints.hcodes[j]], function(err) {
-					if (err) {
-						log.error("FingerWriteStream: fingerprint could not be inserted. j=" + j + " err=" + err);
-					}
-					run(j+1, callback);
-				});
-			}
-			run(0, function() {
-				stmt.finalize();
-				self.db.run("END TRANSACTION;", function(errET) {
-					if (errET) {
-						log.error("FingerWriteStream: sqlite error, could not end transaction: " + errET);
-					}
-					//log(fingerprints.nFP + " fingerprints successfully added to the db " + typeWithWl + "/" + radioList[i] + " at #" + id + " for " + trackInfo.fileName, consts.LOG_INFO);
-					//begin(radioList, i+1, db);
-					next();
-				});
-			});
-		})
+		async.forEachOf(fingerprints.tcodes, function(tcode, j, cb) {
+			stmt.run([tcode-self.firstTcode, fingerprints.hcodes[j]], cb);
+		}, function(err) {
+			if (err) log.error("FingerWriteStream: could not insert one or more fingerprints. err=" + err);
+			next();
+		});
 	}
 
 	_final(next) {
-		this.db.close();
+		stmt.finalize();
+		self.db.run("END TRANSACTION;", function(errET) {
+			if (errET) {
+				log.error("FingerWriteStream: sqlite error, could not end transaction: " + errET);
+			}
+			this.db.close();
+			next();
+		});
 	}
 }
 

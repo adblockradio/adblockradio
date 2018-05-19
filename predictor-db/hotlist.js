@@ -13,7 +13,7 @@ const consts = {
 
 class Hotlist extends Transform {
 	constructor(options) {
-		super(options);
+		super({ objectMode: true });
 		this.country = options.country;
 		this.name = options.name;
 		this.fingerprinter = new Codegen();
@@ -60,13 +60,8 @@ class Hotlist extends Transform {
 			"INNER JOIN tracks ON tracks.id = track_id " +
 			"WHERE finger IN " + inStr + ";", fingerVector, function(err, res) {
 
-			if (err) {
-				log.warn("onFingers: query error=" + err + " path=" + path);
-				return;
-			} else if (!res || !res.length) {
-				log.warn("onFingers: no results for a query of " + tcodes.length);
-				return;
-			}
+			if (err) return log.warn("onFingers: query error=" + err + " path=" + path);
+			if (!res || !res.length) return log.warn("onFingers: no results for a query of " + tcodes.length);
 
 			//log.debug(availData.class + " => " + JSON.stringify(queryResults));
 			for (let i=0; i<res.length; i++) {

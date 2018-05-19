@@ -1,10 +1,9 @@
-var Db = require("./predictor-db/db.js");
+const Db = require("./predictor-db/db.js");
 const Hotlist = require("./predictor-db/hotlist.js");
-var MlPredictor = require("./predictor-ml/ml.js");
-//const Codegen = require("stream-audio-fingerprint");
-var { StreamDl } = require("../adblockradio-dl/dl.js");
-var { getMeta } = require("webradio-metadata");
-var { log } = require("abr-log")("pred-master");
+const MlPredictor = require("./predictor-ml/ml.js");
+const { StreamDl } = require("stream-tireless-baler");
+const { getMeta } = require("webradio-metadata");
+const { log } = require("abr-log")("pred-master");
 
 var country = "France";
 var name = "RTL";
@@ -73,7 +72,7 @@ if (ENABLE_PREDICTOR_ML) {
 var db;
 
 dl.on("metadata", function(metadata) {
-	log.info(country + "_" + name + " metadata=" + JSON.stringify(metadata));
+	log.info(country + "_" + name + " metadata=" + JSON.stringify(metadata, null, "\t"));
 	db = new Db({
 		country: country,
 		name: name,
@@ -85,41 +84,48 @@ dl.on("metadata", function(metadata) {
 
 	dl.on("data", function(dataObj) {
 		var tBuffer = dataObj.tBuffer;
+
+		// dataObj.newSegment is true when the chunk of data we receive belongs to a new audio segment.
+		// when true, we do the computations on the whole previous segment
+
 		if (!dataObj.newSegment) {
-			decoder.stdin.write(dataObj.data);
 			if (SAVE_AUDIO) dbs.audio.write(dataObj.data);
-		} else {
-			dl.pause();
-			if (dbs) {
-				//if (SAVE_AUDIO) dl.unpipe(dbs.audio);
-				if (SAVE_AUDIO) dbs.audio.end();
-				if (ENABLE_PREDICTOR_FINGERPRINT) hotlist.unpipe(dbs.metadata);
-				if (ENABLE_PREDICTOR_ML) mlPredictor.unpipe(dbs.metadata);
-				dbs.metadata.end();
-			}
-			db.newAudioSegment(function(newdbs) {
-				dbs = newdbs;
-				if (ENABLE_PREDICTOR_FINGERPRINT) {
-					// send Hotlist detections to metadata history DB
-					hotlist.pipe(dbs.metadata);
-				}
-				if (ENABLE_PREDICTOR_ML) {
-					// send ML predictions results to metadata history DB
-					mlPredictor.pipe(dbs.metadata);
-				}
-				if (FETCH_METADATA) {
-					// send web-scraped metadata to history DB
-					getMeta(country, name, function(err, parsedMeta, corsEnabled) {
-						if (err) return log.warn("getMeta: error fetching title meta. err=" + err);
-						if (dbs.metadata.ended) return log.warn("getMeta: could not write metadata, stream already ended");
-						log.info(country + "_" + name + " meta=" + JSON.stringify(parsedMeta));
-						dbs.metadata.write({ type: "title", data: parsedMeta });
-					});
-				}
-				decoder.stdin.write(dataObj.data);
-				if (SAVE_AUDIO) dbs.audio.write(dataObj.data);
-				dl.resume();
-			});
+			return decoder.stdin.write(dataObj.data);
 		}
+
+		dl.pause();
+		if (dbs) {
+			//if (SAVE_AUDIO) dl.unpipe(dbs.audio);
+			if (SAVE_AUDIO) dbs.audio.end();
+			if (ENABLE_PREDICTOR_FINGERPRINT) hotlist.unpipe(dbs.metadata);
+			if (ENABLE_PREDICTOR_ML) mlPredictor.unpipe(dbs.metadata);
+			dbs.metadata.end();
+		}
+		db.newAudioSegment(function(newdbs) {
+			dbs = newdbs;
+
+			// TODO: do the hotlist search only if mlPredictor is unsure.
+
+			if (ENABLE_PREDICTOR_FINGERPRINT) {
+				// send Hotlist detections to metadata history DB
+				hotlist.pipe(dbs.metadata);
+			}
+			if (ENABLE_PREDICTOR_ML) {
+				// send ML predictions results to metadata history DB
+				mlPredictor.pipe(dbs.metadata);
+			}
+			if (FETCH_METADATA) {
+				// send web-scraped metadata to history DB
+				getMeta(country, name, function(err, parsedMeta, corsEnabled) {
+					if (err) return log.warn("getMeta: error fetching title meta. err=" + err);
+					if (dbs.metadata.ended) return log.warn("getMeta: could not write metadata, stream already ended");
+					log.info(country + "_" + name + " meta=" + JSON.stringify(parsedMeta));
+					dbs.metadata.write({ type: "title", data: parsedMeta });
+				});
+			}
+			if (SAVE_AUDIO) dbs.audio.write(dataObj.data);
+			decoder.stdin.write(dataObj.data);
+			dl.resume();
+		});
 	});
 });
