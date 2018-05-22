@@ -25,12 +25,20 @@ class Hotlist extends Transform {
 			self.fingerbuffer.hcodes.push(...data.hcodes);
 			//log.debug(JSON.stringify(data));
 		});
-		this.ready = false;
-		this.prepare();
+
+		let path = "./predictor-db/hotlist/" + this.country + "_" + this.name + ".sqlite";
+		log.info("open hotlist db " + path)
+		this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY);
+		//setInterval(self.onFingers, 2000); // search every 2 seconds, to group queries and reduce CPU & I/O load.
+		fs.access(path, fs.constants.F_OK, function(err) {
+			log.error(path + " not found, hotlist module disabled");
+			self.disabled = true;
+		});
 	}
 
 	_write(audioData, enc, next) {
-		if (this.ready)	this.fingerprinter.write(audioData);
+		if (self.disabled) return next();
+		this.fingerprinter.write(audioData);
 		next();
 	}
 
@@ -38,7 +46,8 @@ class Hotlist extends Transform {
 		next();
 	}*/
 
-	onFingers() {
+	onFingers(callback) {
+		if (self.disabled) return callback ? callback(null) : null;
 
 		let tcodes = this.fingerbuffer.tcodes;
 		let hcodes = this.fingerbuffer.hcodes;
@@ -91,132 +100,19 @@ class Hotlist extends Transform {
 				}
 			}
 			log.info("onFingers: nf=" + res.length + " class=" + consts.WLARRAY[maxClass] + " file=" + maxFile + " diff=" + maxDiff + " count=" + largestCount);
-			self.push({ type: "match", data: { file: maxFile, diff: maxDiff, count: largestCount } });
-		});
-	}
 
-	prepare() {
-		let path = "./predictor-db/hotlist/" + this.country + "_" + this.name + ".sqlite";
-		log.info("open db " + path)
-		this.db = new sqlite3.Database(path); //, sqlite3.OPEN_READONLY);
-
-		let commonPath = "./predictor-db/hotlist/" + this.country + "_" + this.name + "/";
-		let jingles = commonPath + consts.WLARRAY[3] + "/";
-		let self = this;
-
-		async.waterfall([
-			function(cb) {
-				self.db.run('CREATE TABLE IF NOT EXISTS "tracks" (' +
-					'`file`	TEXT NOT NULL UNIQUE,' +
-					'`class`	INTEGER NOT NULL,' +
-					'`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE)', cb);
-			}, function(cb) {
-				self.db.run('CREATE TABLE IF NOT EXISTS "fingers" (' +
-					'`track_id`	INTEGER NOT NULL,' +
-					'`dt`	INTEGER NOT NULL,' +
-					'`finger`	INTEGER NOT NULL)', cb);
-			}, function(cb) {
-				self.db.all('SELECT * FROM tracks', cb);
-			}, function(tracksDB, cb) {
-				fs.readdir(jingles, function(err, jingleFiles) {
-					cb(err, tracksDB, jingleFiles);
-				});
-			}, function(tracksDB, jingleFiles, cb) {
-				// list the files on the drive that are not in the DB (and should)
-				let trackList = tracksDB.map(e => e.file);
-				let insertList = [];
-				for (let i=0; i<jingleFiles.length; i++) {
-					if (!trackList.includes(jingleFiles[i])) {
-						insertList.push(jingleFiles[i]);
-					}
-				}
-
-				let removeList = [];
-				for (let i=0; i<trackList.length; i++) {
-					if (!jingleFiles.includes(trackList[i])) {
-						removeList.push(trackList[i]);
-					}
-				}
-				cb(null, insertList, removeList);
-			}, function(insertList, removeList, cb) {
-				// insertion jobs
-				async.eachSeries(insertList, function(item, callback) {
-					log.info("insert jingle " + item + " in DB");
-					async.waterfall([
-						function(cb) {
-							self.db.run("INSERT INTO tracks (file, class) VALUES (?,?)", [item, 3], cb);
-						}, function(cb) {
-							self.db.get("SELECT id FROM tracks WHERE file = ?", [item], cb);
-						}, function(row, cb) {
-							const readStream = fs.createReadStream(jingles + item);
-							var decoder = cp.spawn('ffmpeg', [
-								'-i', 'pipe:0',
-								'-acodec', 'pcm_s16le',
-								'-ar', 11025,
-								'-ac', 1,
-								'-f', 'wav',
-								'-v', 'fatal',
-								'pipe:1'
-							], { stdio: ['pipe', 'pipe', process.stderr] });
-							readStream.pipe(decoder.stdin);
-							readStream.on("end", function() {
-								log.debug("read finished");
-							});
-
-							const fingerprinter = new Codegen();
-							decoder.stdout.pipe(fingerprinter);
-							var tcodes = [];
-							var hcodes = [];
-							fingerprinter.on("data", function(fingers) {
-								tcodes = tcodes.concat(fingers.tcodes);
-								hcodes = hcodes.concat(fingers.hcodes);
-							});
-							fingerprinter.on("end", function() {
-								cb(null, row.id, tcodes, hcodes);
-							});
-						}, function(id, tcodes, hcodes, cb) {
-							self.db.run("BEGIN TRANSACTION", function(err) {
-								var stmt = self.db.prepare("INSERT INTO fingers (dt, finger, track_id) VALUES (?,?,?)");
-								cb(err, id, tcodes, hcodes, stmt);
-							});
-						}, function(id, tcodes, hcodes, stmt, cb) {
-							async.eachOf(tcodes, function(tcode, i, callback) {
-								stmt.run([tcode, hcodes[i], id], callback);
-							}, cb);
-						}, function(cb) {
-							self.db.run("END TRANSACTION;", cb);
-						}
-					], callback);
-				}, function(err) {
-					if (err) log.warn("insertion error=" + err);
-					cb(err, removeList);
-				});
-			}, function(removeList, cb) {
-				// removal jobs
-				async.eachSeries(removeList, function(item, callback) {
-					log.info("remove track " + item + " from DB");
-					async.waterfall([
-						function(cb) {
-							self.db.run("SELECT id FROM tracks WHERE file = ?", [item], cb);
-						}, function(row, cb) {
-							self.db.run("DELETE FROM fingers WHERE track_id = ?", [row.id], cb);
-						}, function(cb) {
-							self.db.run("DELETE FROM tracks WHERE file = ?", [item], cb);
-						}
-					], callback);
-				}, function(err) {
-					if (err) log.warn("removal error=" + err);
-					cb(err);
-				});
+			const output = {
+				file: maxFile, 				// file in DB that has lead to the maximum number of matching fingerprints in sync.
+				class: maxClass,			// integer representing the classification of that file, as an index of consts.WLARRAY
+				diff: maxDiff,				// time delay between the two compared series of fingerprints that maximizes the amount of matches. units are defined in Codegen lib.
+				matchesSync: largestCount,	// amount of matching fingerprints, at the correct time position
+				matchesTotal: nf			// amount of matching fingerprints, at any time position
 			}
-		], function(err) {
-			if (err) return log.error("could not prepare DB. err=" + err);
-			log.info("DB ready: " + path);
-			self.ready = true;
-			setInterval(self.onFingers, 2000);
+
+			self.push({ type: "match", data: output });
+			if (callback) callback(output);
 		});
 	}
 }
-
 
 module.exports = Hotlist;
