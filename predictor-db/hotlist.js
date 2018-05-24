@@ -9,6 +9,13 @@ const cp = require("child_process");
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
+	EMPTY_OUTPUT: {
+		file: null, 				// file in DB that has lead to the maximum number of matching fingerprints in sync.
+		class: null,				// integer representing the classification of that file, as an index of consts.WLARRAY
+		diff: null,					// time delay between the two compared series of fingerprints that maximizes the amount of matches. units are defined in Codegen lib.
+		matchesSync: 0,				// amount of matching fingerprints, at the correct time position
+		matchesTotal: 0				// amount of matching fingerprints, at any time position
+	}
 }
 
 class Hotlist extends Transform {
@@ -26,18 +33,26 @@ class Hotlist extends Transform {
 			//log.debug(JSON.stringify(data));
 		});
 
-		let path = "./predictor-db/hotlist/" + this.country + "_" + this.name + ".sqlite";
+		let path = "predictor-db/hotlist/" + this.country + "_" + this.name + ".sqlite";
 		log.info("open hotlist db " + path)
-		this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY);
+		this.ready = false;
+		try {
+			this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY);
+			this.ready = true;
+		} catch(e) {
+			if (e.message.contains("SQLITE_CANTOPEN")) {
+				log.error(path + " not found, hotlist module disabled");
+			} else {
+				log.error("unknown error: " + e);
+			}
+			this.db = null;
+		}
+
 		//setInterval(self.onFingers, 2000); // search every 2 seconds, to group queries and reduce CPU & I/O load.
-		fs.access(path, fs.constants.F_OK, function(err) {
-			log.error(path + " not found, hotlist module disabled");
-			self.disabled = true;
-		});
 	}
 
 	_write(audioData, enc, next) {
-		if (self.disabled) return next();
+		if (!this.db) return next();
 		this.fingerprinter.write(audioData);
 		next();
 	}
@@ -47,12 +62,16 @@ class Hotlist extends Transform {
 	}*/
 
 	onFingers(callback) {
-		if (self.disabled) return callback ? callback(null) : null;
+		if (!this.db) return callback ? callback(null) : null;
 
 		let tcodes = this.fingerbuffer.tcodes;
 		let hcodes = this.fingerbuffer.hcodes;
 		this.fingerbuffer = { tcodes: [], hcodes: [] };
-		if (!tcodes.length) return log.warn("onFingers: no fingerprints to search");
+		if (!tcodes.length) {
+			this.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
+			if (callback) callback(consts.EMPTY_OUTPUT);
+			return log.warn("onFingers: no fingerprints to search");
+		}
 
 		// create a single query for all fingerprints.
 		var inStr = "(", fingerVector = [];
@@ -70,7 +89,12 @@ class Hotlist extends Transform {
 			"WHERE finger IN " + inStr + ";", fingerVector, function(err, res) {
 
 			if (err) return log.warn("onFingers: query error=" + err + " path=" + path);
-			if (!res || !res.length) return log.warn("onFingers: no results for a query of " + tcodes.length);
+			if (!res || !res.length) {
+				//log.warn("onFingers: no results for a query of " + tcodes.length);
+				self.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
+				if (callback) callback(consts.EMPTY_OUTPUT);
+				return
+			}
 
 			//log.debug(availData.class + " => " + JSON.stringify(queryResults));
 			for (let i=0; i<res.length; i++) {
@@ -99,17 +123,10 @@ class Hotlist extends Transform {
 					maxClass = res[i].class;
 				}
 			}
-			log.info("onFingers: nf=" + res.length + " class=" + consts.WLARRAY[maxClass] + " file=" + maxFile + " diff=" + maxDiff + " count=" + largestCount);
+			//log.info("onFingers: nf=" + res.length + " class=" + consts.WLARRAY[maxClass] + " file=" + maxFile + " diff=" + maxDiff + " count=" + largestCount);
 
-			const output = {
-				file: maxFile, 				// file in DB that has lead to the maximum number of matching fingerprints in sync.
-				class: maxClass,			// integer representing the classification of that file, as an index of consts.WLARRAY
-				diff: maxDiff,				// time delay between the two compared series of fingerprints that maximizes the amount of matches. units are defined in Codegen lib.
-				matchesSync: largestCount,	// amount of matching fingerprints, at the correct time position
-				matchesTotal: nf			// amount of matching fingerprints, at any time position
-			}
-
-			self.push({ type: "match", data: output });
+			const output = { file: maxFile, class: maxClass, diff: maxDiff, matchesSync: largestCount, matchesTotal: res.length }
+			self.push({ type: "hotlist", data: output });
 			if (callback) callback(output);
 		});
 	}

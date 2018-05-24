@@ -4,7 +4,8 @@ const cp = require("child_process");
 const { log } = require("abr-log")("pred-ml");
 
 const consts = {
-	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"]
+	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"],
+	STOP_WORD: "foobar1234"
 }
 
 class MlPredictor extends Transform {
@@ -12,67 +13,94 @@ class MlPredictor extends Transform {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
 		this.fileModel = options.fileModel || "model/" + this.canonical + ".keras";
+		this.ready = false;
+		this.onReadyCallback = options.onReadyCallback;
 		var self = this;
 		this.finalCallback = null;
 		this.readyToCallFinal = false;
+		this.dataWrittenSinceLastSeg = false;
+		this.onDataCallback = null;
 
 		// spawn python subprocess
 		this.cork();
-		this.predictChild = cp.spawn('python', ['-u', 'mlpredict.py', this.canonical, this.fileModel, 11025, 1, 16, 2], { stdio: ['pipe', 'pipe', 'pipe'], cwd: __dirname });
+		this.predictChild = cp.spawn('python', [
+			'-u',
+			'mlpredict.py',
+			this.canonical,
+			this.fileModel,
+			11025,				// hardcoded: sample rate
+			1,					// hardcoded: number of channels
+			16,					// hardcoded: bits per sample
+			consts.STOP_WORD	// stop word, to tell the subprocess to generate a prediction
+		], { stdio: ['pipe', 'pipe', 'pipe'], cwd: __dirname });
+
+		const onData = function(msg) {
+
+			const optCallback = function() {
+				if (self.onDataCallback) {
+					self.onDataCallback();
+					self.onDataCallback = null;
+				}
+			}
+
+			if (msg.indexOf("model loaded") >= 0 && !self.ready) {
+				log.info(self.canonical + " predictor process is ready to crunch audio");
+				self.ready = true;
+				if (self.onReadyCallback) {
+					self.onReadyCallback();
+					self.onReadyCallback = null;
+				}
+				optCallback();
+				return self.uncork();
+			}
+
+			var parseTestText = "audio predicted probs=";
+			var ijson = msg.indexOf(parseTestText) + parseTestText.length;
+			if (ijson < parseTestText.length) {
+				optCallback();
+				return log.debug("mlpredict child: " + msg);
+			}
+
+			try {
+				var results = JSON.parse(msg.slice(ijson, msg.length));
+			} catch(e) {
+				log.warn(self.canonical + " could not parse json results: " + e + " original data=|" + msg.slice(ijson, msg.length) + "|");
+			}
+
+			/*
+			log.info(self.canonical + " current type is " + consts.WLARRAY[results.type] + " confidence=" + Math.round(results.confidence*100)/100 + " " +
+				//" alt is " + consts.WLARRAY[results.alt] +
+				"tMFCC=" + Math.round(results.timings.mfcc*1000) + "ms " +
+				"tINF=" + Math.round(results.timings.inference*1000) + "ms " +
+				//"buffer=" + Math.round(stream.tBuffer*100)/100 + "s " +
+				//"rAvg=" + stream.rAvg + " " +
+				"gain=" + Math.round(results.rms*10)/10 + "db " +
+				"mem=" + Math.round(process.memoryUsage().rss/1000000) + "+" + Math.round(results.mem/1000000) + "MB"); //+ "softmax=" + results.softmax);
+			*/
+
+			let outData = {
+				type: results.type,
+				confidence: results.confidence,
+				softmaxs: results.softmax,
+				//date: new Date(stream.lastData.getTime() + Math.round(stream.tBuffer*1000)),
+				gain: results.rms,
+				lenPcm: results.lenpcm
+			}
+
+			self.push({ type:"ml", data: outData, array: true });
+
+			optCallback();
+		}
+
 		this.predictChild.stdout.on('data', function(msg) {
 			//log('Received message from Python worker:\n' + msg.toString());
-			if (msg[msg.length-1] == "\n") msg = msg.slice(0,msg.length-1); // remove \n at the end
+			const msgS = msg.toString().split("\n");
 
-			if (msg.indexOf("model loaded") >= 0) {
-				log.info(self.canonical + " predictor process is ready to crunch audio");
-				self.uncork();
-			}
-			msg = msg.toString();
-			var parseTestText = "audio predicted probs=";
-			var ijson = msg.indexOf(parseTestText)+parseTestText.length;
-			if (ijson >= parseTestText.length) {
-				try {
-					var results = JSON.parse(msg.slice(ijson, msg.length));
-				} catch(e) {
-					log.warn(self.canonical + " could not parse json results: " + e + " original data=|" + msg.slice(ijson, msg.length) + "|");
-				}
+			//if (msg[msg.length-1] == "\n") msg = msg.slice(0,msg.length-1); // remove \n at the end
 
-				log.info(self.canonical + " current type is " + consts.WLARRAY[results.type] + " confidence=" + Math.round(results.confidence*100)/100 + " " +
-					//" alt is " + consts.WLARRAY[results.alt] +
-					"tMFCC=" + Math.round(results.timings.mfcc*1000) + "ms " +
-					"tINF=" + Math.round(results.timings.inference*1000) + "ms " +
-					//"buffer=" + Math.round(stream.tBuffer*100)/100 + "s " +
-					//"rAvg=" + stream.rAvg + " " +
-					"gain=" + Math.round(results.rms*10)/10 + "db " +
-					"mem=" + Math.round(process.memoryUsage().rss/1000000) + "+" + Math.round(results.mem/1000000) + "MB"); //+ "softmax=" + results.softmax);
-
-				/*if (isNaN(stream.tBuffer) || stream.tBuffer < 0 || stream.tBuffer > 60) {
-					if ((new Date()).getTime() - stream.date.getTime() > 15000) {
-						log.warn(stream.padded_radio_name + " has a buffer of " + Math.round(stream.tBuffer*1000)/1000 + "s that looks dubious. restart dl");
-
-						stream.stopDl();
-						predictionCallback("buffer", null, stream.getStatus());
-						return;
-					}*/
-					// if stream is young and has tBuffer problems, ignore the predictions
-				//} else {
-				let outData = {
-					type: results.type,
-					confidence: results.confidence,
-					softmaxs: results.softmax,
-					//date: new Date(stream.lastData.getTime() + Math.round(stream.tBuffer*1000)),
-					gain: results.rms
-				}
-				//stream.onNewPrediction(outData);
-				self.push({ type:"ml", data: outData, array: true });
-				//}
-
-				//stream.predictBusy = false;
-
-				//onDecoderChunk(null); // drain the buffer if not empty
-
-			} else {
-				log.debug("mlpredict child: " + msg);
+			// sometimes, several lines arrive at once. separate them.
+			for (let i=0; i<msgS.length; i++) {
+				if (msgS[i].length > 0) onData(msgS[i]);
 			}
 		});
 
@@ -96,7 +124,19 @@ class MlPredictor extends Transform {
 
 	}
 
+	sendStopWord(callback) {
+		if (this.dataWrittenSinceLastSeg) { // avoid sending a stop word after zero data. this is the way to close the predictChild.
+			this.predictChild.stdin.write(consts.STOP_WORD);
+			this.predictChild.stdin.write(Buffer.alloc(consts.STOP_WORD.length*10, ' '));
+			this.dataWrittenSinceLastSeg = false;
+			this.onDataCallback = callback;
+		} else if (callback) {
+			callback();
+		}
+	}
+
 	_write(buf, enc, next) {
+		this.dataWrittenSinceLastSeg = true;
 		this.predictChild.stdin.write(buf);
 		next();
 	}

@@ -60,7 +60,8 @@ sampleRate = int(sys.argv[3])
 nchannels = int(sys.argv[4])
 bitdepth = int(sys.argv[5])
 bitrate = sampleRate * nchannels * bitdepth / 8
-readAmount = int(bitrate * float(sys.argv[6]))
+#readAmount = int(bitrate * float(sys.argv[6]))
+stopword = sys.argv[6]
 
 mfccStepT = 0.02  # in seconds
 mfccWinlen = 0.05  # in seconds
@@ -80,30 +81,84 @@ if playAudio:
 	audioout = pyaud.open(format=pyaud.get_format_from_width(bitdepth / 8), channels=nchannels, rate=sampleRate, output=True)
 
 
-logdebug("radio: " + radio + " samplerate: " + str(sampleRate) + " channels: " + str(nchannels) + " bitdepth: " + str(bitdepth) + " bitrate: " + str(bitrate) + " predsampling(b)=" + str(readAmount))
+logdebug("radio: " + radio + " samplerate: " + str(sampleRate) + " channels: " + str(nchannels) + " bitdepth: " + str(bitdepth) + " bitrate: " + str(bitrate))
 
 #fileModel = "model/" + radio + ".keras"
 if not os.path.isfile(fileModel):
 	logerror("Model not found, cannot tag audio")
 	model = None
 else:
-	log("load model from file.")
+	logdebug("load model from file.")
 	model = load_model(fileModel)
 	log("model loaded")
 
+stopwordlen = len(stopword)
+stopwordindex = 0
+ignoreamount = 0
+partial = ""
+pcm = None
 
 while True:
-	data = sys.stdin.read(readAmount)
+	data = partial
+	while True: # read until the stop word is read. this loop may be slow
+
+		"""
+		char = sys.stdin.read(1)
+
+		if char == stopword[stopwordindex]: # stop word is being read
+			logdebug("stop word: read " + char + " at stopwordindex " + str(stopwordindex))
+			stopwordindex += 1
+			if stopwordindex >= stopwordlen: # stop word is complete.
+				logdebug("stop word complete!")
+				stopwordindex = 0
+				break
+		elif stopwordindex > 0: # finally, it was not the stop word. add the beginning of the stopword to actual data.
+			#for i in range(0, stopwordindex):
+			logdebug("stop word false alarm, append " + stopword[0:stopwordindex])
+			data += stopword[0:stopwordindex]
+			stopwordindex = 0
+		else:	# general case
+			#logdebug("not recognized char: " + char)
+			data += char
+		"""
+
+		chars = partial + sys.stdin.read(stopwordlen)
+		pos = chars.find(stopword)
+		if pos >= 0:
+			logdebug("stop word detected at pos " + str(pos))
+			data += chars[0:pos]
+			partial = ""
+			ignoreamount = stopwordlen*10 - pos + stopwordlen
+			#partial = chars[pos+stopwordlen:]
+			break
+		elif ignoreamount >= len(chars):
+			ignoreamount -= len(chars)
+		else:
+			data += chars[ignoreamount:len(chars)-stopwordlen]
+			#data += chars[0:len(chars)-stopwordlen]
+			ignoreamount = 0
+			partial = chars[len(chars)-stopwordlen:len(chars)]
+
+	# each audio sample uses 2 bytes. do not separate them
+	if len(data) % 2 == 1:
+		partial = data[len(data)-1] + partial
+		data = data[0:len(data)-1]
+
+	# to stop the program, send two consecutive stop words without data in between.
 	if len(data) == 0:
+		logdebug("empty data: stop")
 		break
 
+	#data = sys.stdin.read(readAmount)
+	#if len(data) == 0:
+	#	break
+
 	duration = len(data)/bitrate
-	#logdebug("py received " + str(duration) + " s")
+	logdebug("py received " + str(duration) + " s (" + str(len(data)) + " bytes)")
 	if playAudio:
 		audioout.write(data)
 #	cProfile.run('processData(data)')
 
-#def processData(data):
 	t0 = timer()
 
 	try:
@@ -113,15 +168,12 @@ while True:
 		log("invalid rms=" + str(audioop.rms(data,2)) + " data len=" + str(len(data)))
 		pass
 
-	if nchannels > 1:
+	if nchannels > 1: # only analyse the first channel (usually, for stereo signals, the left one)
 		tmp = np.frombuffer(data, dtype="int16")[0::nchannels]
 	else:
 		tmp = np.frombuffer(data, dtype="int16")
 
-	if pcm is None:
-		pcm = tmp
-	else:
-		pcm = np.append(pcm, tmp)  # take only left (first) channel
+	pcm = tmp if pcm is None else np.append(pcm, tmp)
 
 	t1 = timer()
 	pcm_len_limit = int((nnXLenT + duration) * sampleRate)
@@ -129,7 +181,20 @@ while True:
 		logdebug("need to truncate pcm from " + str(len(pcm)) + " to " + str(pcm_len_limit))
 		pcm = pcm[-pcm_len_limit:]
 
-	ceps = psf.mfcc(pcm,samplerate=sampleRate,winlen=mfccWinlen,winstep=mfccStepT, numcep=mfccNceps,nfilt=26,nfft=2048,lowfreq=0,highfreq=None,preemph=0.97,ceplifter=22,appendEnergy=True)
+	ceps = psf.mfcc(
+		pcm,
+		samplerate=sampleRate,
+		winlen=mfccWinlen,
+		winstep=mfccStepT,
+		numcep=mfccNceps,
+		nfilt=26,
+		nfft=2048,
+		lowfreq=0,
+		highfreq=None,
+		preemph=0.97,
+		ceplifter=22,
+		appendEnergy=True
+	)
 
 	t2 = timer()
 	if ceps.shape[0] < nnXLen:  # audio input is shorter than LSTM window
@@ -155,14 +220,22 @@ while True:
 	mp = np.mean(predictions, axis=0)
 	mp_ref = np.array(mp, copy=True)
 	predclass = np.argmax(mp)
-	#predclassalt = np.argmax(np.delete(mp, predclass))
 	mp.sort()
 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
 	logdebug("mpref " + str(mp_ref))
 	logdebug("mp " + str(mp))
 	logdebug("confidence " + str(confidence))
 	logdebug("rms " + str(rms))
-	log("audio predicted probs=" + json.dumps({'type': predclass, 'data': predictions.tolist(), 'confidence': confidence, 'softmax': mp_ref.tolist(), 'rms': rms, 'mem': process.memory_info().rss, 'timings': {'mfcc': str(t2-t1), 'inference': str(t4-t3)} })) # 'alt': predclassalt,
+	log("audio predicted probs=" + json.dumps({
+		'type': predclass,
+		'data': predictions.tolist(),
+		'confidence': confidence,
+		'softmax': mp_ref.tolist(),
+		'rms': rms,
+		'mem': process.memory_info().rss,
+		'lenpcm': len(pcm),
+		'timings': {'mfcc': str(t2-t1), 'inference': str(t4-t3)} })
+	)
 	#t5 = timer()
 	#nsuicide = nsuicide + 1
 	#if nsuicide > 4:
