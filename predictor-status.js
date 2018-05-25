@@ -1,6 +1,6 @@
 const { log } = require("abr-log")("predictor-status");
 const Predictor = require("./predictor.js");
-const { Transform } = require("stream");
+const { Transform, Readable } = require("stream");
 
 const consts = {
     WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
@@ -35,7 +35,7 @@ class Status extends Transform {
                 break;
 
             case "ml":
-                log.info("ml => type=" + consts.WLARRAY[data.data.type] + " confidence=" + data.data.confidence.toFixed(2));
+                log.info("ml => type=" + consts.WLARRAY[data.data.type] + " confidence=" + data.data.confidence.toFixed(2) + " softmax=" + data.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + data.data.confidence.toFixed(2));
                 if (this.cache[0].ml) log.warn("overwriting ml cache data!")
                 this.cache[0].ml = data.data;
                 this.cache[0].gain = data.data.gain;
@@ -89,9 +89,11 @@ class Status extends Transform {
             movAvg[ic] = 0;
             let sum = 0;
             for (let j = 0; j <= availableSlotsPast + availableSlotsFuture; j++) {
-                if (ic == 0) log.debug("i=" + i + " cacheLen=" + this.cache.length + " availPast=" + availableSlotsPast + " availFut=" + availableSlotsFuture + " j=" + j + " ml?=" + !!(this.cache[i + availableSlotsPast - j].ml));
-                if (this.cache[i + availableSlotsPast - j].ml && this.cache[i + availableSlotsPast - j].ml.softmaxs[0]) {
-                    movAvg[ic] += this.cache[i + availableSlotsPast - j].ml.softmaxs[0][ic] * consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
+                //if (ic == 0) log.debug("i=" + i + " cacheLen=" + this.cache.length + " availPast=" + availableSlotsPast + " availFut=" + availableSlotsFuture + " j=" + j + " ml?=" + !!(this.cache[i + availableSlotsPast - j].ml));
+                if (this.cache[i + availableSlotsPast - j].ml && this.cache[i + availableSlotsPast - j].ml.softmaxs) {
+                    if (ic == 0 && isNaN(this.cache[i + availableSlotsPast - j].ml.softmaxs[ic])) log.warn("this.cache[i + availableSlotsPast - j].ml.softmaxs[ic] is NaN. i=" + i + " availableSlotsPast=" + availableSlotsPast + " j=" + j + " ic=" + ic);
+                    if (ic == 0 && isNaN(consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j])) log.warn("consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j] is NaN. availableSlotsFuture=" + availableSlotsFuture + " j=" + j);
+                    movAvg[ic] += this.cache[i + availableSlotsPast - j].ml.softmaxs[ic] * consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
                     sum += consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
                 }
             }
@@ -103,6 +105,7 @@ class Status extends Transform {
         }
 
         // pruning of unsure ML predictions
+        // 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
         const mlConfident = maxMovAvg > 0.65;
         log.debug("movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg + " confident=" + mlConfident);
         
@@ -136,15 +139,37 @@ class Status extends Transform {
     }
 }
 
-const status = new Status();
 
-status.on("data", function(obj) {
-    log.info("status=" + JSON.stringify(Object.assign(obj, { audio: obj.audio.length }), null, "\t"));
-});
+class AdblockRadio extends Readable {
+    constructor(options) {
+        super({ objectMode: true });
 
-const predictor = new Predictor({
-    country: "France",
-    name: "RTL",
-    predictor: { ml: true, hotlist: true },
-    listener: status
-});
+        this.country = options.country;
+        this.name = options.name;
+
+        const status = new Status();
+
+        const self = this;
+        status.on("data", function(obj) {
+            self.push(Object.assign(obj, {
+                country: self.country,
+                name: self.name,
+                audioLen: obj.audio.length
+            }));
+        });
+
+        const predictor = new Predictor({
+            country: self.country,
+            name: self.name,
+            config: options.config,
+            listener: status
+        });
+    }
+
+    _read() {
+
+    }
+}
+
+
+module.exports = AdblockRadio;

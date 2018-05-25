@@ -51,9 +51,9 @@ class Predictor {
 		// module options
 		this.config = {
 			// send stream status to listener every N seconds
-			predInterval: options.predInterval !== undefined ? optiond.predInterval : 1,
+			predInterval: options.predInterval !== undefined ? options.predInterval : 1,
 
-			// save audio file and metadata every N seconds // **predInterval times**.
+			// save audio file and metadata every N **predInterval times**.
 			saveDuration: options.saveDuration !== undefined ? options.saveDuration : 10,
 
 			ENABLE_PREDICTOR_FINGERPRINT: (options.predictor && options.predictor.hotlist !== undefined) ? !!options.predictor.hotlist : true,
