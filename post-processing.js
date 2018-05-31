@@ -1,4 +1,4 @@
-const { log } = require("abr-log")("predictor-status");
+const { log } = require("abr-log")("post-processing");
 const Predictor = require("./predictor.js");
 const { Transform, Readable } = require("stream");
 
@@ -14,7 +14,7 @@ const consts = {
     ]
 }
 
-class Status extends Transform {
+class PostProcessor extends Transform {
     constructor() {
         super({ writableObjectMode: true, readableObjectMode: true });
         this.cache = [];
@@ -22,33 +22,38 @@ class Status extends Transform {
         this.slotCounter = 0;
     }
 
-    _write(data, enc, next) {
+    _write(obj, enc, next) {
         if (!this.cache[0]) this._newCacheSlot(0);
 
-        switch (data.type) {
+        switch (obj.type) {
             case "audio":
-                if (data.newSegment && this.cache[0] && this.cache[0].audio && this.cache[0].audio.length > 0) {
-                    log.info("audio => " + this.cache[0].audio.length + " bytes, tBuf=" + data.tBuffer.toFixed(2) + "s");
-                    this._newCacheSlot(data.tBuffer);
+                if (obj.newSegment && this.cache[0] && this.cache[0].audio && this.cache[0].audio.length > 0) {
+                    log.info("audio => " + this.cache[0].audio.length + " bytes, tBuf=" + obj.tBuffer.toFixed(2) + "s");
+                    this._newCacheSlot(obj.tBuffer);
                 }
-                this.cache[0].audio = this.cache[0].audio ? Buffer.concat([ this.cache[0].audio, data.data ]) : data.data;
+                this.cache[0].audio = this.cache[0].audio ? Buffer.concat([ this.cache[0].audio, obj.data ]) : obj.data;
                 break;
 
             case "ml":
-                log.info("ml => type=" + consts.WLARRAY[data.data.type] + " confidence=" + data.data.confidence.toFixed(2) + " softmax=" + data.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + data.data.confidence.toFixed(2));
+                log.info("ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) + " softmax=" + data.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + data.data.confidence.toFixed(2));
                 if (this.cache[0].ml) log.warn("overwriting ml cache data!")
-                this.cache[0].ml = data.data;
-                this.cache[0].gain = data.data.gain;
+                this.cache[0].ml = obj.data;
+                this.cache[0].gain = obj.data.gain;
                 break;
 
             case "hotlist":
-                log.info("hotlist => matches=" + data.data.matchesSync + "/" + data.data.matchesTotal + " class=" + consts.WLARRAY[data.data.class]);
+                log.info("hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal + " class=" + consts.WLARRAY[data.data.class]);
                 if (this.cache[0].hotlist) log.warn("overwriting hotlist cache data!")
-                this.cache[0].hotlist = data.data;
+                this.cache[0].hotlist = obj.data;
                 break;
 
             case "title":
-                log.info("title => " + JSON.stringify(data.data));
+                log.info("title => " + JSON.stringify(obj.data));
+                // TODO save title
+
+            case "dlinfo":
+                log.info("dlinfo => " + JSON.stringify(obj.data));
+                // TODO save dlinfo
 
             default:
                 log.info(JSON.stringify(data));
@@ -65,7 +70,8 @@ class Status extends Transform {
         
         // schedule the postprocessing for this slot, according to the buffer available.
         // "now" is used as a reference for _postProcessing, so it knows which slot to process
-        setTimeout(this._postProcessing, tBuffer*1000, now);
+        // postProcessing happens 500ms before audio playback, so that clients / players have time to act.
+        setTimeout(this._postProcessing, tBuffer*1000-500, now);
 
         if (this.cache.length > consts.CACHE_MAX_LEN) this.cache.pop();
     }
@@ -112,6 +118,15 @@ class Status extends Transform {
         // pruning of unclear hotlist detections
         const hlConfident = this.cache[i].hotlist.matchesTotal >= 10 && this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2
 
+        let finalClass;
+        if (hlConfident) {
+            finalClass = consts.WLARRAY[this.cache[i].hotlist.class];
+        } else if (mlConfident) {
+            finalClass = consts.WLARRAY[iMaxMovAvg];
+        } else {
+            finalClass = "unsure";
+        }
+
         // final output
         this.push({
             audio: this.cache[i].audio,
@@ -123,34 +138,24 @@ class Status extends Transform {
             hotlist: {
                 class: hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : "unsure",
                 file: this.cache[i].hotlist.file
-            }
+            },
+            class: finalClass
         });
-
-        /*if (!this.cache[i].ml) {
-            return log.warn("_postProcessing: i=" + i + " n=" + this.cache[i].n + " no ml softmaxs to process");
-        }*/
-
-        /*for (let ic = 0; ic < movAvg.length; ic++) {
-            movAvg[ic] = this.cache.slice(i - availableSlotsFuture, i + availableSlotsPast)
-                .map(e => e.ml.softmaxs[0][ic] * consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights.reverse())
-                .reduce((accumulator, currentValue) => accumulator + currentValue);
-            log.debug("movAvg: i=" + i + " n=" + this.cache[i].n + " movAvg=" + movAvg[ic] + " from " + this.cache.slice(i - availableSlotsFuture, i + availableSlotsPast).map(e => e.ml.softmaxs[0][ic]));
-        }*/
     }
 }
 
 
-class AdblockRadio extends Readable {
+class Analyser extends Readable {
     constructor(options) {
         super({ objectMode: true });
 
         this.country = options.country;
         this.name = options.name;
 
-        const status = new Status();
+        const postProcessor = new PostProcessor();
 
         const self = this;
-        status.on("data", function(obj) {
+        postProcessor.on("data", function(obj) {
             self.push(Object.assign(obj, {
                 country: self.country,
                 name: self.name,
@@ -162,14 +167,22 @@ class AdblockRadio extends Readable {
             country: self.country,
             name: self.name,
             config: options.config,
-            listener: status
+            listener: postProcessor
         });
     }
 
-    _read() {
+    newPredictChild() {
+        // TODO
+    }
 
+    stopDl() {
+        // TODO
+    }
+
+    _read() {
+        // nothing
     }
 }
 
-
-module.exports = AdblockRadio;
+exports.PostProcessor = PostProcessor
+exports.Analyser = Analyser;

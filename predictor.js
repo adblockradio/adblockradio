@@ -103,6 +103,8 @@ class Predictor {
 		this.dl.on("metadata", function(metadata) { // this happens once at the beginning of stream download
 			log.info(country + "_" + name + " metadata=" + JSON.stringify(metadata, null, "\t"));
 
+			self.listener.write({ type: "dlinfo", data: metadata });
+
 			self.db = new Db({
 				country: country,
 				name: name,
