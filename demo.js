@@ -1,18 +1,18 @@
-const AdblockRadio = require("./predictor-status");
-const { log } = require("abr-log")("demo");
+const { log } = require("../log-github/log.js")("demo"); //require("abr-log")("demo");
+const { Analyser } = require("./post-processing.js");
 
-const abr = new AdblockRadio({
+log.info("start analyser!");
+
+const abr = new Analyser({
     country: "France",
     name: "RTL",
     config: {
-        predictor: { 
-            ml: true, 
-            hotlist: true
-        },
         predInterval: 1,
         saveDuration: 10,
-        saveAudio: true,
-		saveMetadata: true,
+        enablePredictorHotlist: true,
+        enablePredictorMl: true,
+        saveAudio: false,
+		saveMetadata: false,
 		fetchMetadata: true
     }
 });

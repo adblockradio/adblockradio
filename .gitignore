@@ -8,3 +8,4 @@ log/
 *.log
 *.png
 .vscode/
+config/

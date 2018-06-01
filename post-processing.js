@@ -1,9 +1,11 @@
+"use strict";
 const { log } = require("abr-log")("post-processing");
 const Predictor = require("./predictor.js");
 const { Transform, Readable } = require("stream");
 
 const consts = {
     WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
+    UNSURE: "unsure",
     CACHE_MAX_LEN: 50,
     MOV_AVG_WEIGHTS: [
         {"weights": [0.05, 0.05, 0.05, 0.10, 0.10, 0.15, 0.20, 0.30, 0.80, 1.00], "sum": 2.80 }, // r=0 same as ideal r=1 for very short buffers. so 1 step lag
@@ -20,6 +22,10 @@ class PostProcessor extends Transform {
         this.cache = [];
         this._postProcessing = this._postProcessing.bind(this);
         this.slotCounter = 0;
+        this.metadata = null;
+        this.metadataValidUntil = null;
+        this.streamInfo = null;
+        this.startTime = +new Date();
     }
 
     _write(obj, enc, next) {
@@ -35,28 +41,38 @@ class PostProcessor extends Transform {
                 break;
 
             case "ml":
-                log.info("ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) + " softmax=" + data.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + data.data.confidence.toFixed(2));
+                log.info("ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) +
+                    " softmax=" + obj.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + obj.data.confidence.toFixed(2));
                 if (this.cache[0].ml) log.warn("overwriting ml cache data!")
                 this.cache[0].ml = obj.data;
                 this.cache[0].gain = obj.data.gain;
                 break;
 
             case "hotlist":
-                log.info("hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal + " class=" + consts.WLARRAY[data.data.class]);
+                log.info("hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal +
+                    " class=" + consts.WLARRAY[obj.data.class]);
                 if (this.cache[0].hotlist) log.warn("overwriting hotlist cache data!")
                 this.cache[0].hotlist = obj.data;
                 break;
 
             case "title":
                 log.info("title => " + JSON.stringify(obj.data));
-                // TODO save title
+                this.metadata = obj.data;
+                // validity: not setting a validity or setting it to zero lead to infinite validity.
+                this.metadataValidUntil = obj.validity ? (+new Date() + obj.validity * 1000 * 2) : Infinity;
+                break;
 
             case "dlinfo":
                 log.info("dlinfo => " + JSON.stringify(obj.data));
-                // TODO save dlinfo
+                this.streamInfo = {
+                    url: obj.data.url,
+                    favicon: obj.data.favicon,
+                    homepage: obj.data.homepage
+                }
+                break;
 
             default:
-                log.info(JSON.stringify(data));
+                log.info(JSON.stringify(obj.data));
         }
         
         next();
@@ -71,7 +87,7 @@ class PostProcessor extends Transform {
         // schedule the postprocessing for this slot, according to the buffer available.
         // "now" is used as a reference for _postProcessing, so it knows which slot to process
         // postProcessing happens 500ms before audio playback, so that clients / players have time to act.
-        setTimeout(this._postProcessing, tBuffer*1000-500, now);
+        setTimeout(this._postProcessing, Math.max(tBuffer, 2)*1000-500, now);
 
         if (this.cache.length > consts.CACHE_MAX_LEN) this.cache.pop();
     }
@@ -88,58 +104,73 @@ class PostProcessor extends Transform {
         }*/
 
         // smoothing over time of ML predictions.
-        let movAvg = new Array(3);
-        let iMaxMovAvg = 0;
-        let maxMovAvg = 0;
-        for (let ic = 0; ic < movAvg.length; ic++) {
-            movAvg[ic] = 0;
-            let sum = 0;
-            for (let j = 0; j <= availableSlotsPast + availableSlotsFuture; j++) {
-                //if (ic == 0) log.debug("i=" + i + " cacheLen=" + this.cache.length + " availPast=" + availableSlotsPast + " availFut=" + availableSlotsFuture + " j=" + j + " ml?=" + !!(this.cache[i + availableSlotsPast - j].ml));
-                if (this.cache[i + availableSlotsPast - j].ml && this.cache[i + availableSlotsPast - j].ml.softmaxs) {
-                    if (ic == 0 && isNaN(this.cache[i + availableSlotsPast - j].ml.softmaxs[ic])) log.warn("this.cache[i + availableSlotsPast - j].ml.softmaxs[ic] is NaN. i=" + i + " availableSlotsPast=" + availableSlotsPast + " j=" + j + " ic=" + ic);
-                    if (ic == 0 && isNaN(consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j])) log.warn("consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j] is NaN. availableSlotsFuture=" + availableSlotsFuture + " j=" + j);
-                    movAvg[ic] += this.cache[i + availableSlotsPast - j].ml.softmaxs[ic] * consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
-                    sum += consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
+        let mlOutput = null;
+        if (this.cache[i].ml) {
+            let movAvg = new Array(3);
+            let iMaxMovAvg = 0;
+            let maxMovAvg = 0;
+            for (let ic = 0; ic < movAvg.length; ic++) {
+                movAvg[ic] = 0;
+                let sum = 0;
+                for (let j = 0; j <= availableSlotsPast + availableSlotsFuture; j++) {
+                    //if (ic == 0) log.debug("i=" + i + " cacheLen=" + this.cache.length + " availPast=" + availableSlotsPast + " availFut=" + availableSlotsFuture + " j=" + j + " ml?=" + !!(this.cache[i + availableSlotsPast - j].ml));
+                    if (this.cache[i + availableSlotsPast - j].ml && this.cache[i + availableSlotsPast - j].ml.softmaxs) {
+                        if (ic == 0 && isNaN(this.cache[i + availableSlotsPast - j].ml.softmaxs[ic])) log.warn("this.cache[i + availableSlotsPast - j].ml.softmaxs[ic] is NaN. i=" + i + " availableSlotsPast=" + availableSlotsPast + " j=" + j + " ic=" + ic);
+                        if (ic == 0 && isNaN(consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j])) log.warn("consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j] is NaN. availableSlotsFuture=" + availableSlotsFuture + " j=" + j);
+                        movAvg[ic] += this.cache[i + availableSlotsPast - j].ml.softmaxs[ic] * consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
+                        sum += consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
+                    }
+                }
+                movAvg[ic] = sum ? (movAvg[ic] / sum) : null;
+                if (movAvg[ic] && movAvg[ic] > maxMovAvg) {
+                    maxMovAvg = movAvg[ic];
+                    iMaxMovAvg = ic;
                 }
             }
-            movAvg[ic] = sum ? (movAvg[ic] / sum) : null;
-            if (movAvg[ic] && movAvg[ic] > maxMovAvg) {
-                maxMovAvg = movAvg[ic];
-                iMaxMovAvg = ic;
+
+            // pruning of unsure ML predictions
+            // 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
+            const mlConfident = maxMovAvg > 0.65;
+            log.debug("movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg + " confident=" + mlConfident);
+            mlOutput = {
+                class: mlConfident ? consts.WLARRAY[iMaxMovAvg] : consts.UNSURE,
+                softmax: movAvg,
+            }
+        }
+        
+        // pruning of unclear hotlist detections
+        let hotlistOutput = null;
+        if (this.cache[i].hotlist) {
+            const hlConfident = this.cache[i].hotlist.matchesTotal >= 10 && this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2;
+            hotlistOutput = {
+                class: hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : consts.UNSURE,
+                file: this.cache[i].hotlist.file
             }
         }
 
-        // pruning of unsure ML predictions
-        // 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
-        const mlConfident = maxMovAvg > 0.65;
-        log.debug("movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg + " confident=" + mlConfident);
-        
-        // pruning of unclear hotlist detections
-        const hlConfident = this.cache[i].hotlist.matchesTotal >= 10 && this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2
-
+        // synthesis of predictions. hotlist, when available, is always right. machine learning otherwise.
         let finalClass;
-        if (hlConfident) {
-            finalClass = consts.WLARRAY[this.cache[i].hotlist.class];
-        } else if (mlConfident) {
-            finalClass = consts.WLARRAY[iMaxMovAvg];
+        if (hotlistOutput && hotlistOutput.class !== consts.UNSURE) {
+            finalClass = hotlistOutput.class;
+        } else if (mlOutput && mlOutput.class !== consts.UNSURE) {
+            finalClass = mlOutput.class;
         } else {
-            finalClass = "unsure";
+            finalClass = consts.UNSURE;
         }
 
         // final output
         this.push({
             audio: this.cache[i].audio,
             gain: this.cache[i].gain,
-            ml: {
-                class: mlConfident ? consts.WLARRAY[iMaxMovAvg] : "unsure",
-                softmax: movAvg,
-            },
-            hotlist: {
-                class: hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : "unsure",
-                file: this.cache[i].hotlist.file
-            },
-            class: finalClass
+            ml: mlOutput,
+            hotlist: hotlistOutput,
+            class: finalClass,
+            metadata: +new Date() < this.metadataValidUntil ? this.metadata : null,
+            streamInfo: this.streamInfo,
+            predictorStartTime: this.startTime,
+            playTime: tsRef,
+            tBuffer: this.tBuf,
+            futureSlotsBuffer: availableSlotsFuture
         });
     }
 }
@@ -156,6 +187,9 @@ class Analyser extends Readable {
 
         const self = this;
         postProcessor.on("data", function(obj) {
+            if (!obj.audio) {
+                log.warn("empty audio! " + JSON.stringify(obj, null, "\t"));
+            }
             self.push(Object.assign(obj, {
                 country: self.country,
                 name: self.name,
