@@ -48,7 +48,7 @@ class Predictor {
 		this.listener = options.listener;	// mandatory argument, instance of a Writable Stream.
 
 		if (!this.country || !this.name || !this.listener) {
-			return log.error("Predictor need to be constructed with: country (string), name (string) and listener(Writable stream)");
+			return log.error("Predictor needs to be constructed with: country (string), name (string) and listener (Writable stream)");
 		}
 
 		// default module options

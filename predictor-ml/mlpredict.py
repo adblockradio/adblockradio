@@ -83,14 +83,23 @@ if playAudio:
 
 logdebug("radio: " + radio + " samplerate: " + str(sampleRate) + " channels: " + str(nchannels) + " bitdepth: " + str(bitdepth) + " bitrate: " + str(bitrate))
 
-#fileModel = "model/" + radio + ".keras"
-if not os.path.isfile(fileModel):
-	logerror("Model not found, cannot tag audio")
-	model = None
-else:
+if os.path.isfile(fileModel):
 	logdebug("load model from file.")
 	model = load_model(fileModel)
 	log("model loaded")
+else:
+	fileModelSplit = fileModel.split("/")
+	fileModelSplit[-1] = "all.keras"
+	defaultFileModel = "/".join(fileModelSplit)
+	log("default file " + defaultFileModel)
+
+	if os.path.isfile(defaultFileModel):
+		log("load default model from file.")
+		model = load_model(defaultFileModel)
+		log("model loaded")
+	else:
+		logerror("Model not found, cannot tag audio")
+		sys.exit()
 
 stopwordlen = len(stopword)
 stopwordindex = 0

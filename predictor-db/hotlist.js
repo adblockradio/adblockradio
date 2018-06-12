@@ -36,18 +36,19 @@ class Hotlist extends Transform {
 		let path = "predictor-db/hotlist/" + this.country + "_" + this.name + ".sqlite";
 		log.info("open hotlist db " + path)
 		this.ready = false;
-		try {
-			this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY);
-			this.ready = true;
-		} catch(e) {
-			if (e.message.contains("SQLITE_CANTOPEN")) {
-				log.error(path + " not found, hotlist module disabled");
+		this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY, function(err) {
+			// example of err object structure: { "errno": 14, "code": "SQLITE_CANTOPEN" }
+			if (err.code === "SQLITE_CANTOPEN") {
+				log.warn(path + " not found, hotlist module disabled");
+				self.db = null;
+			} else if (err) {
+				log.error("unknown error: " + err);
+				self.db = null;
 			} else {
-				log.error("unknown error: " + e);
+				log.info("db found");
+				self.ready = true;
 			}
-			this.db = null;
-		}
-
+		});
 		//setInterval(self.onFingers, 2000); // search every 2 seconds, to group queries and reduce CPU & I/O load.
 	}
 

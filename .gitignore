@@ -9,3 +9,6 @@ log/
 *.png
 .vscode/
 config/
+cluster.js
+.eslintrc.json
+records

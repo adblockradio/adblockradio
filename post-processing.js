@@ -74,7 +74,7 @@ class PostProcessor extends Transform {
             default:
                 log.info(JSON.stringify(obj.data));
         }
-        
+
         next();
     }
 
@@ -83,7 +83,7 @@ class PostProcessor extends Transform {
         const now = +new Date();
         this.slotCounter++;
         this.cache.unshift({ ts: now, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
-        
+
         // schedule the postprocessing for this slot, according to the buffer available.
         // "now" is used as a reference for _postProcessing, so it knows which slot to process
         // postProcessing happens 500ms before audio playback, so that clients / players have time to act.
@@ -95,10 +95,10 @@ class PostProcessor extends Transform {
     _postProcessing(tsRef) {
         const i = this.cache.map(e => e.ts).indexOf(tsRef);
         if (i < 0) return log.warn("_postProcessing: cache item not found");
-        
+
         const availableSlotsFuture = Math.min(i, 4); // consts.MOV_AVG_WEIGHTS supports up to 4 slots in the future.
         const availableSlotsPast = Math.min(this.cache.length - 1 - i, consts.MOV_AVG_WEIGHTS[0].weights.length - availableSlotsFuture - 1); // verification: first slot ever (i=0, cache.len=1) leads to zero past slots.
-        
+
         /*if (availableSlotsFuture + availableSlotsPast < 10) {
             return log.warn("_postProcessing: i=" + i + " n=" + this.cache[i].n + " not enough cache. future=" + availableSlotsFuture + " past=" + availableSlotsPast);
         }*/
@@ -137,7 +137,7 @@ class PostProcessor extends Transform {
                 softmax: movAvg,
             }
         }
-        
+
         // pruning of unclear hotlist detections
         let hotlistOutput = null;
         if (this.cache[i].hotlist) {
@@ -193,7 +193,7 @@ class Analyser extends Readable {
             self.push(Object.assign(obj, {
                 country: self.country,
                 name: self.name,
-                audioLen: obj.audio.length
+                audioLen: obj.audio && obj.audio.length
             }));
         });
 

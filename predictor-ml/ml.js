@@ -57,8 +57,12 @@ class MlPredictor extends Transform {
 			var parseTestText = "audio predicted probs=";
 			var ijson = msg.indexOf(parseTestText) + parseTestText.length;
 			if (ijson < parseTestText.length) {
-				optCallback();
-				return log.debug("mlpredict child: " + msg);
+				if (msg.includes("Model not found, cannot tag audio")) {
+					log.error("Keras ML file not found. Cannot tag audio");
+				} else {
+					log.debug("mlpredict child: " + msg);
+				}
+				return optCallback();
 			}
 
 			try {
