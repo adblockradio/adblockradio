@@ -242,6 +242,7 @@ class Analyser extends Readable {
 			let outputData = Object.assign({}, obj);
 
 			// extract redundant info: no need to repeat it in predictions array
+			// if the title metadata changes, only the last one is saved
 			data.metadata = outputData.metadata;
 			data.streamInfo = outputData.streamInfo;
 			data.predictorStartTime = outputData.predictorStartTime;

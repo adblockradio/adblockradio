@@ -1,40 +1,32 @@
 "use strict";
 const { log } = require("abr-log")("predictor");
-const Db = require("./predictor-db/db.js");
 const Hotlist = require("./predictor-db/hotlist.js");
 const MlPredictor = require("./predictor-ml/ml.js");
 const { StreamDl } = require("stream-tireless-baler");
 const { getMeta } = require("webradio-metadata");
 const async = require("async");
+const cp = require("child_process");
+const fs = require("fs");
+
 
 /* overview of operations
-TODO obsolete, to update!
 
-dl: fetches http data, sends "newSegment" events.
-|	|
-|	V
-|	if saveAudio: dbs.audio.write() save to disk
+dl: get http data, emits "newSegment" events. ——> listener (dlinfo, audio)
+| |
+| |
+| —> if saveAudio: save to disk
 |
 V
 decoder: converts http data to PCM audio samples.
-|	|
-|	V
-|	if enablePredictorMl: mlPredictor
-|	|
-|	V
-|	dbs.metadata
+| |
+| |
+| –> if enablePredictorMl:       mlPredictor ––> listener (ml)
 |
-V
-if enablePredictorHotlist: hotlist
-|
-V
-dbs.metadata
+––—> if enablePredictorHotlist:  hotlist     ––> listener (hotlist)
 
 
-if fetchMetadata: getMeta
-|
-V
-dbs.metadata
+on each dl's "newSegment" event:
+if fetchMetadata: getMeta                    ––> listener (title)
 
 */
 
@@ -102,13 +94,7 @@ class Predictor {
 
 			self.listener.write({ type: "dlinfo", data: metadata });
 
-			self.db = new Db({
-				country: this.country,
-				name: this.name,
-				ext: metadata.ext,
-				saveAudio: self.config.saveAudio,
-				path: __dirname
-			});
+			self.audioExt = metadata.ext;
 
 			self.dbs = null;
 			self.predCounter = 0
@@ -192,15 +178,28 @@ class Predictor {
 			this.mlPredictor.ready2 = true;
 		}
 
-		var self = this;
-		this.db.newAudioSegment(function(dbs) {
-			//log.debug("newAudioSegment");
-			self.dbs = dbs;
+		const self = this;
+
+		const now = new Date();
+		const dirDate = (now.getUTCFullYear()) + "-" + (now.getUTCMonth()+1 < 10 ? "0" : "") + (now.getUTCMonth()+1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + (now.getUTCDate());
+		const dir = __dirname + "/records/" + dirDate + "/" + this.country + "_" + this.name + "/todo/";
+		const path = dir + now.toISOString();
+
+		log.debug("saveAudioSegment: path=" + path);
+
+		cp.exec("mkdir -p \"" + dir + "\"", function(error, stdout, stderr) {
+			if (error) {
+				log.error("warning, could not create path " + path);
+			}
+
+			self.dbs = {
+				audio: self.config.saveAudio ? new fs.createWriteStream(path + "." + self.audioExt) : null,
+				metadataPath: path + ".json"
+			};
 
 			// TODO put fetch metadata out of this process, it may delay it.
 			// but... metadata may be an ingredient to help the algorithm. so it shall stay here.
 			if (self.config.fetchMetadata) {
-				// send web-scraped metadata to history DB
 				getMeta(self.country, self.name, function(err, parsedMeta, corsEnabled) {
 					if (err) return log.warn("getMeta: error fetching title meta. err=" + err);
 					//log.info(self.country + "_" + self.name + " meta=" + JSON.stringify(parsedMeta));
