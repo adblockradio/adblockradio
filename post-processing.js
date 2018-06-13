@@ -230,14 +230,15 @@ class Analyser extends Readable {
 	saveMetadata(obj, path) {
 		fs.readFile(path, function(err, readData) {
 			let data = { predictions: [] };
-			if (err) {
-				log.debug("metadataPath read err=" + JSON.stringify(err) + ". overwrite any previous metadata info");
-			} else {
+
+			if (!err) {
 				try {
 					data = JSON.parse(readData);
 				} catch (e) {
 					log.warn("metadataPath read parsing err=" + JSON.stringify(e));
 				}
+			} else if (err && err.code !== "ENOENT") {
+				log.debug("metadataPath read err=" + JSON.stringify(err) + ". erase any previous metadata info");
 			}
 			let outputData = Object.assign({}, obj);
 
