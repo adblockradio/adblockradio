@@ -38,7 +38,7 @@ class Hotlist extends Transform {
 		this.ready = false;
 		this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY, function(err) {
 			// example of err object structure: { "errno": 14, "code": "SQLITE_CANTOPEN" }
-			if (err.code === "SQLITE_CANTOPEN") {
+			if (err && err.code === "SQLITE_CANTOPEN") {
 				log.warn(path + " not found, hotlist module disabled");
 				self.db = null;
 			} else if (err) {

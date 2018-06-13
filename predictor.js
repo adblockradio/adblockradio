@@ -58,7 +58,6 @@ class Predictor {
 			enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
 			enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
-			saveMetadata: true, // save a JSON with predictions (saveDuration intervals)
 			fetchMetadata: true // gather metadata from radio websites (saveDuration intervals)
 		}
 
@@ -134,7 +133,10 @@ class Predictor {
 		const self = this;
 		const out = function() {
 			if (self.config.saveAudio) self.dbs.audio.write(dataObj.data);
-			self.listener.write(Object.assign(dataObj, { type: "audio" }));
+			self.listener.write(Object.assign(dataObj, {
+				type: "audio",
+				metadataPath: self.dbs.metadataPath
+			}));
 			self.decoder.stdin.write(dataObj.data);
 		}
 
@@ -145,6 +147,8 @@ class Predictor {
 
 		this.dl.pause();
 		self.decoder.stdout.pause();
+
+		// TODO: do the hotlist search only if mlPredictor is unsure?
 
 		async.parallel([
 
@@ -179,17 +183,10 @@ class Predictor {
 
 	_newAudioSegment(callback) {
 
-		if (this.dbs) {
-			if (this.config.saveAudio) this.dbs.audio.end();
-			if (this.config.saveMetadata) {
-				log.debug("unpipe");
-				if (this.config.enablePredictorHotlist) this.hotlist.unpipe(this.dbs.metadata);
-				if (this.config.enablePredictorMl) this.mlPredictor.unpipe(this.dbs.metadata);
-				this.dbs.metadata.end();
-			}
-		}
+		if (this.dbs && this.config.saveAudio) this.dbs.audio.end();
 
 		if (this.config.enablePredictorMl && this.mlPredictor.ready && !this.mlPredictor.ready2) {
+			// this happens only once, when mlPredictor is ready to crunch data
 			log.debug("mlPredictor data pipe activated");
 			this.decoder.stdout.pipe(this.mlPredictor);
 			this.mlPredictor.ready2 = true;
@@ -200,35 +197,14 @@ class Predictor {
 			//log.debug("newAudioSegment");
 			self.dbs = dbs;
 
-			// TODO: do the hotlist search only if mlPredictor is unsure?
-			if (self.config.saveMetadata) {
-				if (self.config.enablePredictorHotlist) {
-					// send Hotlist detections to metadata history DB
-					self.hotlist.pipe(self.dbs.metadata);
-				}
-				if (self.config.enablePredictorMl) {
-					// send ML predictions results to metadata history DB
-					if (!self.mlPredictor) log.error("empty mlpredictor");
-					if (!self.dbs.metadata) log.error("empty dbs.metadata");
-					self.mlPredictor.pipe(self.dbs.metadata);
-				}
-			}
-
 			// TODO put fetch metadata out of this process, it may delay it.
+			// but... metadata may be an ingredient to help the algorithm. so it shall stay here.
 			if (self.config.fetchMetadata) {
 				// send web-scraped metadata to history DB
 				getMeta(self.country, self.name, function(err, parsedMeta, corsEnabled) {
 					if (err) return log.warn("getMeta: error fetching title meta. err=" + err);
-					log.info(self.country + "_" + self.name + " meta=" + JSON.stringify(parsedMeta));
+					//log.info(self.country + "_" + self.name + " meta=" + JSON.stringify(parsedMeta));
 					self.listener.write({ type: "title", data: parsedMeta });
-					if (self.config.saveMetadata) {
-						if (self.dbs.metadata.ended) return log.warn("getMeta: could not write metadata, stream already ended");
-						self.dbs.metadata.write({
-							type: "title",
-							data: parsedMeta,
-							validity: self.config.saveDuration * self.config.predInterval // next write is expected to happen in N seconds.
-						});
-					}
 				});
 			}
 			callback();

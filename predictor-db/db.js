@@ -27,46 +27,12 @@ class Db {
 			if (error) {
 				log.error("warning, could not create path " + path);
 			}
-			//log.debug("saveAudioSegment: callback");
 
 			callback({
 				audio: self.saveAudio ? new fs.createWriteStream(path + "." + self.ext) : null,
-				metadata: new MetaWriteStream(path + ".json"),
+				metadataPath: path + ".json"
 			});
 		});
-	}
-}
-
-class MetaWriteStream extends Writable {
-	constructor(path) {
-		super({ objectMode: true });
-		this.file = new fs.createWriteStream(path);
-		this.ended = false;
-		this.meta = {};
-	}
-
-	_write(meta, enc, next) {
-		if (!meta.type) {
-			log.error("MetaWriteStream: no data type");
-			return next();
-		}
-		//log.debug("MetaWriteStream: data type=" + meta.type);
-
-		// some fields are saved in an array
-		if (meta.array) {
-			if (!this.meta[meta.type]) this.meta[meta.type] = [];
-			this.meta[meta.type].push(meta.data);
-		} else {
-			this.meta[meta.type] = meta.data;
-		}
-		next();
-	}
-
-	_final(next) {
-		//log.debug("MetaWriteStream: end. meta=" + JSON.stringify(this.meta));
-		this.file.end(JSON.stringify(this.meta, null, '\t'));
-		this.ended = true;
-		next();
 	}
 }
 

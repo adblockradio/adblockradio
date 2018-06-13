@@ -11,8 +11,8 @@ const abr = new Analyser({
 		saveDuration: 10,
 		enablePredictorHotlist: true,
 		enablePredictorMl: true,
-		saveAudio: false,
-		saveMetadata: false,
+		saveAudio: true,
+		saveMetadata: true,
 		fetchMetadata: true
 	}
 });
