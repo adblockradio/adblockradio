@@ -69,7 +69,8 @@ class PostProcessor extends Transform {
 				this.streamInfo = {
 					url: obj.data.url,
 					favicon: obj.data.favicon,
-					homepage: obj.data.homepage
+					homepage: obj.data.homepage,
+					audioExt: obj.data.ext
 				}
 				break;
 
@@ -133,13 +134,13 @@ class PostProcessor extends Transform {
 			// pruning of unsure ML predictions
 			// 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
 			const mlConfident = maxMovAvg > 0.65;
-			log.debug("movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg + " confident=" + mlConfident);
+			log.debug("movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg.map(e => +e.toFixed(3)) + " confident=" + mlConfident);
 			mlOutput = {
 				class: mlConfident ? consts.WLARRAY[iMaxMovAvg] : consts.UNSURE,
 				softmaxraw: this.cache[i].ml && this.cache[i].ml.softmaxs.map(e => +e.toFixed(3)),
 				softmax: movAvg.map(e => +e.toFixed(3)),
 				slotsFuture: availableSlotsFuture,
-				stotsPast: availableSlotsPast
+				slotsPast: availableSlotsPast
 			}
 		}
 

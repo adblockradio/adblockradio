@@ -148,6 +148,7 @@ class MlPredictor extends Transform {
 	_final(next) {
 		//log.debug("ml.js final");
 		this.predictChild.stdin.end();
+		this.predictChild.kill();
 		//if (this.readyToCallFinal) return next();
 		this.readyToCallFinal = next;
 	}
