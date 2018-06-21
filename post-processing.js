@@ -35,7 +35,7 @@ class PostProcessor extends Transform {
 		switch (obj.type) {
 			case "audio":
 				if (obj.newSegment && this.cache[0] && this.cache[0].audio && this.cache[0].audio.length > 0) {
-					log.info("audio => " + this.cache[0].audio.length + " bytes, tBuf=" + obj.tBuffer.toFixed(2) + "s");
+					//log.info("in: audio => " + this.cache[0].audio.length + " bytes, tBuf=" + obj.tBuffer.toFixed(2) + "s");
 					this._newCacheSlot(obj.tBuffer);
 				}
 				this.cache[0].audio = this.cache[0].audio ? Buffer.concat([this.cache[0].audio, obj.data]) : obj.data;
@@ -43,7 +43,7 @@ class PostProcessor extends Transform {
 				break;
 
 			case "ml":
-				log.info("ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) +
+				log.info("in: ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) +
 					" softmax=" + obj.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + obj.data.confidence.toFixed(2));
 				if (this.cache[0].ml) log.warn("overwriting ml cache data!")
 				this.cache[0].ml = obj.data;
@@ -51,21 +51,21 @@ class PostProcessor extends Transform {
 				break;
 
 			case "hotlist":
-				log.info("hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal +
+				log.info("in: hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal +
 					" class=" + consts.WLARRAY[obj.data.class]);
 				if (this.cache[0].hotlist) log.warn("overwriting hotlist cache data!")
 				this.cache[0].hotlist = obj.data;
 				break;
 
 			case "title":
-				log.info("title => " + JSON.stringify(obj.data));
+				log.info("in: title => " + JSON.stringify(obj.data));
 				this.metadata = obj.data;
 				// validity: not setting a validity or setting it to zero lead to infinite validity.
 				this.metadataValidUntil = obj.validity ? (+new Date() + obj.validity * 1000 * 2) : Infinity;
 				break;
 
 			case "dlinfo":
-				log.info("dlinfo => " + JSON.stringify(obj.data));
+				log.info("in: dlinfo => " + JSON.stringify(obj.data));
 				this.streamInfo = {
 					url: obj.data.url,
 					favicon: obj.data.favicon,
@@ -83,6 +83,7 @@ class PostProcessor extends Transform {
 
 	_newCacheSlot(tBuffer) {
 
+		log.debug("---------------------");
 		const now = +new Date();
 		this.slotCounter++;
 		this.cache.unshift({ ts: now, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
@@ -134,7 +135,7 @@ class PostProcessor extends Transform {
 			// pruning of unsure ML predictions
 			// 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
 			const mlConfident = maxMovAvg > 0.65;
-			log.debug("movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg.map(e => +e.toFixed(3)) + " confident=" + mlConfident);
+			//log.debug("out: movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg.map(e => +e.toFixed(3)) + " confident=" + mlConfident);
 			mlOutput = {
 				class: mlConfident ? consts.WLARRAY[iMaxMovAvg] : consts.UNSURE,
 				softmaxraw: this.cache[i].ml && this.cache[i].ml.softmaxs.map(e => +e.toFixed(3)),
@@ -178,6 +179,7 @@ class PostProcessor extends Transform {
 			playTime: tsRef,
 			tBuffer: +this.cache[i].tBuf.toFixed(2),
 		});
+		//log.debug("out: i=" + i + " class=" + finalClass);
 	}
 }
 
@@ -201,10 +203,10 @@ class Analyser extends Readable {
 		// optional custom config
 		Object.assign(this.config, options.config);
 
-		const postProcessor = new PostProcessor();
+		this.postProcessor = new PostProcessor();
 
 		const self = this;
-		postProcessor.on("data", function(obj) {
+		this.postProcessor.on("data", function(obj) {
 			if (!obj.audio) {
 				log.warn("empty audio! " + JSON.stringify(obj, null, "\t"));
 			}
@@ -220,11 +222,11 @@ class Analyser extends Readable {
 			if (self.config.saveMetadata) self.saveMetadata(obj, metadataPath);
 		});
 
-		const predictor = new Predictor({
+		this.predictor = new Predictor({
 			country: self.country,
 			name: self.name,
 			config: options.config,
-			listener: postProcessor
+			listener: this.postProcessor
 		});
 	}
 
@@ -264,12 +266,17 @@ class Analyser extends Readable {
 		});
 	}
 
-	newPredictChild() {
-		// TODO
+	refreshPredictorMl() {
+		this.predictor.refreshPredictorMl();
+	}
+
+	refreshPredictorHotlist() {
+		this.predictor.refreshPredictorHotlist();
 	}
 
 	stopDl() {
 		// TODO
+		this.predictor.stop();
 	}
 
 	_read() {

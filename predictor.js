@@ -50,7 +50,8 @@ class Predictor {
 			enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
 			enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
-			fetchMetadata: true // gather metadata from radio websites (saveDuration intervals)
+			fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
+			modelPath: __dirname + '/model', // directory where ML models and hotlist DBs are stored
 		}
 
 		// optional custom config
@@ -78,16 +79,8 @@ class Predictor {
 			'pipe:1'
 		], { stdio: ['pipe', 'pipe', process.stderr] });
 
-		if (this.config.enablePredictorHotlist) {
-			this.hotlist = new Hotlist({ country: this.country, name: this.name });
-			this.hotlist.pipe(this.listener);
-			this.decoder.stdout.pipe(this.hotlist);
-		}
-		if (this.config.enablePredictorMl) {
-			this.mlPredictor = new MlPredictor({ country: this.country, name: this.name });
-			this.mlPredictor.pipe(this.listener);
-			// we pipe decoder to mlPredictor later, once mlPredictor is ready to process data.
-		}
+		this.refreshPredictorHotlist();
+		this.refreshPredictorMl();
 
 		this.dl.on("metadata", function(metadata) { // this happens once at the beginning of stream download
 			//log.info(country + "_" + name + " metadata=" + JSON.stringify(metadata, null, "\t"));
@@ -147,9 +140,11 @@ class Predictor {
 
 		], function(err) {
 
+			if (err) log.warn("a predictor returned the following error: " + JSON.stringify(err));
+
 			// save audio and metadata less frequently than status updates. to do so, we count the audio segments.
 			self.predCounter += 1;
-			log.debug("new segment. predcounter=" + self.predCounter + "/" + self.config.saveDuration);
+			//log.debug("new segment. predcounter=" + self.predCounter + "/" + self.config.saveDuration);
 
 			const finish = function() {
 				//log.debug("dl+decoder resume");
@@ -210,8 +205,53 @@ class Predictor {
 		});
 	}
 
+	refreshPredictorHotlist() {
+		if (this.hotlist) {
+			this.hotlist.unpipe(this.listener);
+			this.decoder.stdout.unpipe(this.hotlist);
+			this.hotlist.destroy();
+			delete this.hotlist;
+		}
+		if (this.config.enablePredictorHotlist) {
+			this.hotlist = new Hotlist({
+				country: this.country,
+				name: this.name,
+				fileDB: this.config.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
+			});
+			this.hotlist.pipe(this.listener);
+			this.decoder.stdout.pipe(this.hotlist);
+		} else {
+			this.hotlist = null;
+		}
+	}
+
+	refreshPredictorMl() {
+		if (this.mlPredictor) {
+			this.mlPredictor.unpipe(this.listener);
+			if (this.mlPredictor.ready2) this.decoder.stdout.pipe(this.mlPredictor);
+			this.mlPredictor.destroy();
+			delete this.mlPredictor;
+		}
+		if (this.config.enablePredictorMl) {
+			this.mlPredictor = new MlPredictor({
+				country: this.country,
+				name: this.name,
+				fileModel: this.config.modelPath + '/' + this.country + '_' + this.name + '.keras'
+			});
+			this.mlPredictor.pipe(this.listener);
+			// we pipe decoder to mlPredictor later, once mlPredictor is ready to process data.
+		} else {
+			this.mlPredictor = null;
+		}
+	}
+
 	stop() {
-		// TODO
+		log.info("close predictor");
+		this.dl.stopDl();
+		this.decoder.kill();
+		if (this.hotlist) this.hotlist.destroy();
+		if (this.mlPredictor) this.mlPredictor.destroy();
+		this.listener.end();
 	}
 
 }

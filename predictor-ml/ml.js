@@ -12,7 +12,7 @@ class MlPredictor extends Transform {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
-		this.fileModel = options.fileModel || "model/" + this.canonical + ".keras";
+		this.fileModel = options.fileModel || __dirname + "/model/" + this.canonical + ".keras";
 		this.ready = false;
 		this.onReadyCallback = options.onReadyCallback;
 		var self = this;
@@ -25,14 +25,14 @@ class MlPredictor extends Transform {
 		this.cork();
 		this.predictChild = cp.spawn('python', [
 			'-u',
-			'mlpredict.py',
+			__dirname + '/mlpredict.py',
 			this.canonical,
 			this.fileModel,
 			11025,				// hardcoded: sample rate
 			1,					// hardcoded: number of channels
 			16,					// hardcoded: bits per sample
 			consts.STOP_WORD	// stop word, to tell the subprocess to generate a prediction
-		], { stdio: ['pipe', 'pipe', 'pipe'], cwd: __dirname });
+		], { stdio: ['pipe', 'pipe', 'pipe'] });
 
 		const onData = function(msg) {
 
@@ -62,7 +62,7 @@ class MlPredictor extends Transform {
 				} else {
 					log.debug("mlpredict child: " + msg);
 				}
-				return optCallback();
+				return; // optCallback();
 			}
 
 			try {
@@ -70,17 +70,6 @@ class MlPredictor extends Transform {
 			} catch(e) {
 				log.warn(self.canonical + " could not parse json results: " + e + " original data=|" + msg.slice(ijson, msg.length) + "|");
 			}
-
-			/*
-			log.info(self.canonical + " current type is " + consts.WLARRAY[results.type] + " confidence=" + Math.round(results.confidence*100)/100 + " " +
-				//" alt is " + consts.WLARRAY[results.alt] +
-				"tMFCC=" + Math.round(results.timings.mfcc*1000) + "ms " +
-				"tINF=" + Math.round(results.timings.inference*1000) + "ms " +
-				//"buffer=" + Math.round(stream.tBuffer*100)/100 + "s " +
-				//"rAvg=" + stream.rAvg + " " +
-				"gain=" + Math.round(results.rms*10)/10 + "db " +
-				"mem=" + Math.round(process.memoryUsage().rss/1000000) + "+" + Math.round(results.mem/1000000) + "MB"); //+ "softmax=" + results.softmax);
-			*/
 
 			let outData = {
 				type: results.type,
@@ -128,13 +117,19 @@ class MlPredictor extends Transform {
 
 	}
 
+	_sendStopWord() {
+		this.predictChild.stdin.write(consts.STOP_WORD);
+		this.predictChild.stdin.write(Buffer.alloc(consts.STOP_WORD.length*10, ' '));
+	}
+
 	sendStopWord(callback) {
 		if (this.dataWrittenSinceLastSeg) { // avoid sending a stop word after zero data. this is the way to close the predictChild.
-			this.predictChild.stdin.write(consts.STOP_WORD);
-			this.predictChild.stdin.write(Buffer.alloc(consts.STOP_WORD.length*10, ' '));
+			//log.debug("send stop word to ML subprocess");
+			this._sendStopWord();
 			this.dataWrittenSinceLastSeg = false;
 			this.onDataCallback = callback;
 		} else if (callback) {
+			log.warn("stopword sent but no data written since last one");
 			callback();
 		}
 	}
@@ -146,9 +141,18 @@ class MlPredictor extends Transform {
 	}
 
 	_final(next) {
+		log.info("closing ML predictor");
 		//log.debug("ml.js final");
+
+		// sending two consecutive stop words without
+		// data in between causes the child process to exit.
+		this._sendStopWord();
+		this._sendStopWord();
+
+		// if not enough, kill it directly!
 		this.predictChild.stdin.end();
 		this.predictChild.kill();
+
 		//if (this.readyToCallFinal) return next();
 		this.readyToCallFinal = next;
 	}

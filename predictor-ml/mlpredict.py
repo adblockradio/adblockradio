@@ -31,10 +31,14 @@ def get_session(gpu_fraction=0.05):
 
 KTF.set_session(get_session())
 
-
-
+# show or hide verbose logging
 debug = False
-playAudio = False # for debug only, causes some lags in the program
+
+# play audio as received by this module.
+# avoid this if you run several instances in parallel!
+# may cause some lags in the process. for debugging purposes.
+playAudio = False
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -74,8 +78,7 @@ pcm = None
 
 #nsuicide = 0
 
-
-# audio out for debug purposes
+# audio out
 if playAudio:
 	pyaud = pyaudio.PyAudio()
 	audioout = pyaud.open(format=pyaud.get_format_from_width(bitdepth / 8), channels=nchannels, rate=sampleRate, output=True)
@@ -110,27 +113,6 @@ pcm = None
 while True:
 	data = partial
 	while True: # read until the stop word is read. this loop may be slow
-
-		"""
-		char = sys.stdin.read(1)
-
-		if char == stopword[stopwordindex]: # stop word is being read
-			logdebug("stop word: read " + char + " at stopwordindex " + str(stopwordindex))
-			stopwordindex += 1
-			if stopwordindex >= stopwordlen: # stop word is complete.
-				logdebug("stop word complete!")
-				stopwordindex = 0
-				break
-		elif stopwordindex > 0: # finally, it was not the stop word. add the beginning of the stopword to actual data.
-			#for i in range(0, stopwordindex):
-			logdebug("stop word false alarm, append " + stopword[0:stopwordindex])
-			data += stopword[0:stopwordindex]
-			stopwordindex = 0
-		else:	# general case
-			#logdebug("not recognized char: " + char)
-			data += char
-		"""
-
 		chars = partial + sys.stdin.read(stopwordlen)
 		pos = chars.find(stopword)
 		if pos >= 0:
@@ -158,11 +140,7 @@ while True:
 		logdebug("empty data: stop")
 		break
 
-	#data = sys.stdin.read(readAmount)
-	#if len(data) == 0:
-	#	break
-
-	duration = len(data)/bitrate
+	duration = 1.0*len(data)/bitrate
 	logdebug("py received " + str(duration) + " s (" + str(len(data)) + " bytes)")
 	if playAudio:
 		audioout.write(data)
@@ -243,8 +221,8 @@ while True:
 		'rms': rms,
 		'mem': process.memory_info().rss,
 		'lenpcm': len(pcm),
-		'timings': {'mfcc': str(t2-t1), 'inference': str(t4-t3)} })
-	)
+		'timings': {'mfcc': str(t2-t1), 'inference': str(t4-t3)}
+	}))
 	#t5 = timer()
 	#nsuicide = nsuicide + 1
 	#if nsuicide > 4:

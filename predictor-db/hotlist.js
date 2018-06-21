@@ -21,8 +21,10 @@ const consts = {
 class Hotlist extends Transform {
 	constructor(options) {
 		super({ objectMode: true });
-		this.country = options.country;
-		this.name = options.name;
+		const country = options.country;
+		const name = options.name;
+		const path = options.fileDB || "predictor-db/hotlist" + '/' + country + "_" + name + ".sqlite";
+
 		this.fingerprinter = new Codegen();
 		this.fingerbuffer = { tcodes: [], hcodes: [] };
 		this.onFingers = this.onFingers.bind(this);
@@ -33,7 +35,6 @@ class Hotlist extends Transform {
 			//log.debug(JSON.stringify(data));
 		});
 
-		let path = "predictor-db/hotlist/" + this.country + "_" + this.name + ".sqlite";
 		log.info("open hotlist db " + path)
 		this.ready = false;
 		this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY, function(err) {
@@ -57,10 +58,6 @@ class Hotlist extends Transform {
 		this.fingerprinter.write(audioData);
 		next();
 	}
-
-	/*_final(next) {
-		next();
-	}*/
 
 	onFingers(callback) {
 		if (!this.db) return callback ? callback(null) : null;
@@ -89,7 +86,7 @@ class Hotlist extends Transform {
 			"INNER JOIN tracks ON tracks.id = track_id " +
 			"WHERE finger IN " + inStr + ";", fingerVector, function(err, res) {
 
-			if (err) return log.warn("onFingers: query error=" + err + " path=" + path);
+			if (err) return log.warn("onFingers: query error=" + err);
 			if (!res || !res.length) {
 				//log.warn("onFingers: no results for a query of " + tcodes.length);
 				self.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
@@ -128,7 +125,15 @@ class Hotlist extends Transform {
 
 			const output = { file: maxFile, class: maxClass, diff: maxDiff, matchesSync: largestCount, matchesTotal: res.length }
 			self.push({ type: "hotlist", data: output });
-			if (callback) callback(output);
+			if (callback) callback();
+		});
+	}
+
+	_final(next) {
+		log.info("closing hotlist DB");
+		this.db.close(function(err) {
+			if (err) log.warn("could not close DB. err=" + err);
+			next();
 		});
 	}
 }
