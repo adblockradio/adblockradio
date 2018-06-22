@@ -50,6 +50,7 @@ class Predictor {
 			enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
 			enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
+			saveAudioPath: __dirname + '/records', // root folder where audio and metadata are saved
 			fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
 			modelPath: __dirname + '/model', // directory where ML models and hotlist DBs are stored
 		}
@@ -177,7 +178,7 @@ class Predictor {
 
 		const now = new Date();
 		const dirDate = (now.getUTCFullYear()) + "-" + (now.getUTCMonth()+1 < 10 ? "0" : "") + (now.getUTCMonth()+1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + (now.getUTCDate());
-		const dir = __dirname + "/records/" + dirDate + "/" + this.country + "_" + this.name + "/todo/";
+		const dir = this.config.saveAudioPath + '/' + dirDate + "/" + this.country + "_" + this.name + "/todo/";
 		const path = dir + now.toISOString();
 
 		log.debug("saveAudioSegment: path=" + path);
