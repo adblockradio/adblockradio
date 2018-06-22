@@ -67,7 +67,7 @@ class Hotlist extends Transform {
 		this.fingerbuffer = { tcodes: [], hcodes: [] };
 		if (!tcodes.length) {
 			this.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
-			if (callback) callback(consts.EMPTY_OUTPUT);
+			if (callback) callback();
 			return log.warn("onFingers: no fingerprints to search");
 		}
 
@@ -90,7 +90,7 @@ class Hotlist extends Transform {
 			if (!res || !res.length) {
 				//log.warn("onFingers: no results for a query of " + tcodes.length);
 				self.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
-				if (callback) callback(consts.EMPTY_OUTPUT);
+				if (callback) callback();
 				return
 			}
 
