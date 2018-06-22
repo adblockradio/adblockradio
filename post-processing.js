@@ -97,6 +97,8 @@ class PostProcessor extends Transform {
 	}
 
 	_postProcessing(tsRef) {
+		if (this.ended) return log.warn('abort _postProcessing event because stream is ended.');
+
 		const i = this.cache.map(e => e.ts).indexOf(tsRef);
 		if (i < 0) return log.warn("_postProcessing: cache item not found");
 
@@ -277,6 +279,8 @@ class Analyser extends Readable {
 	stopDl() {
 		// TODO
 		this.predictor.stop();
+		this.postProcessor.ended = true;
+		this.postProcessor.end();
 	}
 
 	_read() {

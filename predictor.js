@@ -252,7 +252,6 @@ class Predictor {
 		this.decoder.kill();
 		if (this.hotlist) this.hotlist.destroy();
 		if (this.mlPredictor) this.mlPredictor.destroy();
-		this.listener.end();
 	}
 
 }
