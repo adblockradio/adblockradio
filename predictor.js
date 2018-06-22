@@ -73,7 +73,7 @@ class Predictor {
 		this.decoder = require('child_process').spawn('ffmpeg', [
 			'-i', 'pipe:0',
 			'-acodec', 'pcm_s16le',
-			'-ar', 11025,
+			'-ar', 22050,
 			'-ac', 1,
 			'-f', 'wav',
 			'-v', 'fatal',
