@@ -150,7 +150,8 @@ class PostProcessor extends Transform {
 		// pruning of unclear hotlist detections
 		let hotlistOutput = null;
 		if (this.cache[i].hotlist) {
-			const hlConfident = this.cache[i].hotlist.matchesTotal >= 10 && this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2;
+			const hlConfident = this.cache[i].hotlist.matchesTotal >= 10 &&
+				this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2;
 			hotlistOutput = {
 				class: hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : consts.UNSURE,
 				file: hlConfident ? this.cache[i].hotlist.file : null
@@ -221,7 +222,11 @@ class Analyser extends Readable {
 
 			self.push(obj);
 
-			if (self.config.saveMetadata) self.saveMetadata(obj, metadataPath);
+			if (self.config.saveMetadata && metadataPath) {
+				self.saveMetadata(obj, metadataPath);
+			} else if (self.config.metadataPath) {
+				log.warn("did not save metadata file, because missing metadataPath parameter");
+			}
 		});
 
 		this.predictor = new Predictor({

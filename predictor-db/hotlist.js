@@ -79,8 +79,6 @@ class Hotlist extends Transform {
 		}
 		inStr += ")";
 
-		var results = {}
-
 		let self = this;
 		this.db.all("SELECT tracks.file as file, tracks.class as class, id, dt as dtquery, finger FROM fingers " +
 			"INNER JOIN tracks ON tracks.id = track_id " +

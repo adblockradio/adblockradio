@@ -94,7 +94,6 @@ class Predictor {
 			self.predCounter = 0
 
 			self._newAudioSegment(function() {
-				log.debug("first segment created");
 				self.dl.resume();
 			});
 
