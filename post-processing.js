@@ -154,7 +154,9 @@ class PostProcessor extends Transform {
 				this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2;
 			hotlistOutput = {
 				class: hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : consts.UNSURE,
-				file: hlConfident ? this.cache[i].hotlist.file : null
+				file: hlConfident ? this.cache[i].hotlist.file : null,
+				matches: this.cache[i].hotlist.matchesSync,
+				total: this.cache[i].hotlist.matchesTotal,
 			}
 		}
 
