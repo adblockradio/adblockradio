@@ -28,7 +28,7 @@ class MlPredictor extends Transform {
 			__dirname + '/mlpredict.py',
 			this.canonical,
 			this.fileModel,
-			11025,				// hardcoded: sample rate
+			22050,				// hardcoded: sample rate
 			1,					// hardcoded: number of channels
 			16,					// hardcoded: bits per sample
 			consts.STOP_WORD	// stop word, to tell the subprocess to generate a prediction
