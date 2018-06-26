@@ -150,8 +150,8 @@ class PostProcessor extends Transform {
 		// pruning of unclear hotlist detections
 		let hotlistOutput = null;
 		if (this.cache[i].hotlist) {
-			const hlConfident = this.cache[i].hotlist.matchesTotal >= 10 &&
-				this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.4;
+			const hlConfident = this.cache[i].hotlist.matchesTotal >= 20 &&
+				this.cache[i].hotlist.matchesSync / this.cache[i].hotlist.matchesTotal > 0.2;
 			hotlistOutput = {
 				class: hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : consts.UNSURE,
 				file: hlConfident ? this.cache[i].hotlist.file : null,
