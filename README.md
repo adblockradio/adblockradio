@@ -27,7 +27,7 @@ npm install
 ### Demo
 
 The time-frequency analyser need a compatible machine-learning model. The fingerprint matcher need a fingerprint database.
-Grab demo files for French station Radio FG with the following commands:
+Grab demo files for French station RTL with the following commands: (TODO)
 ```
 cd model/
 wget https://www.adblockradio.com/models/France_RTL.keras
