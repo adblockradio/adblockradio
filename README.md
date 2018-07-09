@@ -112,6 +112,48 @@ Here is a sample output of the demo script:
 ```
 ## Documentation
 
+### Usage
+
+```
+const { Analyser } = require("adblockradio");
+
+const abr = new Analyser({
+	country: "France",
+	name: "RTL",
+	config: {
+		...
+	}
+});
+
+abr.on("data", function(obj) {
+	...
+});
+```
+
+### Input
+
+Country and name are strings that must match a radio on [radio-browser.info](http://www.radio-browser.info).
+
+Config fields are all optional. Their definitions and default values are the following.
+
+Stream segmentation:
+- predInterval: 1, // send stream status to listener every N seconds
+- saveDuration: 10, // save audio file and metadata every N predInterval times.
+
+Modules switches:
+- enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
+- enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
+- saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
+- saveMetadata: true, // save a JSON with predictions (saveDuration intervals)
+- fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
+
+Paths:
+- modelPath: __dirname + '/model', // directory where ML models and hotlist DBs are stored
+- saveAudioPath: __dirname + '/records', // root folder where audio and metadata are saved
+
+
+### Output
+
 Readable streams constructed with `Analyser` emit objects with the following properties.
 
 - audio: Buffer containing a chunk of original (compressed) audio data.
@@ -119,7 +161,7 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - ml: null if not available, otherwise an object containing the results of the time-frequency analyser
   * class: either "0-ads", "1-speech" or "2-music". The classification according to this module.
   * softmaxraw: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
-  * softmax: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in `post-processing.js`.
+  * softmax: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/dest4/adblockradio/blob/master/post-processing.js).
 
 - hotlist: null if not available, otherwise an object containing the results of the fingerprint matcher.
   * class: either "0-ads", "1-speech", "2-music", "3-jingles" or "unsure"
@@ -129,11 +171,11 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - class: final prediction of the algorithm.
 
-- metadata: live metadata using the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata)
+- metadata: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
 
 - streamInfo: static metadata about the stream. audio url, favicon, audio format (mp3 or aac) and homepage URL.
 
-- gain: a dB-like value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
+- gain: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
 
 - tBuffer: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
   
@@ -142,5 +184,6 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - playTime: approximate timestamp of when the given audio is to be played. TODO check this.  
   
   
-  
-  
+## License
+
+See LICENSE file. If you wish to use this software with another license, do not hesitate to contact me at a_npm (at) storelli (point) fr
