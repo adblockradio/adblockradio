@@ -23,6 +23,6 @@
     "sqlite3": "^3.1.13",
     "stream-audio-fingerprint": "1.0.x",
     "stream-tireless-baler": "^1.0.2",
-    "webradio-metadata": "^0.1.17"
+    "webradio-metadata": "^0.1.22"
   }
 }
