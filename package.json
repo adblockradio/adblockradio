@@ -2,7 +2,7 @@
   "name": "adblockradio",
   "version": "1.0.0",
   "description": "Distinguish ads, talk and music in radios",
-  "main": "backend.js",
+  "main": "post-processing.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,12 +17,9 @@
   "dependencies": {
     "abr-log": "git+https://git@github.com/dest4/log.git",
     "async": "^2.6.1",
-    "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
-    "m3u8": "0.0.7",
-    "node-png": "^0.4.3",
     "sqlite3": "^3.1.13",
     "stream-audio-fingerprint": "1.0.x",
     "stream-tireless-baler": "^1.0.2",
-    "webradio-metadata": "^0.1.22"
+    "webradio-metadata": "^0.1.23"
   }
 }
