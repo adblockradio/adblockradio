@@ -18,7 +18,7 @@ A Readable interface, `Analyser`, is exposed. It streams objects containing the 
 ### Installation
 
 First, get Node.js and NPM. Tested with node v9.9.0 and NPM 5.6.0. If you need to manage several node versions on your workstation, use [NVM](https://github.com/creationix/nvm).
-```
+```bash
 git clone https://github.com/dest4/adblockradio.git
 cd adblockradio
 npm install
@@ -28,7 +28,7 @@ npm install
 
 The time-frequency analyser need a compatible machine-learning model. The fingerprint matcher need a fingerprint database.
 Grab demo files for French station RTL with the following commands: (TODO)
-```
+```bash
 cd model/
 wget https://www.adblockradio.com/models/France_RTL.keras
 wget https://www.adblockradio.com/models/France_RTL.sqlite
@@ -36,7 +36,7 @@ cd ..
 ```
 
 then run the demo:
-```
+```javascript
 const { log } = require("abr-log")("demo");
 const { Analyser } = require("./post-processing.js");
 
@@ -62,7 +62,7 @@ abr.on("data", function(obj) {
 ```
 or
 
-```
+```bash
 node demo.js
 ```
 
@@ -114,7 +114,7 @@ Here is a sample output of the demo script:
 
 ### Usage
 
-```
+```javascript
 const { Analyser } = require("adblockradio");
 
 const abr = new Analyser({
@@ -132,58 +132,71 @@ abr.on("data", function(obj) {
 
 ### Input
 
-Country and name are strings that must match a radio on [radio-browser.info](http://www.radio-browser.info).
+#### Stream info (mandatory)
 
-Config fields are all optional. Their definitions and default values are the following.
+Property|Description|Default
+--------|-----------|-------
+`country`|Country of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
+`name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 
-Stream segmentation:
-- predInterval: 1, // send stream status to listener every N seconds
-- saveDuration: 10, // save audio file and metadata every N predInterval times.
 
-Modules switches:
-- enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
-- enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
-- saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
-- saveMetadata: true, // save a JSON with predictions (saveDuration intervals)
-- fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
+#### Stream segmentation (optional)
 
-Paths:
-- modelPath: __dirname + '/model', // directory where ML models and hotlist DBs are stored
-- saveAudioPath: __dirname + '/records', // root folder where audio and metadata are saved
+Property|Description|Default
+--------|-----------|-------
+`predInterval`|send stream status to listener every N seconds|`1`
+`saveDuration`|save audio file and metadata every N `predInterval` times|`10`
 
+#### Switches (optional)
+
+Property|Description|Periodicity|Default
+--------|-----------|-----------|-------
+`enablePredictorMl`|perform machine learning inference|`predInterval`|`true`
+`enablePredictorHotlist`|compute audio fingerprints and search them in a DB|`predInterval`|`true`
+`saveAudio`|save stream audio data in segments on hard drive|`saveDuration`|`true`
+`saveMetadata`|save a JSON with predictions|`saveDuration`|`true`
+`fetchMetadata`|gather metadata from radio websites|`saveDuration`|`true`
+
+#### Paths:
+
+Property|Description|Default
+--------|-----------|-------
+`modelPath`|directory where ML models and hotlist DBs are stored|`__dirname + '/model'`
+`saveAudioPath`|root folder where audio and metadata are saved|`__dirname + '/records'`
 
 ### Output
 
 Readable streams constructed with `Analyser` emit objects with the following properties.
 
-- audio: Buffer containing a chunk of original (compressed) audio data.
+- `audio`: Buffer containing a chunk of original (compressed) audio data.
 
-- ml: null if not available, otherwise an object containing the results of the time-frequency analyser
-  * class: either "0-ads", "1-speech" or "2-music". The classification according to this module.
-  * softmaxraw: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
-  * softmax: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/dest4/adblockradio/blob/master/post-processing.js).
+- `ml`: `null` if not available, otherwise an object containing the results of the time-frequency analyser
+  * `class`: either `0-ads`, `1-speech` or `2-music`. The classification according to this module.
+  * `softmaxraw`: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
+  * `softmax`: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/dest4/adblockradio/blob/master/post-processing.js).
 
-- hotlist: null if not available, otherwise an object containing the results of the fingerprint matcher.
-  * class: either "0-ads", "1-speech", "2-music", "3-jingles" or "unsure"
-  * file: if class is not "unsure", the reference of the file recognized.
-  * total: number of fingerprints computed for the given audio segment.
-  * matches: number of matching fingerprints between the audio segment and the fingerprint database.
+- `hotlist`: null if not available, otherwise an object containing the results of the fingerprint matcher.
+  * `class`: either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`
+  * `file`: if class is not "unsure", the reference of the file recognized.
+  * `total`: number of fingerprints computed for the given audio segment.
+  * `matches`: number of matching fingerprints between the audio segment and the fingerprint database.
 
-- class: final prediction of the algorithm.
+- `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`.
 
-- metadata: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
+- `metadata`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
 
-- streamInfo: static metadata about the stream. audio url, favicon, audio format (mp3 or aac) and homepage URL.
+- `streamInfo`: static metadata about the stream. Contains stream `url`, `favicon`, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL.
 
-- gain: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
+- `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
 
-- tBuffer: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
+- `tBuffer`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
   
-- predictorStartTime: timestamp of the algorithm startup. Useful to get the uptime.
+- `predictorStartTime`: timestamp of the algorithm startup. Useful to get the uptime.
 
-- playTime: approximate timestamp of when the given audio is to be played. TODO check this.  
+- `playTime`: approximate timestamp of when the given audio is to be played. TODO check this.  
   
   
 ## License
 
+Your contribution to this project is welcome, but might be subject to a contributor's agreement.
 See LICENSE file. If you wish to use this software with another license, do not hesitate to contact me at a_npm (at) storelli (point) fr
