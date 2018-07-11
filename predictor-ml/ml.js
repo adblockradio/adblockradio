@@ -129,7 +129,7 @@ class MlPredictor extends Transform {
 			this.dataWrittenSinceLastSeg = false;
 			this.onDataCallback = callback;
 		} else if (callback) {
-			log.warn("stopword sent but no data written since last one");
+			if (this.ready2) log.warn("stopword sent but no data written since last one");
 			callback();
 		}
 	}

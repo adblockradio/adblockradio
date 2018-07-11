@@ -18,7 +18,7 @@ const consts = {
 }
 
 class PostProcessor extends Transform {
-	constructor() {
+	constructor(config) {
 		super({ writableObjectMode: true, readableObjectMode: true });
 		this.cache = [];
 		this._postProcessing = this._postProcessing.bind(this);
@@ -27,6 +27,7 @@ class PostProcessor extends Transform {
 		this.metadataValidUntil = null;
 		this.streamInfo = null;
 		this.startTime = +new Date();
+		this.config = config;
 	}
 
 	_write(obj, enc, next) {
@@ -43,7 +44,7 @@ class PostProcessor extends Transform {
 				break;
 
 			case "ml":
-				log.info("in: ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) +
+				if (this.config.verbose) log.info("in: ml => type=" + consts.WLARRAY[obj.data.type] + " confidence=" + obj.data.confidence.toFixed(2) +
 					" softmax=" + obj.data.softmaxs.map(e => e.toFixed(2)) + " confidence=" + obj.data.confidence.toFixed(2));
 				if (this.cache[0].ml) log.warn("overwriting ml cache data!")
 				this.cache[0].ml = obj.data;
@@ -51,21 +52,21 @@ class PostProcessor extends Transform {
 				break;
 
 			case "hotlist":
-				log.info("in: hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal +
+				if (this.config.verbose) log.info("in: hotlist => matches=" + obj.data.matchesSync + "/" + obj.data.matchesTotal +
 					" class=" + consts.WLARRAY[obj.data.class]);
 				if (this.cache[0].hotlist) log.warn("overwriting hotlist cache data!")
 				this.cache[0].hotlist = obj.data;
 				break;
 
 			case "title":
-				log.info("in: title => " + JSON.stringify(obj.data));
+				if (this.config.verbose) log.info("in: title => " + JSON.stringify(obj.data));
 				this.metadata = obj.data;
 				// validity: not setting a validity or setting it to zero lead to infinite validity.
 				this.metadataValidUntil = obj.validity ? (+new Date() + obj.validity * 1000 * 2) : Infinity;
 				break;
 
 			case "dlinfo":
-				log.info("in: dlinfo => " + JSON.stringify(obj.data));
+				if (this.config.verbose) log.info("in: dlinfo => " + JSON.stringify(obj.data));
 				this.streamInfo = {
 					url: obj.data.url,
 					favicon: obj.data.favicon,
@@ -75,7 +76,7 @@ class PostProcessor extends Transform {
 				break;
 
 			default:
-				log.info(JSON.stringify(obj.data));
+				log.warn(JSON.stringify(obj.data));
 		}
 
 		next();
@@ -83,7 +84,7 @@ class PostProcessor extends Transform {
 
 	_newCacheSlot(tBuffer) {
 
-		log.debug("---------------------");
+		if (this.config.verbose) log.debug("---------------------");
 		const now = +new Date();
 		this.slotCounter++;
 		this.cache.unshift({ ts: now, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
@@ -203,12 +204,15 @@ class Analyser extends Readable {
 		// default module options
 		this.config = {
 			saveMetadata: true, // save a JSON with predictions (saveDuration intervals)
+			verbose: false,
 		}
 
 		// optional custom config
 		Object.assign(this.config, options.config);
 
-		this.postProcessor = new PostProcessor();
+		this.postProcessor = new PostProcessor({
+			verbose: this.config.verbose,
+		});
 
 		const self = this;
 		this.postProcessor.on("data", function(obj) {

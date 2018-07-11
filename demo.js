@@ -13,7 +13,8 @@ const abr = new Analyser({
 		enablePredictorMl: true,
 		saveAudio: true,
 		saveMetadata: true,
-		fetchMetadata: true
+		fetchMetadata: true,
+		verbose: true,
 	}
 });
 
