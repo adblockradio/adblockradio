@@ -22,8 +22,9 @@ As prerequisites, you need:
 - Python (tested with v2.7.9).
 - Keras (tested with v2.0.8). Keras installation instructions are available [here](https://keras.io/#installation).
 - Tensorflow (tested with `tensorflow` v1.4.0 and `tensorflow-gpu` v1.3.0). Installation instructions are [here](https://www.tensorflow.org/install/).
+- FFmpeg (tested with v2.6.9). Installation instructions available [here](https://ffmpeg.org/download.html).
 
-Then proceed to the installation:
+Then install this module:
 
 ```bash
 git clone https://github.com/dest4/adblockradio.git
@@ -33,7 +34,7 @@ npm install
 
 ### Demo
 
-The time-frequency analyser needs a compatible machine-learning model. The fingerprint matcher needs a fingerprint database.
+The time-frequency analyser needs a compatible machine-learning model (`*.keras`). The fingerprint matcher needs a fingerprint database (`*.sqlite`).
 Grab demo files for French station RTL with the following commands: (TODO)
 ```bash
 cd model/
@@ -177,5 +178,8 @@ Readable streams constructed with `Analyser` emit objects with the following pro
   
 ## License
 
+AGPL-3.0 (see LICENSE file)
+
 Your contribution to this project is welcome, but might be subject to a contributor's agreement.
-See LICENSE file. If you wish to use this software with another license, do not hesitate to contact the author at a_npm (at) storelli (point) fr
+
+If you wish to use this software with another license, do not hesitate to contact the author at a_npm (at) storelli (point) fr
