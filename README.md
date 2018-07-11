@@ -1,7 +1,7 @@
 # Adblock Radio
 
 ## Outline
-This module analyses radio streams and determines if current kind of audio is advertisement, talk or music in audio streams
+This module analyses radio streams and determines if current kind of audio is advertisement, talk or music in audio streams. It is the engine of [Adblock Radio](https://www.adblockradio.com).
 
 The analysis is two-fold:
 
@@ -17,7 +17,14 @@ A Readable interface, `Analyser`, is exposed. It streams objects containing the 
 
 ### Installation
 
-First, get Node.js and NPM. Tested with node v9.9.0 and NPM 5.6.0. If you need to manage several node versions on your workstation, use [NVM](https://github.com/creationix/nvm).
+As prerequisites, you need:
+- Node.js and NPM. This project has been tested with node v9.9.0 and NPM 5.6.0. If you need to manage several node versions on your platform, you might want to use [NVM](https://github.com/creationix/nvm).
+- Python (tested with v2.7.9).
+- Keras (tested with v2.0.8). Keras installation instructions are available [here](https://keras.io/#installation).
+- Tensorflow (tested with `tensorflow` v1.4.0 and `tensorflow-gpu` v1.3.0). Installation instructions are [here](https://www.tensorflow.org/install/).
+
+Then proceed to the installation:
+
 ```bash
 git clone https://github.com/dest4/adblockradio.git
 cd adblockradio
@@ -26,7 +33,7 @@ npm install
 
 ### Demo
 
-The time-frequency analyser need a compatible machine-learning model. The fingerprint matcher need a fingerprint database.
+The time-frequency analyser needs a compatible machine-learning model. The fingerprint matcher needs a fingerprint database.
 Grab demo files for French station RTL with the following commands: (TODO)
 ```bash
 cd model/
@@ -36,36 +43,9 @@ cd ..
 ```
 
 then run the demo:
-```javascript
-const { log } = require("abr-log")("demo");
-const { Analyser } = require("./post-processing.js");
-
-log.info("start analyser!");
-
-const abr = new Analyser({
-	country: "France",
-	name: "RTL",
-	config: {
-		predInterval: 1,
-		saveDuration: 10,
-		enablePredictorHotlist: true,
-		enablePredictorMl: true,
-		saveAudio: true,
-		saveMetadata: true,
-		fetchMetadata: true
-	}
-});
-
-abr.on("data", function(obj) {
-	log.info("status=" + JSON.stringify(Object.assign(obj, { audio: undefined }), null, "\t"));
-});
-```
-or
-
 ```bash
 node demo.js
 ```
-
 
 Here is a sample output of the demo script:
 ```
@@ -107,9 +87,10 @@ Here is a sample output of the demo script:
 	"predictorStartTime": 1531150137583,
 	"playTime": 1531150155250,
 	"tBuffer": 15.98,
-	"audioLen": 16000
+	"audio": ...
 }
 ```
+
 ## Documentation
 
 ### Usage
@@ -130,24 +111,22 @@ abr.on("data", function(obj) {
 });
 ```
 
-### Input
-
-#### Stream info (mandatory)
-
 Property|Description|Default
 --------|-----------|-------
 `country`|Country of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 
 
-#### Stream segmentation (optional)
+### Optional configuration
+
+#### Stream segmentation
 
 Property|Description|Default
 --------|-----------|-------
 `predInterval`|send stream status to listener every N seconds|`1`
 `saveDuration`|save audio file and metadata every N `predInterval` times|`10`
 
-#### Switches (optional)
+#### Switches
 
 Property|Description|Periodicity|Default
 --------|-----------|-----------|-------
@@ -157,7 +136,7 @@ Property|Description|Periodicity|Default
 `saveMetadata`|save a JSON with predictions|`saveDuration`|`true`
 `fetchMetadata`|gather metadata from radio websites|`saveDuration`|`true`
 
-#### Paths:
+#### Paths
 
 Property|Description|Default
 --------|-----------|-------
@@ -199,4 +178,4 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 ## License
 
 Your contribution to this project is welcome, but might be subject to a contributor's agreement.
-See LICENSE file. If you wish to use this software with another license, do not hesitate to contact me at a_npm (at) storelli (point) fr
+See LICENSE file. If you wish to use this software with another license, do not hesitate to contact the author at a_npm (at) storelli (point) fr
