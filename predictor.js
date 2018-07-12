@@ -180,7 +180,7 @@ class Predictor {
 		const dir = this.config.saveAudioPath + '/' + dirDate + "/" + this.country + "_" + this.name + "/todo/";
 		const path = dir + now.toISOString();
 
-		log.debug("saveAudioSegment: path=" + path);
+		//log.debug("saveAudioSegment: path=" + path);
 
 		cp.exec("mkdir -p \"" + dir + "\"", function(error, stdout, stderr) {
 			if (error) {

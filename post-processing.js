@@ -182,7 +182,7 @@ class PostProcessor extends Transform {
 			metadataPath: this.cache[i].metadataPath,
 			streamInfo: this.streamInfo,
 			predictorStartTime: this.startTime,
-			playTime: tsRef,
+			playTime: Math.round(tsRef + this.cache[i].tBuf * 1000),
 			tBuffer: +this.cache[i].tBuf.toFixed(2),
 		});
 		//log.debug("out: i=" + i + " class=" + finalClass);
@@ -222,6 +222,8 @@ class Analyser extends Readable {
 
 			const metadataPath = obj.metadataPath;
 			Object.assign(obj, {
+				country: self.country,
+				name: self.name,
 				audioLen: obj.audio && obj.audio.length,
 				metadataPath: undefined
 			});
