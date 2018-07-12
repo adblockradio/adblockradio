@@ -15,11 +15,11 @@
   "author": "Alexandre Storelli <a_npm@storelli.fr>",
   "license": "AGPL-3.0",
   "dependencies": {
-    "abr-log": "git+https://git@github.com/dest4/log.git",
+    "abr-log": "^1.0.2",
     "async": "^2.6.1",
     "sqlite3": "^3.1.13",
-    "stream-audio-fingerprint": "1.0.x",
-    "stream-tireless-baler": "^1.0.2",
-    "webradio-metadata": "^0.1.23"
+    "stream-audio-fingerprint": "^1.0.1",
+    "stream-tireless-baler": "^1.0.3",
+    "webradio-metadata": "^0.1.25"
   }
 }
