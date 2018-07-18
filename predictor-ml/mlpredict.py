@@ -112,8 +112,14 @@ pcm = None
 
 while True:
 	data = partial
-	while True: # read until the stop word is read. this loop may be slow
-		chars = partial + sys.stdin.read(stopwordlen)
+	while True: # read until the stop word is read.
+		try:
+			chars = partial + sys.stdin.read(stopwordlen)
+		except IOError:
+			# in case the parent stdin is closed, ensures this script exits. Otherwise, hangs with 100% CPU usage
+			logdebug("IOError")
+			break
+
 		pos = chars.find(stopword)
 		if pos >= 0:
 			logdebug("stop word detected at pos " + str(pos))
