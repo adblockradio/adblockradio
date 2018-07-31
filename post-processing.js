@@ -1,6 +1,7 @@
 "use strict";
 const { log } = require("abr-log")("post-processing");
 const Predictor = require("./predictor.js");
+const PredictorFile = require("./predictor-file.js");
 const { Transform, Readable } = require("stream");
 const fs = require("fs");
 
@@ -34,13 +35,22 @@ class PostProcessor extends Transform {
 		if (!this.cache[0]) this._newCacheSlot(0);
 
 		switch (obj.type) {
-			case "audio":
+			case "audio": // only in stream analysis mode
 				if (obj.newSegment && this.cache[0] && this.cache[0].audio && this.cache[0].audio.length > 0) {
-					//log.info("in: audio => " + this.cache[0].audio.length + " bytes, tBuf=" + obj.tBuffer.toFixed(2) + "s");
+					if (this.config.verbose) log.info("in: audio => " + this.cache[0].audio.length + " bytes, tBuf=" + obj.tBuffer.toFixed(2) + "s");
 					this._newCacheSlot(obj.tBuffer);
 				}
 				this.cache[0].audio = this.cache[0].audio ? Buffer.concat([this.cache[0].audio, obj.data]) : obj.data;
 				this.cache[0].metadataPath = obj.metadataPath;
+				break;
+
+			case "fileChunk": // only in file analysis mode
+				this.cache[0].audio = obj.data;
+				this.cache[0].metadataPath = obj.metadataPath;
+				this.cache[0].tStart = obj.tStart;	// in ms
+				this.cache[0].tEnd = obj.tEnd;		// in ms
+				if (this.config.verbose) log.info("in: fileChunk => " + this.cache[0].audio.length + " bytes, tStart=" + (obj.tStart / 1000).toFixed(2) + "s");
+				this._newCacheSlot();
 				break;
 
 			case "ml":
@@ -89,12 +99,28 @@ class PostProcessor extends Transform {
 		this.slotCounter++;
 		this.cache.unshift({ ts: now, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
 
-		// schedule the postprocessing for this slot, according to the buffer available.
-		// "now" is used as a reference for _postProcessing, so it knows which slot to process
-		// postProcessing happens 500ms before audio playback, so that clients / players have time to act.
-		setTimeout(this._postProcessing, Math.max(tBuffer, 2) * 1000 - 500, now);
+
+		if (this.config.fileMode) {
+			if (this.cache.length >= 5) {
+				this._postProcessing(this.cache[4].ts);
+			}
+
+		} else {
+			// schedule the postprocessing for this slot, according to the buffer available.
+			// "now" is used as a reference for _postProcessing, so it knows which slot to process
+			// postProcessing happens 500ms before audio playback, so that clients / players have time to act.
+			setTimeout(this._postProcessing, Math.max(tBuffer, 2) * 1000 - 500, now);
+		}
 
 		if (this.cache.length > consts.CACHE_MAX_LEN) this.cache.pop();
+	}
+
+	_final(next) { // only in file mode, because radio streams "never" end
+		log.info('flushing post processor cache');
+		for (let i=3; i>=0; i--) {
+			this._postProcessing(this.cache[i].ts);
+		}
+		next();
 	}
 
 	_postProcessing(tsRef) {
@@ -136,7 +162,7 @@ class PostProcessor extends Transform {
 			}
 
 			// pruning of unsure ML predictions
-			// 	confidence = 1.0-math.exp(1-mp[2]/mp[1])
+			// confidence = 1.0-math.exp(1-mp[2]/mp[1])
 			const mlConfident = maxMovAvg > 0.65;
 			//log.debug("out: movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg.map(e => +e.toFixed(3)) + " confident=" + mlConfident);
 			mlOutput = {
@@ -172,20 +198,31 @@ class PostProcessor extends Transform {
 		}
 
 		// final output
-		this.push({
-			audio: this.cache[i].audio,
+		let out = {
 			gain: this.cache[i].gain && +this.cache[i].gain.toFixed(2),
 			ml: mlOutput,
 			hotlist: hotlistOutput,
 			class: finalClass,
-			metadata: +new Date() < this.metadataValidUntil ? this.metadata : null,
 			metadataPath: this.cache[i].metadataPath,
-			streamInfo: this.streamInfo,
-			predictorStartTime: this.startTime,
-			playTime: Math.round(tsRef + this.cache[i].tBuf * 1000),
-			tBuffer: +this.cache[i].tBuf.toFixed(2),
-		});
-		//log.debug("out: i=" + i + " class=" + finalClass);
+		}
+
+		if (this.config.fileMode) {
+			Object.assign(out, { // results specific to file analysis mode
+				tStart: this.cache[i].tStart,
+				tEnd: this.cache[i].tEnd,
+			});
+		} else {
+			Object.assign(out, { // results specific to stream analysis mode
+				audio: this.cache[i].audio,
+				predictorStartTime: this.startTime,
+				metadata: +new Date() < this.metadataValidUntil ? this.metadata : null,
+				streamInfo: this.streamInfo,
+				playTime: Math.round(tsRef + this.cache[i].tBuf * 1000),
+				tBuffer: +this.cache[i].tBuf.toFixed(2),
+			});
+		}
+
+		this.push(out);
 	}
 }
 
@@ -205,6 +242,7 @@ class Analyser extends Readable {
 		this.config = {
 			saveMetadata: true, // save a JSON with predictions (saveDuration intervals)
 			verbose: false,
+			file: null, // analyse a file instead of a HTTP stream
 		}
 
 		// optional custom config
@@ -212,19 +250,18 @@ class Analyser extends Readable {
 
 		this.postProcessor = new PostProcessor({
 			verbose: this.config.verbose,
+			fileMode: !!this.config.file,
 		});
 
 		const self = this;
 		this.postProcessor.on("data", function(obj) {
-			if (!obj.audio) {
+			if (!self.config.file && !obj.audio) {
 				log.warn("empty audio! " + JSON.stringify(obj, null, "\t"));
 			}
 
 			const metadataPath = obj.metadataPath;
 			Object.assign(obj, {
-				country: self.country,
-				name: self.name,
-				audioLen: obj.audio && obj.audio.length,
+				audioLen: obj.audio ? obj.audio.length : undefined,
 				metadataPath: undefined
 			});
 
@@ -237,15 +274,31 @@ class Analyser extends Readable {
 			}
 		});
 
-		this.predictor = new Predictor({
-			country: self.country,
-			name: self.name,
-			config: options.config,
-			listener: this.postProcessor
+		this.postProcessor.on("end", function() {
+			log.info("postProcessing ended");
 		});
+
+		if (this.config.file) {
+			if (fs.existsSync(this.config.file + ".json")) fs.unlinkSync(this.config.file + ".json");
+			this.predictor = new PredictorFile({
+				country: self.country,
+				name: self.name,
+				file: this.config.file,
+				config: options.config,
+				listener: this.postProcessor
+			});
+		} else {
+			this.predictor = new Predictor({
+				country: self.country,
+				name: self.name,
+				config: options.config,
+				listener: this.postProcessor
+			});
+		}
 	}
 
 	saveMetadata(obj, path) {
+		const self = this;
 		fs.readFile(path, function(err, readData) {
 			let data = { predictions: [] };
 
@@ -265,6 +318,8 @@ class Analyser extends Readable {
 			data.metadata = outputData.metadata;
 			data.streamInfo = outputData.streamInfo;
 			data.predictorStartTime = outputData.predictorStartTime;
+			data.country = self.country;
+			data.name = self.name;
 
 			Object.assign(outputData, {
 				audio: undefined,
