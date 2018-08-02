@@ -1,17 +1,22 @@
 # Adblock Radio
+An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
 ## Outline
-This module analyses radio streams and determines if current kind of audio is advertisement, talk or music in audio streams. It is the engine of [Adblock Radio](https://www.adblockradio.com).
+This module determines if the content of live radio streams or podcasts is advertisement, talk or music. It is the engine of [Adblock Radio](https://www.adblockradio.com).
 
-The analysis is two-fold:
+Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`. In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
 
-First, in `predictor.js`, the audio stream is downloaded with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler) then decoded with `ffmpeg`.
-PCM audio is piped into two sub-modules:
-- a time-frequency analyser (`predictor-ml/ml.js`), that identifies patterns in spectrograms with machine learning.
-- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known audio samples (using module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint))
+The following computations are in two steps: 
 
-Then, in `post-processing.js`, results are gathered for each audio segment. The audio buffer is leveraged to smooth the results and prune dubious predictions.
-A Readable interface, `Analyser`, is exposed. It streams objects containing the audio itself and all analysis results.
+### Analysis of audio on a short time-window
+Chunks of ~1s of PCM audio is piped into two sub-modules:
+- a time-frequency analyser (`predictor-ml/ml.js`), that identifies patterns in spectrograms with a machine learning [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network).
+- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known audio samples (using module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint)).
+
+### Post-processing to smooth the results
+In `post-processing.js`, results are gathered for each audio segment. Past results are taken into account, as well as future results, within the limits of the file boundaries or the stream audio buffer (usually between 4s and 16s). Predictions are smoothed and dubious data points are pruned.
+
+A Readable interface, `Analyser`, is exposed to the end user. It streams objects containing the audio itself and all analysis results. On a regular laptop CPU, computations run at 5-10X for files and at 10-20% usage for live stream.
 
 ## Getting started
 
@@ -35,6 +40,7 @@ npm install
 ### Demo
 
 The time-frequency analyser needs a compatible machine-learning model (`*.keras`). The fingerprint matcher needs a fingerprint database (`*.sqlite`).
+
 Grab demo files for French station RTL with the following commands: (TODO)
 ```bash
 cd model/
@@ -43,14 +49,15 @@ wget https://www.adblockradio.com/models/France_RTL.sqlite
 cd ..
 ```
 
-then run the demo:
+#### Live stream analysis
+Run the demo on French RTL live radio stream:
 ```bash
 node demo.js
 ```
 
-Here is a sample output of the demo script:
+Here is a sample output of the demo script, showing an ad detected:
 ```
-[2018-07-09T15:29:30.730Z] info demo: 	status={
+{
 	"gain": 74.63,
 	"ml": {
 		"class": "0-ads",
@@ -92,6 +99,45 @@ Here is a sample output of the demo script:
 }
 ```
 
+#### Podcast analysis
+It is also possible to analyse radio recordings.
+Run the demo on a recording of French RTL radio, including ads, talk and music:
+```bash
+node demo-file.js
+```
+
+The results show classifications with time boundaries in milliseconds.
+```
+[
+	{
+		"class": "1-speech",
+		"tStart": 0,
+		"tEnd": 58500
+	},
+	{
+		"class": "0-ads",
+		"tStart": 58500,
+		"tEnd": 125500
+	},
+	{
+		"class": "1-speech",
+		"tStart": 125500,
+		"tEnd": 218000
+	},
+	{
+		"class": "2-music",
+		"tStart": 218000,
+		"tEnd": 250500
+	},
+	{
+		"class": "1-speech",
+		"tStart": 250500,
+		"tEnd": 472949
+	}
+]
+```
+Note that when analysing files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but will probably be in the future.
+
 ## Documentation
 
 ### Usage
@@ -116,7 +162,7 @@ Property|Description|Default
 --------|-----------|-------
 `country`|Country of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
-
+`file`|File to analyse (optional)|None
 
 ### Optional configuration
 
@@ -125,7 +171,7 @@ Property|Description|Default
 Property|Description|Default
 --------|-----------|-------
 `predInterval`|send stream status to listener every N seconds|`1`
-`saveDuration`|save audio file and metadata every N `predInterval` times|`10`
+`saveDuration`|save audio file and metadata every N `predInterval` times (streams only)|`10`
 
 #### Switches
 
@@ -133,22 +179,22 @@ Property|Description|Periodicity|Default
 --------|-----------|-----------|-------
 `enablePredictorMl`|perform machine learning inference|`predInterval`|`true`
 `enablePredictorHotlist`|compute audio fingerprints and search them in a DB|`predInterval`|`true`
-`saveAudio`|save stream audio data in segments on hard drive|`saveDuration`|`true`
+`saveAudio`|save stream audio data in segments on hard drive (streams only)|`saveDuration`|`true`
 `saveMetadata`|save a JSON with predictions|`saveDuration`|`true`
-`fetchMetadata`|gather metadata from radio websites|`saveDuration`|`true`
+`fetchMetadata`|gather metadata from radio websites (streams only)|`saveDuration`|`true`
 
 #### Paths
 
 Property|Description|Default
 --------|-----------|-------
 `modelPath`|directory where ML models and hotlist DBs are stored|`__dirname + '/model'`
-`saveAudioPath`|root folder where audio and metadata are saved|`__dirname + '/records'`
+`saveAudioPath`|root folder where audio and metadata are saved (streams only)|`__dirname + '/records'`
 
 ### Output
 
 Readable streams constructed with `Analyser` emit objects with the following properties.
 
-- `audio`: Buffer containing a chunk of original (compressed) audio data.
+- `audio`: Buffer containing a chunk of original (compressed) audio data (streams only).
 
 - `ml`: `null` if not available, otherwise an object containing the results of the time-frequency analyser
   * `class`: either `0-ads`, `1-speech` or `2-music`. The classification according to this module.
@@ -163,21 +209,114 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`.
 
-- `metadata`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
+- `metadata`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata) (streams only).
 
-- `streamInfo`: static metadata about the stream. Contains stream `url`, `favicon`, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL.
+- `streamInfo`: static metadata about the stream. Contains stream `url`, `favicon`, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL (streams only).
 
 - `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
 
-- `tBuffer`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
+- `tBuffer`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler) (streams only).
   
-- `predictorStartTime`: timestamp of the algorithm startup. Useful to get the uptime.
+- `predictorStartTime`: timestamp of the algorithm startup. Useful to get the uptime (streams only).
 
-- `playTime`: approximate timestamp of when the given audio is to be played. TODO check this.  
+- `playTime`: approximate timestamp of when the given audio is to be played (streams only). TODO check this.  
   
-  
+
+## Supported radios
+
+### Belgium
+- Bel-RTL
+- MNM
+- Radio 1
+- RTBF La Première
+- Studio Brussel
+- Zen FM
+
+### France
+- Alouette
+- BFM Business
+- Chante France
+- Chérie
+- Djam Radio
+- Europe 1
+- FIP
+- France Culture
+- France Info
+- France Inter
+- France Musique
+- Fun Radio
+- Jazz Radio
+- M Radio
+- Nostalgie
+- Nova Lyon - RTU
+- NRJ
+- OÜI FM
+- Radio Classique
+- Radio FG
+- Radio Meuh
+- Radio Nova
+- Radio Scoop Lyon
+- RFM
+- Rire et Chansons
+- RMC
+- RTL
+- RTL2
+- Skyrock
+- TSF Jazz
+- Virgin Radio France
+- Voltage
+
+### Germany
+- bigFM Deutschland
+- Fritz
+- Jam FM
+- Klassik Radio
+- Radio 7
+- RTL Radio
+- TechnoBase.FM
+
+### Italy
+- Radio 24
+- Radio 80
+- Radio Capital
+- Radio Company
+- Rai Radio 1
+- Rai Radio 2
+- Rai Radio 3
+
+### Spain
+- Cadena 100
+- Cadena SER
+- RAC1
+- Rock FM
+
+### Switzerland
+- RTS Couleur 3
+- RTS La Premiere
+- Spoon Radio
+
+### United Kingdom
+- Absolute Radio
+- BBC Radio 1
+- BBC Radio 2
+- BBC Radio 3
+- Kane FM
+- Kiss UK
+
+## Future work
+
+### Improvements
+- Native advertisements are not well recognized. Plugging speech recognition software in and doing semantic analysis could help.
+- Analog signals (FM) have not been tested and are not currently supported. Work on this topic could broaden the use cases of this project.
+- Support for popular podcasts.
+
+### Integrations
+This project is not intended to be handled by end-users. Integrations of this project in mass market products are welcome:
+- mobile apps for webradios and podcasts. Keras models should be converted to native Tensorflow ones, and the Keras + Tensorflow library could be replaced with [Tensorflow Mobile for Android and iOS](https://www.tensorflow.org/mobile/mobile_intro). Node.JS routines could be integrated with this [React Native plugin](https://www.npmjs.com/package/nodejs-mobile-react-native).
+- browser extensions, with [Tensorflow JS](https://js.tensorflow.org/).
+- digital alarm-clocks, and hobbyist projects, as long as enough computation power and network are available. Platforms as small as Raspberry Pi Zero/A/B should be enough, though RPi 3B/3B+ is recommended. Tensorflow is available on [Raspbian](https://www.tensorflow.org/install/install_raspbian).
+
 ## License
-
 AGPL-3.0 (see LICENSE file)
 
 Your contribution to this project is welcome, but might be subject to a contributor's agreement.
