@@ -170,16 +170,17 @@ Property|Description|Default
 --------|-----------|-------
 `country`|Country of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
-`file`|File to analyse (optional)|None
+`file`|File to analyse (optional, analyse the live stream otherwise)|None
 
 ### Optional configuration
+Properties marked with a `*` are meant to be used only with live radio stream analysis, not file analysis where they are ignored.
 
 #### Stream segmentation
 
 Property|Description|Default
 --------|-----------|-------
 `predInterval`|send stream status to listener every N seconds|`1`
-`saveDuration`|save audio file and metadata every N `predInterval` times (streams only)|`10`
+`saveDuration*`|save audio file and metadata every N `predInterval` times|`10`
 
 #### Switches
 
@@ -187,22 +188,22 @@ Property|Description|Periodicity|Default
 --------|-----------|-----------|-------
 `enablePredictorMl`|perform machine learning inference|`predInterval`|`true`
 `enablePredictorHotlist`|compute audio fingerprints and search them in a DB|`predInterval`|`true`
-`saveAudio`|save stream audio data in segments on hard drive (streams only)|`saveDuration`|`true`
+`saveAudio*`|save stream audio data in segments on hard drive|`saveDuration`|`true`
 `saveMetadata`|save a JSON with predictions|`saveDuration`|`true`
-`fetchMetadata`|gather metadata from radio websites (streams only)|`saveDuration`|`true`
+`fetchMetadata*`|gather metadata from radio websites|`saveDuration`|`true`
 
 #### Paths
 
 Property|Description|Default
 --------|-----------|-------
 `modelPath`|directory where ML models and hotlist DBs are stored|`__dirname + '/model'`
-`saveAudioPath`|root folder where audio and metadata are saved (streams only)|`__dirname + '/records'`
+`saveAudioPath*`|root folder where audio and metadata are saved|`__dirname + '/records'`
 
 ### Output
 
-Readable streams constructed with `Analyser` emit objects with the following properties.
+Readable streams constructed with `Analyser` emit objects with the following properties. Some properties are only available when doing live radio analysis. They are marked with a `*`. Other specific to file analysis are marked with `**`.
 
-- `audio`: Buffer containing a chunk of original (compressed) audio data (streams only).
+- `audio*`: Buffer containing a chunk of original (compressed) audio data.
 
 - `ml`: `null` if not available, otherwise an object containing the results of the time-frequency analyser
   * `softmaxraw`: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
@@ -217,22 +218,25 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`.
 
-- `metadata`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata) (streams only).
+- `metadata*`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
 
-- `streamInfo`: static metadata about the stream. Contains stream `url`, `favicon`, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL (streams only).
+- `streamInfo*`: static metadata about the stream. Contains stream `url`, `favicon`, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL.
 
 - `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
 
-- `tBuffer`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler) (streams only).
+- `tBuffer*`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
   
-- `predictorStartTime`: timestamp of the algorithm startup. Useful to get the uptime (streams only).
+- `predictorStartTime*`: timestamp of the algorithm startup. Useful to get the uptime.
 
-- `playTime`: approximate timestamp of when the given audio is to be played (streams only). TODO check this.  
-  
+- `playTime*`: approximate timestamp of when the given audio is to be played. TODO check this.
+
+- `tStart**`: lower boundary of the time interval linked with the prediction (in milliseconds)
+
+- `tEnd**`: upper boundary of the time interval linked with the prediction (in milliseconds)
 
 ## Supported radios
 
-Note that names of radios match those in [radio-browser.info](http://www.radio-browser.info/gui/#/).
+Names of radios match those in [radio-browser.info](http://www.radio-browser.info/gui/#/).
 
 ### Belgium
 - Bel-RTL
@@ -332,7 +336,7 @@ This project is not intended to be handled by end-users. Integrations of this pr
 - browser extensions, with [Tensorflow JS](https://js.tensorflow.org/).
 - digital alarm-clocks, and hobbyist projects, as long as enough computation power and network are available. Platforms as small as Raspberry Pi Zero/A/B should be enough, though RPi 3B/3B+ is recommended. Tensorflow is available on [Raspbian](https://www.tensorflow.org/install/install_raspbian).
 
-When integrating Adblock Radio in a product, please give the user a way to give negative feedback on the classification. Mispredictions should promptly be reported to Adblock Radio maintainer so that ML models and hotlist databases can be updated accordingly. Reports are manually reviewed: it is enough to provide the name of the radio(s) and a timestamp at which the problem happened. One report every few minutes is enough. Contact the maintainer for details about the APIs to use.
+When integrating Adblock Radio in a product, please give the user a way to give negative feedback on the classification. Mispredictions should promptly be reported to Adblock Radio maintainer so that ML models and hotlist databases can be updated accordingly. Reports are manually reviewed: it is enough to provide the name of the radio(s) and a timestamp at which the problem happened. For a given selection of radios, one report every few minutes is enough. You may contact the maintainer for details about the APIs to use.
 
 The license of this code release might not be convenient for integrators. The authors willing to use Adblock Radio with another license are invited to contact the author Alexandre Storelli at a_npm [at] storelli.fr.
 
