@@ -2,7 +2,7 @@
 An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
 ## Outline
-This module determines if the content of live radio streams or podcasts is advertisement, talk or music. It is the engine of [Adblock Radio](https://www.adblockradio.com).
+This module determines if the content of live radio streams or podcasts is advertisement, talk or music. It is the engine of [Adblock Radio](https://www.adblockradio.com) and has been tested with real-world data from 60+ radios from 7 countries.
 
 Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`. In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
 
@@ -13,12 +13,18 @@ Chunks of ~1s of PCM audio are piped into two sub-modules:
 - a time-frequency analyser (`predictor-ml/ml.js`), featuring a [LSTM](https://en.wikipedia.org/wiki/Long_short-term_memory) [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network), that takes as an input a spectrogram derivative, the [Mel-frequency cepstral coefficients](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum) of the signal.
 - a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles. It use the module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint), that shares conceptual similarities with the [original Shazam algorithm](https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf).
 
-More details about these computations will be provided elsewhere.
-
 ### Post-processing to smooth the results
-In `post-processing.js`, results are gathered for each audio segment. Past results are taken into account, as well as future results, within the limits of the file boundaries or the stream audio buffer (usually between 4s and 16s). Predictions are smoothed and dubious data points are pruned.
+In `post-processing.js`, results are gathered for each audio segment. Past results are taken into account, as well as future results, within the limits of the file boundaries or of the stream audio buffer (usually between 4 and 16 precious seconds). Predictions are smoothed with weighted time-windows and dubious data points are pruned, introducing a [hysteresis](https://en.wikipedia.org/wiki/Hysteresis) behavior of predictions for live radio streams.
 
 A Readable interface, `Analyser`, is exposed to the end user. It streams objects containing the audio itself and all analysis results. On a regular laptop CPU, computations run at 5-10X for files and at 10-20% usage for live stream.
+
+## Discussion on technical decisions
+
+Combining machine learning with acoustic fingerprinting gives robustness to the system. The machine learning predictor, if properly trained, provides reliable classifications on most original content. Though, in some situations, it fails (see below in *Improvements* section). The role of the fingerprint matcher is to alleviate the errors of the machine learning module. Fingerprinting is only relevant for exact repetitions of content (ads, music, jingles, but not for talk). Fortunately, most errors of the machine learning predictor deal with ads and music, which are broadcast identically multiple times. Thus, the hotlist DB, only fed with the small subset of problematic data, can reduce the overall error rate while keeping computations cheap.
+
+The [first version](https://twitter.com/PierreCol/status/784851362207137792) of Adblock Radio in 2016 (that one that got *lawyered* by French private radio network [Les Indés Radios](http://www.lesindesradios.fr/) - hi guys! hope you enjoy reading this! *[xoxoxo](http://oxavocats.com/)*) used only the fingerprinting part of this project, with a binary ad/not ad classification. Users could report undetected ads with a single click and the corresponding audio was automatically integrated in the DB, with a posteriori moderation. Results were really promising, but it was difficult to keep the databases up to date as commercials are broadcast in multiple slight variations, in addition to be renewed frequently, in some cases every few days. Some streams with not enough listeners were very poorly classified. Exciting strategies to [mine new commercials](https://www.computer.org/csdl/proceedings/icme/2011/4348/00/06012115-abs.html) and to [whitelist large amounts of music](https://github.com/dest4/radio-playlist-generator) have been developed, but it still required a lot of manual work and I/O on servers was problematic. In retrospect, the choice of SQLite for these read-write-intensive, time-critical database operations was probably not the best.
+
+The second version, from early 2017 to mid 2018, used only the lightweight ML part, with almost inexistent I/O. Personal research to distinguish ads from the rest showed that also separating talk from music was a low hanging fruit. So predictions became between ad, talk and music. The system behave very well with much less manual review, but reached a plateau in precision, a bit below user expectations. The ternary classification made user reports more difficult to handle, requiring a priori moderation. Current version uses the same ML part but also benefits from a fingerprinting module with much lighter databases, made of jingles and the subset of mispredicted ML training data likely to be broadcast again.
 
 ## Getting started
 
@@ -138,7 +144,7 @@ The results show classifications with time boundaries in milliseconds.
 	}
 ]
 ```
-Note that when analyzing files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but will probably be in the future.
+Note that when analyzing audio files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but will probably be in the future.
 
 ## Documentation
 
@@ -225,6 +231,8 @@ Readable streams constructed with `Analyser` emit objects with the following pro
   
 
 ## Supported radios
+
+Note that names of radios match those in [radio-browser.info](http://www.radio-browser.info/gui/#/).
 
 ### Belgium
 - Bel-RTL
@@ -326,7 +334,7 @@ This project is not intended to be handled by end-users. Integrations of this pr
 
 When integrating Adblock Radio in a product, please give the user a way to give negative feedback on the classification. Mispredictions should promptly be reported to Adblock Radio maintainer so that ML models and hotlist databases can be updated accordingly. Reports are manually reviewed: it is enough to provide the name of the radio(s) and a timestamp at which the problem happened. One report every few minutes is enough. Contact the maintainer for details about the APIs to use.
 
-The license of this code release might not be convenient for integrators. The authors willing to use Adblock Radio with another license are invited to contact the author at a_npm [at] storelli.fr.
+The license of this code release might not be convenient for integrators. The authors willing to use Adblock Radio with another license are invited to contact the author Alexandre Storelli at a_npm [at] storelli.fr.
 
 ## License
 AGPL-3.0 (see LICENSE file)
