@@ -175,7 +175,19 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - `playTime`: approximate timestamp of when the given audio is to be played. TODO check this.  
   
-  
+
+## Future work
+
+### Improvements
+- Native advertisements are not well recognized. Plugging speech recognition software in and doing semantic analysis could help.
+- Analog signals (FM) have not been tested and are not currently supported. Work on this topic could broaden the use cases of this project.
+
+### Integrations
+This project is not meant to be used standalone. Integrations of this project in consumer-ready products are welcome:
+- mobile apps for webradios and podcasts. Keras models should be converted to native Tensorflow ones, and the Keras + Tensorflow library could be replaced with [Tensorflow Mobile for Android and iOS](https://www.tensorflow.org/mobile/mobile_intro). Node.JS routines could be integrated with this [React Native plugin](https://www.npmjs.com/package/nodejs-mobile-react-native).
+- browser extensions, with [Tensorflow JS](https://js.tensorflow.org/).
+- digital alarm-clocks, as long as enough CPU power and wifi are available.
+
 ## License
 
 AGPL-3.0 (see LICENSE file)
