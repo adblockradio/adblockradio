@@ -10,10 +10,10 @@ The following computations are in two steps:
 
 ### Analysis of audio on a short time-window
 Chunks of ~1s of PCM audio are piped into two sub-modules:
-- a time-frequency analyser (`predictor-ml/ml.js`), that identifies patterns in spectrograms with a machine learning [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network).
-- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles (using module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint)).
+- a time-frequency analyser (`predictor-ml/ml.js`), featuring a [LSTM](https://en.wikipedia.org/wiki/Long_short-term_memory) [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network), that takes as an input a spectrogram derivative, the [Mel-frequency cepstral coefficients](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum) of the signal.
+- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles. It use the module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint), that shares conceptual similarities with the [original Shazam algorithm](https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf).
 
-The topology of the neural network, its training protocol as well as the techniques to find jingles and build the hotlist are not detailed here.
+More details about these computations will be provided elsewhere.
 
 ### Post-processing to smooth the results
 In `post-processing.js`, results are gathered for each audio segment. Past results are taken into account, as well as future results, within the limits of the file boundaries or the stream audio buffer (usually between 4s and 16s). Predictions are smoothed and dubious data points are pruned.
@@ -204,10 +204,10 @@ Readable streams constructed with `Analyser` emit objects with the following pro
   * `class`: either `0-ads`, `1-speech`, `2-music` or `unsure`. The classification according to `softmax`.
 
 - `hotlist`: null if not available, otherwise an object containing the results of the fingerprint matcher.
-  * `class`: either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`
   * `file`: if class is not "unsure", the reference of the file recognized.
   * `total`: number of fingerprints computed for the given audio segment.
   * `matches`: number of matching fingerprints between the audio segment and the fingerprint database.
+  * `class`: either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure` if not enough matches have been found.
 
 - `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`.
 
@@ -332,4 +332,3 @@ The license of this code release might not be convenient for integrators. The au
 AGPL-3.0 (see LICENSE file)
 
 Your contribution to this project is welcome, but might be subject to a contributor's license agreement.
-
