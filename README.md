@@ -9,7 +9,7 @@ Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tir
 The following computations are in two steps: 
 
 ### Analysis of audio on a short time-window
-Chunks of ~1s of PCM audio is piped into two sub-modules:
+Chunks of ~1s of PCM audio are piped into two sub-modules:
 - a time-frequency analyser (`predictor-ml/ml.js`), that identifies patterns in spectrograms with a machine learning [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network).
 - a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles (using module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint)).
 
@@ -138,7 +138,7 @@ The results show classifications with time boundaries in milliseconds.
 	}
 ]
 ```
-Note that when analysing files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but will probably be in the future.
+Note that when analyzing files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but will probably be in the future.
 
 ## Documentation
 
@@ -199,9 +199,9 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - `audio`: Buffer containing a chunk of original (compressed) audio data (streams only).
 
 - `ml`: `null` if not available, otherwise an object containing the results of the time-frequency analyser
-  * `class`: either `0-ads`, `1-speech` or `2-music`. The classification according to this module.
   * `softmaxraw`: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
   * `softmax`: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/dest4/adblockradio/blob/master/post-processing.js).
+  * `class`: either `0-ads`, `1-speech`, `2-music` or `unsure`. The classification according to `softmax`.
 
 - `hotlist`: null if not available, otherwise an object containing the results of the fingerprint matcher.
   * `class`: either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`
@@ -309,10 +309,10 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 ### Improvements
 Detection is not perfect for some specific kinds of audio content: 
-- hip-hop music, easily mispredicted as advertisements. Workaround is to add tracks to the hotlist.
+- hip-hop music, easily mispredicted as advertisements. Workaround is to add tracks to the hotlist, but that's a lot of music to whitelist.
 - ads for music albums, often mispredicted as music. Can be solved by doing a stronger context analysis, but is hard to solve for live streams.
 - advertisements for talk shows, mispredicted as talk, but this is litigious. Could be partially alleviated by context analysis.
-- native advertisements, where the regular speaker reads sponsored content. This is quire unusual on radios, though more common in podcasts. A next step for this would be to use speech recognition software ([Mozilla Deep Speech](https://github.com/mozilla/DeepSpeech)?) and do semantic analysis ([SpamAssassin](https://spamassassin.apache.org/)?).
+- native advertisements, where the regular speaker reads sponsored content. This is quire unusual on radios, though more common in podcasts. A next step for this would be to use speech recognition software (with e.g. [Mozilla Deep Speech](https://github.com/mozilla/DeepSpeech)) and do semantic analysis (with e.g. [SpamAssassin](https://spamassassin.apache.org/)).
 
 Analog signals (FM) have not been tested and are not currently supported. Analog noise might void the techniques used here, requiring the use of filters and/or noise-resistant fingerprinting algorithms. Work on this topic could broaden the use cases of this project.
 
@@ -324,9 +324,12 @@ This project is not intended to be handled by end-users. Integrations of this pr
 - browser extensions, with [Tensorflow JS](https://js.tensorflow.org/).
 - digital alarm-clocks, and hobbyist projects, as long as enough computation power and network are available. Platforms as small as Raspberry Pi Zero/A/B should be enough, though RPi 3B/3B+ is recommended. Tensorflow is available on [Raspbian](https://www.tensorflow.org/install/install_raspbian).
 
+When integrating Adblock Radio in a product, please give the user a way to give negative feedback on the classification. Mispredictions should promptly be reported to Adblock Radio maintainer so that ML models and hotlist databases can be updated accordingly. Reports are manually reviewed: it is enough to provide the name of the radio(s) and a timestamp at which the problem happened. One report every few minutes is enough. Contact the maintainer for details about the APIs to use.
+
+The license of this code release might not be convenient for integrators. The authors willing to use Adblock Radio with another license are invited to contact the author at a_npm [at] storelli.fr.
+
 ## License
 AGPL-3.0 (see LICENSE file)
 
-Your contribution to this project is welcome, but might be subject to a contributor's agreement.
+Your contribution to this project is welcome, but might be subject to a contributor's license agreement.
 
-If you wish to use this software with another license, do not hesitate to contact the author at a_npm (at) storelli (point) fr
