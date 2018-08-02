@@ -11,7 +11,9 @@ The following computations are in two steps:
 ### Analysis of audio on a short time-window
 Chunks of ~1s of PCM audio is piped into two sub-modules:
 - a time-frequency analyser (`predictor-ml/ml.js`), that identifies patterns in spectrograms with a machine learning [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network).
-- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known audio samples (using module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint)).
+- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles (using module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint)).
+
+The topology of the neural network, its training protocol as well as the techniques to find jingles and build the hotlist are not detailed here.
 
 ### Post-processing to smooth the results
 In `post-processing.js`, results are gathered for each audio segment. Past results are taken into account, as well as future results, within the limits of the file boundaries or the stream audio buffer (usually between 4s and 16s). Predictions are smoothed and dubious data points are pruned.
@@ -306,9 +308,15 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 ## Future work
 
 ### Improvements
-- Native advertisements are not well recognized. Plugging speech recognition software in and doing semantic analysis could help.
-- Analog signals (FM) have not been tested and are not currently supported. Work on this topic could broaden the use cases of this project.
-- Support for popular podcasts.
+Detection is not perfect for some specific kinds of audio content: 
+- hip-hop music, easily mispredicted as advertisements. Workaround is to add tracks to the hotlist.
+- ads for music albums, often mispredicted as music. Can be solved by doing a stronger context analysis, but is hard to solve for live streams.
+- advertisements for talk shows, mispredicted as talk, but this is litigious. Could be partially alleviated by context analysis.
+- native advertisements, where the regular speaker reads sponsored content. This is quire unusual on radios, though more common in podcasts. A next step for this would be to use speech recognition software ([Mozilla Deep Speech](https://github.com/mozilla/DeepSpeech)?) and do semantic analysis ([SpamAssassin](https://spamassassin.apache.org/)?).
+
+Analog signals (FM) have not been tested and are not currently supported. Analog noise might void the techniques used here, requiring the use of filters and/or noise-resistant fingerprinting algorithms. Work on this topic could broaden the use cases of this project.
+
+Finally, support could be added for popular podcasts that do not share the acoustics of a specific radio. There is no particuliar obstacle to doing this: each series of podcasts would have its own acoustic model and hotlist database, as radio already do.
 
 ### Integrations
 This project is not intended to be handled by end-users. Integrations of this project in mass market products are welcome:
