@@ -92,46 +92,24 @@ class PredictorFile {
 
 		const self = this;
 
-		this.dl = new ChunkAudioRead({ file: this.config.file, predInterval: this.config.predInterval });
-		this.dl.on("error", (err) => log.error("read err=" + err));
-		this.dl.pause();
+		this.input = new ChunkAudioRead({ file: this.config.file, predInterval: this.config.predInterval });
+		this.input.on("error", (err) => log.error("read err=" + err));
+		this.input.pause();
 
-		/*if (this.config.enablePredictorMl && this.mlPredictor.ready && !this.mlPredictor.ready2) {
-			// this happens only once, when mlPredictor is ready to crunch data
-			log.debug("mlPredictor data pipe activated");
-			//this.dl.pipe(this.mlPredictor);
-			this.mlPredictor.ready2 = true;
-		}*/
+		this.input.on("data", self._onData);
 
-		/*this.dbs = {
-			audio: null,
-			metadataPath: this.config.file + ".json"
-		};*/
-
-		/*this._newAudioSegment(function() {
-			self.dl.resume();
-		});*/
-
-		this.dl.on("data", self._onData);
-
-		this.dl.on("end", function() {
+		this.input.on("end", function() {
 			log.info("all data has been read");
-			//this.decoder.stdout.on('end', function() {
-			//	log.info(bytesRead + ' bytes decoded from ' + self.file);
-			self.listener.end();
-			//});
+			self.readFinished = true;
 		});
 
-		this.mlPredictor.onReadyCallback = () => this.dl.resume();
+		this.mlPredictor.onReadyCallback = () => this.input.resume();
 
 	}
 
 	_onData(dataObj) {
-		//if (!this.dbs) return log.error("no dbs!!");
-
 		const self = this;
-
-		this.dl.pause();
+		this.input.pause();
 
 		// TODO: do the hotlist search only if mlPredictor is unsure?
 
@@ -156,8 +134,12 @@ class PredictorFile {
 				type: "fileChunk",
 				metadataPath: self.config.file + ".json"
 			}));
-
-			self.dl.resume();
+			if (self.readFinished) {
+				self.stopPredictors();
+				self.listener.end();
+			} else {
+				self.input.resume();
+			}
 		});
 	}
 
@@ -187,7 +169,7 @@ class PredictorFile {
 		}
 	}
 
-	stop() {
+	stopPredictors() {
 		log.info("close predictor");
 		if (this.hotlist) this.hotlist.destroy();
 		if (this.mlPredictor) this.mlPredictor.destroy();

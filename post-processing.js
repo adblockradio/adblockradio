@@ -117,7 +117,7 @@ class PostProcessor extends Transform {
 
 	_final(next) { // only in file mode, because radio streams "never" end
 		log.info('flushing post processor cache');
-		for (let i=3; i>=0; i--) {
+		for (let i=3; i>=1; i--) {
 			this._postProcessing(this.cache[i].ts);
 		}
 		next();
@@ -267,15 +267,23 @@ class Analyser extends Readable {
 
 			self.push(obj);
 
-			if (self.config.saveMetadata && metadataPath) {
-				self.saveMetadata(obj, metadataPath);
-			} else if (self.config.metadataPath) {
+			if (!self.config.saveMetadata) return;
+			if (!metadataPath) {
 				log.warn("did not save metadata file, because missing metadataPath parameter");
+			} else if (self.config.file) {
+				self.data = self.data || { predictions: [], country: self.country, name: self.name };
+				self.data.predictions.push(obj);
+			} else {
+				self.saveMetadata(obj, metadataPath);
 			}
 		});
 
 		this.postProcessor.on("end", function() {
-			log.info("postProcessing ended");
+			log.info("postProcessor ended");
+			self.mergeClassBlocks(self.data, function(blocksCleaned) {
+				self.push(blocksCleaned);
+				self.push(null);
+			});
 		});
 
 		if (this.config.file) {
@@ -295,6 +303,17 @@ class Analyser extends Readable {
 				listener: this.postProcessor
 			});
 		}
+
+		/*
+		// only to test mergeClassBlocks method
+		fs.readFile(this.config.file + ".json", function(err, data) {
+			data = JSON.parse(data);
+			self.mergeClassBlocks(data, function(blocksCleaned) {
+				self.push(blocksCleaned);
+				self.push(null); // end the Analyser Readable stream
+			});
+		});
+		*/
 	}
 
 	saveMetadata(obj, path) {
@@ -333,6 +352,72 @@ class Analyser extends Readable {
 			fs.writeFile(path, JSON.stringify(data, null, "\t"), function(err) {
 				if (err) log.warn("metadata write err=" + JSON.stringify(err));
 			});
+		});
+	}
+
+	mergeClassBlocks(data, callback) {
+		//const self = this;
+		const path = this.config.file + ".json";
+
+		data.blocksRaw = [];
+		for (let i=0; i<data.predictions.length; i++) {
+			const ml = data.blocksRaw.length
+			if (!ml || data.blocksRaw[ml-1].class !== data.predictions[i].class) {
+				data.blocksRaw.push({
+					class: data.predictions[i].class,
+					tStart: data.predictions[i].tStart,
+					tEnd: data.predictions[i].tEnd
+				});
+			} else { // same class as the previous one.
+				data.blocksRaw[ml-1].tEnd = data.predictions[i].tEnd;
+			}
+		}
+
+
+		// convert short blocks to "unsure" and merge any sequential "unsure" blocks together
+		data.blocksCoarse = data.blocksRaw.slice().map(b => Object.assign({}, b));
+		for (let i=data.blocksCoarse.length-1; i>=0; i--) {
+			//const l = data.blocksCoarse.length;
+			const delta = data.blocksCoarse[i].tEnd - data.blocksCoarse[i].tStart;
+			if (delta < 5000) {
+				data.blocksCoarse[i].class = "unsure";
+			}
+		}
+		for (let i=data.blocksCoarse.length-1; i>=1; i--) {
+			if (data.blocksCoarse[i-1].class === "unsure" && data.blocksCoarse[i].class === "unsure") {
+				data.blocksCoarse[i-1].tEnd = data.blocksCoarse[i].tEnd;
+				data.blocksCoarse.splice(i, 1);
+			}
+		}
+
+
+		// remove unsure blocks, assume neighbors are right.
+		data.blocksCleaned = data.blocksCoarse.slice().map(b => Object.assign({}, b));
+		if (data.blocksCleaned.length >= 2 && data.blocksCleaned[0].class === "unsure") { // remove first if unsure
+			data.blocksCleaned[1].tStart = data.blocksCleaned[0].tStart;
+			data.blocksCleaned.splice(0, 1);
+		}
+		if (data.blocksCleaned.length >= 2 && data.blocksCleaned[data.blocksCleaned.length-1].class === "unsure") { // remove last if unsure
+			data.blocksCleaned[data.blocksCleaned.length-2].tEnd = data.blocksCleaned[data.blocksCleaned.length-1].tEnd;
+			data.blocksCleaned.splice(data.blocksCleaned.length-1, 1);
+		}
+		for (let i=data.blocksCleaned.length-2; i>=1; i--) { // remove others if unsure
+			if (data.blocksCleaned[i].class !== "unsure") continue;
+			if (data.blocksCleaned[i+1].class !== data.blocksCleaned[i-1].class) { // unsure between two different blocks
+				const delta = data.blocksCleaned[i].tEnd - data.blocksCleaned[i].tStart;
+				data.blocksCleaned[i+1].tStart -= delta / 2;
+				data.blocksCleaned[i-1].tEnd += delta / 2;
+				data.blocksCleaned.splice(i, 1);
+			} else { // unsure between two identical blocks. remove it
+				data.blocksCleaned[i-1].tEnd = data.blocksCleaned[i+1].tEnd;
+				data.blocksCleaned.splice(i, 2);
+			}
+		}
+
+		fs.writeFile(path, JSON.stringify(data, null, "\t"), function(err) {
+			if (err) log.warn("metadata write err=" + JSON.stringify(err));
+			log.info("detailed analysis results have been written to " + path);
+			callback(data.blocksCleaned);
 		});
 	}
 
