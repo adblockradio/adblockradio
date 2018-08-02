@@ -265,7 +265,7 @@ class Analyser extends Readable {
 				metadataPath: undefined
 			});
 
-			self.push(obj);
+			self.push({ liveResult: obj });
 
 			if (!self.config.saveMetadata) return;
 			if (!metadataPath) {
@@ -281,7 +281,7 @@ class Analyser extends Readable {
 		this.postProcessor.on("end", function() {
 			log.info("postProcessor ended");
 			self.mergeClassBlocks(self.data, function(blocksCleaned) {
-				self.push(blocksCleaned);
+				self.push({ blocksCleaned: blocksCleaned });
 				self.push(null);
 			});
 		});

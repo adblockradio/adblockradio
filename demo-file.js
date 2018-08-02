@@ -3,7 +3,7 @@ const { Analyser } = require("./post-processing.js");
 
 log.info("start analyser!");
 
-const FILE = "files/merge.mp3";
+const FILE = "podcasts/example.mp3";
 
 const abr = new Analyser({
 	country: "France",
@@ -19,7 +19,7 @@ const abr = new Analyser({
 });
 
 abr.on("data", function(obj) {
-	log.info("status=" + JSON.stringify(obj, null, "\t"));
+	log.info(JSON.stringify(obj, null, "\t"));
 });
 
 abr.on("end", function() {
