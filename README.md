@@ -7,6 +7,7 @@ This module determines if the content of live radio streams or podcasts is adver
 Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`. In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
 
 The following computations are in two steps: 
+
 ### Analysis of audio on a short time-window
 Chunks of ~1s of PCM audio is piped into two sub-modules:
 - a time-frequency analyser (`predictor-ml/ml.js`), that identifies patterns in spectrograms with a machine learning [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network).
@@ -310,13 +311,12 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - Support for popular podcasts.
 
 ### Integrations
-This project is end-user friendly. Integrations of this project in mass market products are welcome:
+This project is not intended to be handled by end-users. Integrations of this project in mass market products are welcome:
 - mobile apps for webradios and podcasts. Keras models should be converted to native Tensorflow ones, and the Keras + Tensorflow library could be replaced with [Tensorflow Mobile for Android and iOS](https://www.tensorflow.org/mobile/mobile_intro). Node.JS routines could be integrated with this [React Native plugin](https://www.npmjs.com/package/nodejs-mobile-react-native).
 - browser extensions, with [Tensorflow JS](https://js.tensorflow.org/).
-- digital alarm-clocks, as long as enough CPU power and wifi are available.
+- digital alarm-clocks, and hobbyist projects, as long as enough computation power and network are available. Platforms as small as Raspberry Pi Zero/A/B should be enough, though RPi 3B/3B+ is recommended. Tensorflow is available on [Raspbian](https://www.tensorflow.org/install/install_raspbian).
 
 ## License
-
 AGPL-3.0 (see LICENSE file)
 
 Your contribution to this project is welcome, but might be subject to a contributor's agreement.
