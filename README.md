@@ -2,7 +2,7 @@
 An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
 ## Outline
-This module determines if the content of live radio streams or podcasts is advertisement, talk or music. It is the engine of [Adblock Radio](https://www.adblockradio.com) and has been tested with real-world data from 60+ radios from 7 countries.
+This module determines if the content of live radio streams or podcasts is advertisement, talk or music. Unlike previous implementations by other authors, [relying on metadata](https://github.com/quasoft/adblockradio) or [on precise jingles](https://blog.rekawek.eu/2016/02/24/radio-adblock/), this solution can be applied to all webradios streams. Being the engine of [Adblock Radio](https://www.adblockradio.com), it has been tested with real-world data from 60+ radios from 7 countries.
 
 Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`. In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
 
@@ -10,8 +10,8 @@ The following computations are in two steps:
 
 ### Analysis of audio on a short time-window
 Chunks of ~1s of PCM audio are piped into two sub-modules:
-- a time-frequency analyser (`predictor-ml/ml.js`), featuring a [LSTM](https://en.wikipedia.org/wiki/Long_short-term_memory) [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network), that takes as an input a spectrogram derivative, the [Mel-frequency cepstral coefficients](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum) of the signal.
-- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles. It use the module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint), that shares conceptual similarities with the [original Shazam algorithm](https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf).
+- a time-frequency analyser (`predictor-ml/ml.js`), featuring a [LSTM](https://en.wikipedia.org/wiki/Long_short-term_memory) [recurrent neural network](https://en.wikipedia.org/wiki/Recurrent_neural_network), that takes as an input a matrix similar to a spectrogram: [Mel-frequency cepstral coefficients](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum) vs time.
+- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles. It use the landmark fingerprinting module [dest4/stream-audio-fingerprint](https://github.com/dest4/stream-audio-fingerprint), that shares conceptual similarities with the [original Shazam algorithm](https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf).
 
 ### Post-processing to smooth the results
 In `post-processing.js`, results are gathered for each audio segment. Past results are taken into account, as well as future results, within the limits of the file boundaries or of the stream audio buffer (usually between 4 and 16 precious seconds). Predictions are smoothed with weighted time-windows and dubious data points are pruned, introducing a [hysteresis](https://en.wikipedia.org/wiki/Hysteresis) behavior of predictions for live radio streams.
@@ -25,6 +25,11 @@ Combining machine learning with acoustic fingerprinting gives robustness to the 
 The [first version](https://twitter.com/PierreCol/status/784851362207137792) of Adblock Radio in 2016 (that one that got *lawyered* by French private radio network [Les Indés Radios](http://www.lesindesradios.fr/) - hi guys! hope you enjoy reading this! *[xoxoxo](http://oxavocats.com/)*) used only the fingerprinting part of this project, with a binary ad/not ad classification. Users could report undetected ads with a single click and the corresponding audio was automatically integrated in the DB, with a posteriori moderation. Results were really promising, but it was difficult to keep the databases up to date as commercials are broadcast in multiple slight variations, in addition to be renewed frequently, in some cases every few days. Some streams with not enough listeners were very poorly classified. Exciting strategies to [mine new commercials](https://www.computer.org/csdl/proceedings/icme/2011/4348/00/06012115-abs.html) and to [whitelist large amounts of music](https://github.com/dest4/radio-playlist-generator) have been developed, but it still required a lot of manual work and I/O on servers was problematic. In retrospect, the choice of SQLite for these read-write-intensive, time-critical database operations was probably not the best.
 
 The second version, from early 2017 to mid 2018, used only the lightweight ML part, with almost inexistent I/O. Personal research to distinguish ads from the rest showed that also separating talk from music was a low hanging fruit. So predictions became between ad, talk and music. The system behave very well with much less manual review, but reached a plateau in precision, a bit below user expectations. The ternary classification made user reports more difficult to handle, requiring a priori moderation. Current version uses the same ML part but also benefits from a fingerprinting module with much lighter databases, made of jingles and the subset of mispredicted ML training data likely to be broadcast again.
+
+Adblock Radio should ideally be run on the end user device. It is tempting to do the computations in the cloud and to serve the results to the listeners. First-hand experience shows it is not an ideal solution. Adblock Radio has tested two options to design architecture with this paradigm: 
+- either the analysing server rebroadcasts audio content to listeners, with tags (briefly tested in 2016). This leads to legal issues as relaying a stream could be considered as copyright infrigement (disclaimer: IANAL). Also this scales poorly because now you are a CDN.
+- either the analysing server streams classification metadata only - users listen to webradios with the official links (in production since 2017). There is no way to be sure synchronization between audio and metadata will be correct. In most cases, it works well, with a sync gap of less than two seconds. But some radios have weird CDNs or have introduced dynamic advertising in their streams, which means that streams between the server and the clients can become significantly different. For example, lags of about 20s have been observed for [Radio FG](https://www.radiofg.com/) and up to 45s for [Jazz Radio](http://www.jazzradio.fr/). This leads to a frustrating experience for listeners. I have tried to bruteforce sync between the server and the client by comparing chunks of the original stream. It is tricky for web applications because most webradios CDNs have not enabled [CORS headers](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing), so that Javascript in browser will not be able to read the audio content to sync. Flash (duh) or web extensions would be needed, but this seems excessive.
+
 
 ## Getting started
 
@@ -114,7 +119,7 @@ Run the demo on a recording of French RTL radio, including ads, talk and music:
 node demo-file.js
 ```
 
-The results show classifications with time boundaries in milliseconds.
+Gradual outputs are similar to those of live stream analysis. An additional post-processing specific to recordings hides the uncertainties in predictions and shows big chunks for each class, with time stamps in milliseconds, making it ready for slicing.
 ```
 [
 	{
@@ -321,20 +326,23 @@ Names of radios match those in [radio-browser.info](http://www.radio-browser.inf
 
 ### Improvements
 Detection is not perfect for some specific kinds of audio content: 
-- hip-hop music, easily mispredicted as advertisements. Workaround is to add tracks to the hotlist, but that's a lot of music to whitelist.
-- ads for music albums, often mispredicted as music. Can be solved by doing a stronger context analysis, but is hard to solve for live streams.
+- hip-hop music, easily mispredicted as advertisements. Workaround is to add tracks to the hotlist, but that's a lot of music to whitelist. A more general neural network could be designed, but maybe at the cost of performance.
+- ads for music albums, often mispredicted as music. Can be solved by doing a stronger context analysis, but is hard to solve for live streams where future further than a few seconds of buffer is unknown.
 - advertisements for talk shows, mispredicted as talk, but this is litigious. Could be partially alleviated by context analysis.
 - native advertisements, where the regular speaker reads sponsored content. This is quire unusual on radios, though more common in podcasts. A next step for this would be to use speech recognition software (with e.g. [Mozilla Deep Speech](https://github.com/mozilla/DeepSpeech)) and do semantic analysis (with e.g. [SpamAssassin](https://spamassassin.apache.org/)).
 
-Analog signals (FM) have not been tested and are not currently supported. Analog noise might void the techniques used here, requiring the use of filters and/or noise-resistant fingerprinting algorithms. Work on this topic could broaden the use cases of this project.
+Stability of the post-processing could be improved. Currently, it only uses confidence thresholds. When below the threshold, it uses the last confident prediction. Thus the system sometimes persists in error. Cycles of ads, talk and music are fairly repetitive for each radio streams. Implementing a [Hidden Markov Model](https://en.wikipedia.org/wiki/Hidden_Markov_model) would very likely help clean the output.
+
+Analog signals (FM) have not been tested and are not currently supported. Analog noise might void the techniques used here, requiring the use of filters and/or noise-resistant fingerprinting algorithms. Work on this topic could broaden the use cases of this project, even if, in the future, radio will be more signinicantly consumed with noise-free [DAB](https://en.wikipedia.org/wiki/Digital_audio_broadcasting) and webradios.
 
 Finally, support could be added for popular podcasts that do not share the acoustics of a specific radio. There is no particuliar obstacle to doing this: each series of podcasts would have its own acoustic model and hotlist database, as radio already do.
 
 ### Integrations
 This project is not intended to be handled by end-users. Integrations of this project in mass market products are welcome:
 - mobile apps for webradios and podcasts. Keras models should be converted to native Tensorflow ones, and the Keras + Tensorflow library could be replaced with [Tensorflow Mobile for Android and iOS](https://www.tensorflow.org/mobile/mobile_intro). Node.JS routines could be integrated with this [React Native plugin](https://www.npmjs.com/package/nodejs-mobile-react-native).
-- browser extensions, with [Tensorflow JS](https://js.tensorflow.org/).
+- browser extensions, with [Tensorflow JS](https://js.tensorflow.org/). The extension could take control of the volume knob on popular webradios catalogs such as [TuneIn](https://tunein.com/) or [Radio.de](http://www.radio.de/). I already did work on this. Beware of the synchronization issues detailed above.
 - digital alarm-clocks, and hobbyist projects, as long as enough computation power and network are available. Platforms as small as Raspberry Pi Zero/A/B should be enough, though RPi 3B/3B+ is recommended. Tensorflow is available on [Raspbian](https://www.tensorflow.org/install/install_raspbian).
+- connected speakers, such as [Sonos](https://musicpartners.sonos.com/?q=docs). The algorithm itself will not run on Sonos hardware, so a separate hardware device on the same local network could do it (such as a Raspberry). Great idea for a crowdfunding campaign.
 
 When integrating Adblock Radio in a product, please give the user a way to give negative feedback on the classification. Mispredictions should promptly be reported to Adblock Radio maintainer so that ML models and hotlist databases can be updated accordingly. Reports are manually reviewed: it is enough to provide the name of the radio(s) and a timestamp at which the problem happened. For a given selection of radios, one report every few minutes is enough. You may contact the maintainer for details about the APIs to use.
 
