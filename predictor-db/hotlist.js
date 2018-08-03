@@ -3,9 +3,6 @@ const sqlite3 = require("sqlite3").verbose();
 const { Transform } = require("stream");
 const { log } = require("abr-log")("pred-hotlist");
 const Codegen = require("stream-audio-fingerprint");
-const fs = require("fs");
-const async = require("async");
-const cp = require("child_process");
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
@@ -78,6 +75,8 @@ class Hotlist extends Transform {
 			fingerVector.push(hcodes[i]);
 		}
 		inStr += ")";
+
+		//log.info(JSON.stringify(fingerVector, null, "\t"));
 
 		let self = this;
 		this.db.all("SELECT tracks.file as file, tracks.class as class, id, dt as dtquery, finger FROM fingers " +

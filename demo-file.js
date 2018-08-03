@@ -3,7 +3,8 @@ const { Analyser } = require("./post-processing.js");
 
 log.info("start analyser!");
 
-const FILE = "podcasts/example.mp3";
+const FILE = process.argv[2] || "podcasts/example.mp3";
+log.info("FILE=" + FILE);
 
 const abr = new Analyser({
 	country: "France",

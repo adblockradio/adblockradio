@@ -21,7 +21,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 0,
@@ -47,7 +47,7 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
+				"matches": 2,
 				"total": 5
 			},
 			"class": "1-speech",
@@ -74,8 +74,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 7
+				"matches": 2,
+				"total": 15
 			},
 			"class": "1-speech",
 			"tStart": 2000,
@@ -101,8 +101,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 5
+				"matches": 2,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 3000,
@@ -129,7 +129,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 4000,
@@ -156,7 +156,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 5000,
@@ -182,7 +182,7 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
+				"matches": 2,
 				"total": 12
 			},
 			"class": "1-speech",
@@ -210,7 +210,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 16
+				"total": 13
 			},
 			"class": "1-speech",
 			"tStart": 7000,
@@ -237,7 +237,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 8000,
@@ -264,7 +264,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 9000,
@@ -290,8 +290,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 10000,
@@ -318,7 +318,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 11000,
@@ -345,7 +345,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 12000,
@@ -372,7 +372,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 13000,
@@ -398,8 +398,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 14000,
@@ -452,8 +452,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 4,
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 16000,
@@ -479,8 +479,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 9
+				"matches": 2,
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 17000,
@@ -507,7 +507,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 18000,
@@ -534,7 +534,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 13
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 19000,
@@ -561,7 +561,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 9
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 20000,
@@ -588,7 +588,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 21000,
@@ -615,7 +615,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 22000,
@@ -641,8 +641,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 11
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 23000,
@@ -668,8 +668,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 1,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 24000,
@@ -695,8 +695,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 18
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 25000,
@@ -723,7 +723,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 26000,
@@ -749,8 +749,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 22
+				"matches": 1,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 27000,
@@ -776,8 +776,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 26
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 28000,
@@ -804,7 +804,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 29000,
@@ -830,8 +830,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 30000,
@@ -858,7 +858,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 31000,
@@ -885,7 +885,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 15
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 32000,
@@ -912,7 +912,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 33000,
@@ -966,7 +966,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 11
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 35000,
@@ -992,8 +992,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 36000,
@@ -1020,7 +1020,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 37000,
@@ -1047,7 +1047,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 10
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 38000,
@@ -1073,8 +1073,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 14
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 39000,
@@ -1100,8 +1100,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 10
+				"matches": 2,
+				"total": 9
 			},
 			"class": "1-speech",
 			"tStart": 40000,
@@ -1128,7 +1128,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 41000,
@@ -1155,7 +1155,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 3,
-				"total": 20
+				"total": 21
 			},
 			"class": "1-speech",
 			"tStart": 42000,
@@ -1181,8 +1181,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 43000,
@@ -1208,8 +1208,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 15
+				"matches": 1,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 44000,
@@ -1236,7 +1236,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 45000,
@@ -1289,8 +1289,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 18
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 47000,
@@ -1343,8 +1343,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 49000,
@@ -1371,7 +1371,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 50000,
@@ -1398,7 +1398,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 51000,
@@ -1424,8 +1424,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 5
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 52000,
@@ -1452,7 +1452,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 53000,
@@ -1479,7 +1479,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 2
 			},
 			"class": "unsure",
 			"tStart": 54000,
@@ -1506,7 +1506,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 5
 			},
 			"class": "unsure",
 			"tStart": 55000,
@@ -1560,7 +1560,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 3,
-				"total": 16
+				"total": 21
 			},
 			"class": "unsure",
 			"tStart": 57000,
@@ -1584,12 +1584,12 @@
 				"slotsPast": 5
 			},
 			"hotlist": {
-				"class": "2-music",
-				"file": "...",
-				"matches": 5,
-				"total": 20
+				"class": "unsure",
+				"file": null,
+				"matches": 3,
+				"total": 8
 			},
-			"class": "2-music",
+			"class": "unsure",
 			"tStart": 58000,
 			"tEnd": 59000
 		},
@@ -1614,7 +1614,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 11
+				"total": 7
 			},
 			"class": "unsure",
 			"tStart": 59000,
@@ -1641,7 +1641,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 3
 			},
 			"class": "unsure",
 			"tStart": 60000,
@@ -1694,8 +1694,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "unsure",
 			"tStart": 62000,
@@ -1721,8 +1721,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 2,
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 63000,
@@ -1749,7 +1749,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 64000,
@@ -1775,8 +1775,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 1,
+				"total": 1
 			},
 			"class": "0-ads",
 			"tStart": 65000,
@@ -1802,8 +1802,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 0,
+				"total": 0
 			},
 			"class": "0-ads",
 			"tStart": 66000,
@@ -1830,7 +1830,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "0-ads",
 			"tStart": 67000,
@@ -1856,8 +1856,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 10
+				"matches": 4,
+				"total": 13
 			},
 			"class": "0-ads",
 			"tStart": 68000,
@@ -1884,7 +1884,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 11
+				"total": 9
 			},
 			"class": "0-ads",
 			"tStart": 69000,
@@ -1911,7 +1911,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 7
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 70000,
@@ -1937,8 +1937,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 71000,
@@ -1992,7 +1992,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 73000,
@@ -2018,8 +2018,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 74000,
@@ -2046,7 +2046,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 1
 			},
 			"class": "0-ads",
 			"tStart": 75000,
@@ -2073,7 +2073,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 76000,
@@ -2100,7 +2100,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 77000,
@@ -2127,7 +2127,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 4
 			},
 			"class": "unsure",
 			"tStart": 78000,
@@ -2153,8 +2153,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 15
+				"matches": 1,
+				"total": 3
 			},
 			"class": "unsure",
 			"tStart": 79000,
@@ -2180,8 +2180,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 21
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 80000,
@@ -2234,8 +2234,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 82000,
@@ -2261,8 +2261,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 83000,
@@ -2315,8 +2315,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 4
+				"matches": 1,
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 85000,
@@ -2342,8 +2342,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "0-ads",
 			"tStart": 86000,
@@ -2423,8 +2423,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 12
+				"matches": 1,
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 89000,
@@ -2451,7 +2451,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 4
 			},
 			"class": "0-ads",
 			"tStart": 90000,
@@ -2477,8 +2477,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 11
+				"matches": 1,
+				"total": 12
 			},
 			"class": "0-ads",
 			"tStart": 91000,
@@ -2504,8 +2504,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 4,
+				"total": 9
 			},
 			"class": "0-ads",
 			"tStart": 92000,
@@ -2532,7 +2532,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 93000,
@@ -2559,7 +2559,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 16
+				"total": 6
 			},
 			"class": "0-ads",
 			"tStart": 94000,
@@ -2586,7 +2586,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 95000,
@@ -2612,8 +2612,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 7
 			},
 			"class": "0-ads",
 			"tStart": 96000,
@@ -2639,8 +2639,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 1
 			},
 			"class": "0-ads",
 			"tStart": 97000,
@@ -2666,8 +2666,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "0-ads",
 			"tStart": 98000,
@@ -2693,8 +2693,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 7
 			},
 			"class": "0-ads",
 			"tStart": 99000,
@@ -2720,8 +2720,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 28
+				"matches": 1,
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 100000,
@@ -2747,8 +2747,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 9
+				"matches": 3,
+				"total": 10
 			},
 			"class": "0-ads",
 			"tStart": 101000,
@@ -2774,8 +2774,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 5
 			},
 			"class": "0-ads",
 			"tStart": 102000,
@@ -2802,7 +2802,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 1
 			},
 			"class": "0-ads",
 			"tStart": 103000,
@@ -2829,7 +2829,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 3
 			},
 			"class": "0-ads",
 			"tStart": 104000,
@@ -2856,7 +2856,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 7
 			},
 			"class": "0-ads",
 			"tStart": 105000,
@@ -2882,8 +2882,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "0-ads",
 			"tStart": 106000,
@@ -2909,8 +2909,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 0,
+				"total": 0
 			},
 			"class": "0-ads",
 			"tStart": 107000,
@@ -2936,8 +2936,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 108000,
@@ -2963,8 +2963,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 4,
+				"total": 6
 			},
 			"class": "0-ads",
 			"tStart": 109000,
@@ -2990,8 +2990,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 2,
+				"total": 9
 			},
 			"class": "0-ads",
 			"tStart": 110000,
@@ -3018,7 +3018,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 111000,
@@ -3044,8 +3044,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 2,
+				"total": 7
 			},
 			"class": "0-ads",
 			"tStart": 112000,
@@ -3071,7 +3071,7 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
+				"matches": 2,
 				"total": 4
 			},
 			"class": "0-ads",
@@ -3126,7 +3126,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 2
 			},
 			"class": "0-ads",
 			"tStart": 115000,
@@ -3153,7 +3153,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 13
 			},
 			"class": "0-ads",
 			"tStart": 116000,
@@ -3179,8 +3179,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 12
 			},
 			"class": "0-ads",
 			"tStart": 117000,
@@ -3207,7 +3207,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 4
 			},
 			"class": "0-ads",
 			"tStart": 118000,
@@ -3261,7 +3261,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 4
 			},
 			"class": "unsure",
 			"tStart": 120000,
@@ -3287,8 +3287,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 3
+				"matches": 1,
+				"total": 6
 			},
 			"class": "unsure",
 			"tStart": 121000,
@@ -3314,8 +3314,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 5
+				"matches": 2,
+				"total": 4
 			},
 			"class": "unsure",
 			"tStart": 122000,
@@ -3368,8 +3368,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 8
+				"matches": 2,
+				"total": 6
 			},
 			"class": "unsure",
 			"tStart": 124000,
@@ -3396,7 +3396,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 8
 			},
 			"class": "unsure",
 			"tStart": 125000,
@@ -3423,7 +3423,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 126000,
@@ -3450,7 +3450,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 3
 			},
 			"class": "unsure",
 			"tStart": 127000,
@@ -3476,8 +3476,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 11
+				"matches": 0,
+				"total": 0
 			},
 			"class": "unsure",
 			"tStart": 128000,
@@ -3504,7 +3504,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 129000,
@@ -3530,8 +3530,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 12
+				"matches": 1,
+				"total": 4
 			},
 			"class": "unsure",
 			"tStart": 130000,
@@ -3558,7 +3558,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 22
+				"total": 8
 			},
 			"class": "unsure",
 			"tStart": 131000,
@@ -3611,8 +3611,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 133000,
@@ -3638,8 +3638,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 134000,
@@ -3666,7 +3666,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 135000,
@@ -3692,8 +3692,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 136000,
@@ -3719,8 +3719,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 10
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 137000,
@@ -3747,7 +3747,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 138000,
@@ -3773,8 +3773,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 4
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 139000,
@@ -3800,8 +3800,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 140000,
@@ -3827,8 +3827,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 2,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 141000,
@@ -3854,8 +3854,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 142000,
@@ -3882,7 +3882,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 143000,
@@ -3909,7 +3909,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 144000,
@@ -3962,8 +3962,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 3,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 146000,
@@ -3990,7 +3990,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 147000,
@@ -4016,8 +4016,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 9
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 148000,
@@ -4043,8 +4043,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 9
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 149000,
@@ -4071,7 +4071,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 150000,
@@ -4097,8 +4097,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 22
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 151000,
@@ -4124,8 +4124,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 10
+				"matches": 2,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 152000,
@@ -4151,8 +4151,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 153000,
@@ -4178,8 +4178,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 1,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 154000,
@@ -4206,7 +4206,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 155000,
@@ -4233,7 +4233,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 11
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 156000,
@@ -4259,8 +4259,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 7
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 157000,
@@ -4287,7 +4287,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 158000,
@@ -4311,12 +4311,12 @@
 				"slotsPast": 5
 			},
 			"hotlist": {
-				"class": "2-music",
-				"file": "...",
-				"matches": 6,
-				"total": 22
+				"class": "unsure",
+				"file": null,
+				"matches": 1,
+				"total": 1
 			},
-			"class": "2-music",
+			"class": "1-speech",
 			"tStart": 159000,
 			"tEnd": 160000
 		},
@@ -4341,7 +4341,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 5
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 160000,
@@ -4367,8 +4367,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 35
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 161000,
@@ -4394,8 +4394,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 162000,
@@ -4422,7 +4422,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 163000,
@@ -4448,8 +4448,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 164000,
@@ -4476,7 +4476,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 165000,
@@ -4502,8 +4502,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 166000,
@@ -4530,7 +4530,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 167000,
@@ -4557,7 +4557,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 23
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 168000,
@@ -4583,7 +4583,7 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
+				"matches": 1,
 				"total": 4
 			},
 			"class": "1-speech",
@@ -4611,7 +4611,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 170000,
@@ -4638,7 +4638,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 171000,
@@ -4691,8 +4691,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 173000,
@@ -4719,7 +4719,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 174000,
@@ -4746,7 +4746,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 175000,
@@ -4772,8 +4772,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 176000,
@@ -4827,7 +4827,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 178000,
@@ -4854,7 +4854,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 14
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 179000,
@@ -4880,8 +4880,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 180000,
@@ -4907,8 +4907,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 5
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 181000,
@@ -4961,8 +4961,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 8
+				"matches": 2,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 183000,
@@ -4988,8 +4988,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 21
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 184000,
@@ -5016,7 +5016,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 185000,
@@ -5042,8 +5042,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 12
+				"matches": 1,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 186000,
@@ -5069,8 +5069,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 187000,
@@ -5096,8 +5096,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 188000,
@@ -5123,8 +5123,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 189000,
@@ -5151,7 +5151,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 9
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 190000,
@@ -5204,8 +5204,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 192000,
@@ -5231,8 +5231,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 193000,
@@ -5258,8 +5258,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 194000,
@@ -5285,8 +5285,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 15
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 195000,
@@ -5312,8 +5312,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 15
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 196000,
@@ -5420,8 +5420,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 200000,
@@ -5448,7 +5448,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 201000,
@@ -5474,8 +5474,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 8
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 202000,
@@ -5502,7 +5502,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 203000,
@@ -5529,7 +5529,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 204000,
@@ -5555,8 +5555,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 29
+				"matches": 3,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 205000,
@@ -5582,8 +5582,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 44
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 206000,
@@ -5610,7 +5610,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 207000,
@@ -5637,7 +5637,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 208000,
@@ -5663,8 +5663,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 12
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 209000,
@@ -5690,8 +5690,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 2
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 210000,
@@ -5718,7 +5718,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 8
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 211000,
@@ -5745,7 +5745,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 212000,
@@ -5771,8 +5771,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 213000,
@@ -5825,8 +5825,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 215000,
@@ -5852,8 +5852,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 17
+				"matches": 1,
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 216000,
@@ -5906,8 +5906,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 11
+				"matches": 1,
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 218000,
@@ -5933,8 +5933,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 24
+				"matches": 1,
+				"total": 10
 			},
 			"class": "unsure",
 			"tStart": 219000,
@@ -5960,8 +5960,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 14
+				"matches": 2,
+				"total": 6
 			},
 			"class": "2-music",
 			"tStart": 220000,
@@ -5987,8 +5987,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 13
+				"matches": 1,
+				"total": 7
 			},
 			"class": "2-music",
 			"tStart": 221000,
@@ -6015,7 +6015,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 14
+				"total": 12
 			},
 			"class": "2-music",
 			"tStart": 222000,
@@ -6041,8 +6041,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 16
+				"matches": 1,
+				"total": 3
 			},
 			"class": "2-music",
 			"tStart": 223000,
@@ -6068,8 +6068,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 6
+				"matches": 3,
+				"total": 13
 			},
 			"class": "2-music",
 			"tStart": 224000,
@@ -6095,8 +6095,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 15
+				"matches": 1,
+				"total": 6
 			},
 			"class": "2-music",
 			"tStart": 225000,
@@ -6123,7 +6123,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 12
+				"total": 4
 			},
 			"class": "2-music",
 			"tStart": 226000,
@@ -6149,8 +6149,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 21
+				"matches": 1,
+				"total": 2
 			},
 			"class": "2-music",
 			"tStart": 227000,
@@ -6204,7 +6204,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 8
+				"total": 4
 			},
 			"class": "2-music",
 			"tStart": 229000,
@@ -6231,7 +6231,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 8
+				"total": 4
 			},
 			"class": "2-music",
 			"tStart": 230000,
@@ -6257,8 +6257,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 13
+				"matches": 1,
+				"total": 5
 			},
 			"class": "2-music",
 			"tStart": 231000,
@@ -6285,7 +6285,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 8
+				"total": 11
 			},
 			"class": "2-music",
 			"tStart": 232000,
@@ -6311,8 +6311,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 23
+				"matches": 1,
+				"total": 14
 			},
 			"class": "2-music",
 			"tStart": 233000,
@@ -6339,7 +6339,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 8
+				"total": 6
 			},
 			"class": "2-music",
 			"tStart": 234000,
@@ -6365,8 +6365,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 9
+				"matches": 2,
+				"total": 8
 			},
 			"class": "2-music",
 			"tStart": 235000,
@@ -6392,8 +6392,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 19
+				"matches": 1,
+				"total": 11
 			},
 			"class": "2-music",
 			"tStart": 236000,
@@ -6419,8 +6419,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 1
 			},
 			"class": "2-music",
 			"tStart": 237000,
@@ -6446,8 +6446,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 16
+				"matches": 1,
+				"total": 8
 			},
 			"class": "2-music",
 			"tStart": 238000,
@@ -6474,7 +6474,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 13
+				"total": 6
 			},
 			"class": "2-music",
 			"tStart": 239000,
@@ -6500,8 +6500,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 13
+				"matches": 1,
+				"total": 1
 			},
 			"class": "2-music",
 			"tStart": 240000,
@@ -6528,7 +6528,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 11
+				"total": 5
 			},
 			"class": "2-music",
 			"tStart": 241000,
@@ -6554,8 +6554,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 16
+				"matches": 1,
+				"total": 4
 			},
 			"class": "2-music",
 			"tStart": 242000,
@@ -6581,8 +6581,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 62
+				"matches": 1,
+				"total": 2
 			},
 			"class": "2-music",
 			"tStart": 243000,
@@ -6608,8 +6608,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 12
+				"matches": 2,
+				"total": 8
 			},
 			"class": "2-music",
 			"tStart": 244000,
@@ -6635,8 +6635,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 16
+				"matches": 0,
+				"total": 0
 			},
 			"class": "2-music",
 			"tStart": 245000,
@@ -6662,8 +6662,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 21
+				"matches": 1,
+				"total": 3
 			},
 			"class": "2-music",
 			"tStart": 246000,
@@ -6690,7 +6690,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 4
 			},
 			"class": "2-music",
 			"tStart": 247000,
@@ -6744,7 +6744,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 1
 			},
 			"class": "unsure",
 			"tStart": 249000,
@@ -6771,7 +6771,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 14
+				"total": 2
 			},
 			"class": "unsure",
 			"tStart": 250000,
@@ -6797,8 +6797,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "unsure",
 			"tStart": 251000,
@@ -6824,8 +6824,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "unsure",
 			"tStart": 252000,
@@ -6851,8 +6851,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 17
+				"matches": 1,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 253000,
@@ -6878,8 +6878,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 254000,
@@ -6906,7 +6906,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 255000,
@@ -6933,7 +6933,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 256000,
@@ -6959,8 +6959,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 17
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 257000,
@@ -6986,8 +6986,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 18
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 258000,
@@ -7014,7 +7014,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 259000,
@@ -7040,8 +7040,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 11
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 260000,
@@ -7067,8 +7067,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 261000,
@@ -7092,12 +7092,12 @@
 				"slotsPast": 5
 			},
 			"hotlist": {
-				"class": "2-music",
-				"file": "...",
-				"matches": 5,
-				"total": 21
+				"class": "unsure",
+				"file": null,
+				"matches": 1,
+				"total": 9
 			},
-			"class": "2-music",
+			"class": "1-speech",
 			"tStart": 262000,
 			"tEnd": 263000
 		},
@@ -7121,8 +7121,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 263000,
@@ -7148,8 +7148,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 5
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 264000,
@@ -7175,8 +7175,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 1,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 265000,
@@ -7203,7 +7203,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 15
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 266000,
@@ -7229,8 +7229,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 5
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 267000,
@@ -7257,7 +7257,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 268000,
@@ -7283,8 +7283,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 269000,
@@ -7310,8 +7310,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 3
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 270000,
@@ -7338,7 +7338,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 271000,
@@ -7364,8 +7364,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 272000,
@@ -7392,7 +7392,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 273000,
@@ -7418,8 +7418,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 274000,
@@ -7445,8 +7445,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 2,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 275000,
@@ -7472,8 +7472,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 29
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 276000,
@@ -7499,8 +7499,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 12
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 277000,
@@ -7526,8 +7526,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 278000,
@@ -7553,8 +7553,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 279000,
@@ -7580,8 +7580,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 280000,
@@ -7607,8 +7607,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 3
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 281000,
@@ -7661,8 +7661,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 283000,
@@ -7716,7 +7716,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 285000,
@@ -7742,8 +7742,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 7
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 286000,
@@ -7770,7 +7770,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 287000,
@@ -7823,8 +7823,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 289000,
@@ -7850,8 +7850,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 5
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 290000,
@@ -7877,8 +7877,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 37
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 291000,
@@ -7904,8 +7904,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 10
+				"matches": 3,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 292000,
@@ -7931,8 +7931,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 293000,
@@ -7959,7 +7959,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 294000,
@@ -7985,7 +7985,7 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
+				"matches": 2,
 				"total": 9
 			},
 			"class": "1-speech",
@@ -8012,7 +8012,7 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
+				"matches": 1,
 				"total": 4
 			},
 			"class": "1-speech",
@@ -8039,8 +8039,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 297000,
@@ -8067,7 +8067,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 298000,
@@ -8094,7 +8094,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 299000,
@@ -8121,7 +8121,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 13
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 300000,
@@ -8147,8 +8147,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 26
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 301000,
@@ -8175,7 +8175,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 6
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 302000,
@@ -8202,7 +8202,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 13
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 303000,
@@ -8228,8 +8228,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 20
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 304000,
@@ -8255,8 +8255,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 9
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 305000,
@@ -8282,8 +8282,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 5
+				"matches": 2,
+				"total": 9
 			},
 			"class": "1-speech",
 			"tStart": 306000,
@@ -8309,8 +8309,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 307000,
@@ -8336,8 +8336,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 308000,
@@ -8363,8 +8363,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 309000,
@@ -8391,7 +8391,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 15
+				"total": 5
 			},
 			"class": "unsure",
 			"tStart": 310000,
@@ -8417,8 +8417,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 43
+				"matches": 2,
+				"total": 14
 			},
 			"class": "unsure",
 			"tStart": 311000,
@@ -8471,8 +8471,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 17
+				"matches": 1,
+				"total": 7
 			},
 			"class": "unsure",
 			"tStart": 313000,
@@ -8525,8 +8525,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 13
+				"matches": 0,
+				"total": 0
 			},
 			"class": "unsure",
 			"tStart": 315000,
@@ -8552,8 +8552,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 316000,
@@ -8579,8 +8579,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 13
+				"matches": 1,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 317000,
@@ -8606,8 +8606,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 318000,
@@ -8633,8 +8633,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 319000,
@@ -8661,7 +8661,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 320000,
@@ -8687,8 +8687,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 321000,
@@ -8742,7 +8742,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 323000,
@@ -8768,8 +8768,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 7
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 324000,
@@ -8850,7 +8850,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 327000,
@@ -8876,8 +8876,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 14
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 328000,
@@ -8903,8 +8903,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 329000,
@@ -8931,7 +8931,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 11
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 330000,
@@ -8984,8 +8984,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 13
+				"matches": 2,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 332000,
@@ -9011,8 +9011,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 11
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 333000,
@@ -9066,7 +9066,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 335000,
@@ -9092,8 +9092,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 336000,
@@ -9120,7 +9120,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 337000,
@@ -9146,8 +9146,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 17
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 338000,
@@ -9173,8 +9173,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 2,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 339000,
@@ -9200,8 +9200,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 340000,
@@ -9227,8 +9227,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 341000,
@@ -9254,8 +9254,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 342000,
@@ -9282,7 +9282,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 15
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 343000,
@@ -9309,7 +9309,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 344000,
@@ -9335,8 +9335,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 2,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 345000,
@@ -9363,7 +9363,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 346000,
@@ -9390,7 +9390,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 347000,
@@ -9417,7 +9417,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 348000,
@@ -9443,8 +9443,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 349000,
@@ -9470,8 +9470,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 350000,
@@ -9498,7 +9498,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 351000,
@@ -9551,8 +9551,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 353000,
@@ -9578,8 +9578,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 9
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 354000,
@@ -9605,8 +9605,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 7
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 355000,
@@ -9633,7 +9633,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 7
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 356000,
@@ -9659,8 +9659,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 6
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 357000,
@@ -9686,8 +9686,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 22
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 358000,
@@ -9714,7 +9714,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 359000,
@@ -9740,8 +9740,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 2,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 360000,
@@ -9767,8 +9767,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 361000,
@@ -9794,8 +9794,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 362000,
@@ -9821,8 +9821,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 21
+				"matches": 2,
+				"total": 12
 			},
 			"class": "1-speech",
 			"tStart": 363000,
@@ -9849,7 +9849,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 364000,
@@ -9875,8 +9875,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 10
+				"matches": 1,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 365000,
@@ -9902,8 +9902,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 366000,
@@ -9929,8 +9929,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 367000,
@@ -9956,8 +9956,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 12
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 368000,
@@ -9983,8 +9983,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 22
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 369000,
@@ -10010,8 +10010,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 370000,
@@ -10037,8 +10037,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 17
+				"matches": 1,
+				"total": 9
 			},
 			"class": "1-speech",
 			"tStart": 371000,
@@ -10064,8 +10064,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 372000,
@@ -10091,8 +10091,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 17
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 373000,
@@ -10118,8 +10118,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 5
+				"matches": 2,
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 374000,
@@ -10145,8 +10145,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 17
+				"matches": 2,
+				"total": 15
 			},
 			"class": "1-speech",
 			"tStart": 375000,
@@ -10172,8 +10172,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 19
+				"matches": 1,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 376000,
@@ -10199,8 +10199,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 377000,
@@ -10226,8 +10226,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 21
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 378000,
@@ -10254,7 +10254,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 379000,
@@ -10280,8 +10280,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 33
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 380000,
@@ -10307,8 +10307,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 75
+				"matches": 4,
+				"total": 40
 			},
 			"class": "1-speech",
 			"tStart": 381000,
@@ -10335,7 +10335,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 12
 			},
 			"class": "1-speech",
 			"tStart": 382000,
@@ -10361,8 +10361,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 10
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 383000,
@@ -10389,7 +10389,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 384000,
@@ -10415,8 +10415,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 18
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 385000,
@@ -10442,8 +10442,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 19
+				"matches": 2,
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 386000,
@@ -10470,7 +10470,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 387000,
@@ -10497,7 +10497,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 388000,
@@ -10523,8 +10523,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 43
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 389000,
@@ -10578,7 +10578,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 5,
-				"total": 41
+				"total": 36
 			},
 			"class": "1-speech",
 			"tStart": 391000,
@@ -10604,8 +10604,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 12
+				"matches": 2,
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 392000,
@@ -10658,8 +10658,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 4
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 394000,
@@ -10685,8 +10685,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 36
+				"matches": 2,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 395000,
@@ -10712,8 +10712,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 8
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 396000,
@@ -10740,7 +10740,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 21
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 397000,
@@ -10766,8 +10766,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 5
+				"matches": 2,
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 398000,
@@ -10793,8 +10793,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 30
+				"matches": 2,
+				"total": 19
 			},
 			"class": "1-speech",
 			"tStart": 399000,
@@ -10821,7 +10821,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 9
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 400000,
@@ -10848,7 +10848,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 401000,
@@ -10875,7 +10875,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 3,
-				"total": 52
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 402000,
@@ -10901,8 +10901,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 403000,
@@ -10928,8 +10928,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 5,
-				"total": 84
+				"matches": 3,
+				"total": 29
 			},
 			"class": "1-speech",
 			"tStart": 404000,
@@ -10955,8 +10955,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 6
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 405000,
@@ -10982,8 +10982,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 16
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 406000,
@@ -11009,8 +11009,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 15
+				"matches": 1,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 407000,
@@ -11064,7 +11064,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 12
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 409000,
@@ -11090,8 +11090,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 1,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 410000,
@@ -11117,8 +11117,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 10
+				"matches": 2,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 411000,
@@ -11144,8 +11144,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 3
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 412000,
@@ -11171,8 +11171,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 5
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 413000,
@@ -11226,7 +11226,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 19
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 415000,
@@ -11252,8 +11252,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 416000,
@@ -11279,8 +11279,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 417000,
@@ -11306,8 +11306,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 20
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 418000,
@@ -11334,7 +11334,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 419000,
@@ -11388,7 +11388,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 3
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 421000,
@@ -11414,8 +11414,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 422000,
@@ -11441,8 +11441,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 19
+				"matches": 1,
+				"total": 7
 			},
 			"class": "1-speech",
 			"tStart": 423000,
@@ -11469,7 +11469,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 424000,
@@ -11496,7 +11496,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 11
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 425000,
@@ -11522,8 +11522,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 24
+				"matches": 2,
+				"total": 13
 			},
 			"class": "1-speech",
 			"tStart": 426000,
@@ -11549,8 +11549,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 427000,
@@ -11576,8 +11576,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 7
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 428000,
@@ -11604,7 +11604,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 429000,
@@ -11657,8 +11657,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 31
+				"matches": 1,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 431000,
@@ -11684,8 +11684,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 13
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 432000,
@@ -11712,7 +11712,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 433000,
@@ -11739,7 +11739,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 434000,
@@ -11765,8 +11765,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 16
+				"matches": 1,
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 435000,
@@ -11792,8 +11792,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 0,
-				"total": 0
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 436000,
@@ -11820,7 +11820,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 437000,
@@ -11847,7 +11847,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 8
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 438000,
@@ -11874,7 +11874,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 439000,
@@ -11901,7 +11901,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 6
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 440000,
@@ -11927,8 +11927,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 441000,
@@ -11954,8 +11954,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 19
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 442000,
@@ -11981,8 +11981,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 16
+				"matches": 3,
+				"total": 10
 			},
 			"class": "1-speech",
 			"tStart": 443000,
@@ -12008,8 +12008,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 11
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 444000,
@@ -12035,8 +12035,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 22
+				"matches": 1,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 445000,
@@ -12063,7 +12063,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 446000,
@@ -12090,7 +12090,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 3,
-				"total": 18
+				"total": 12
 			},
 			"class": "1-speech",
 			"tStart": 447000,
@@ -12117,7 +12117,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 2
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 448000,
@@ -12143,8 +12143,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 4
+				"matches": 1,
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 449000,
@@ -12171,7 +12171,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 2,
-				"total": 7
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 450000,
@@ -12197,8 +12197,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 451000,
@@ -12251,8 +12251,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 24
+				"matches": 2,
+				"total": 5
 			},
 			"class": "1-speech",
 			"tStart": 453000,
@@ -12278,8 +12278,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 3
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 454000,
@@ -12305,8 +12305,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 9
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 455000,
@@ -12332,8 +12332,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 33
+				"matches": 1,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 456000,
@@ -12359,8 +12359,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 457000,
@@ -12386,8 +12386,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 2
+				"matches": 0,
+				"total": 0
 			},
 			"class": "1-speech",
 			"tStart": 458000,
@@ -12413,8 +12413,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 1
+				"matches": 2,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 459000,
@@ -12440,8 +12440,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 13
+				"matches": 2,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 460000,
@@ -12468,7 +12468,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 1
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 461000,
@@ -12494,8 +12494,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 5
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 462000,
@@ -12522,7 +12522,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 7
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 463000,
@@ -12548,8 +12548,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 2,
-				"total": 9
+				"matches": 1,
+				"total": 3
 			},
 			"class": "1-speech",
 			"tStart": 464000,
@@ -12575,8 +12575,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 4,
-				"total": 17
+				"matches": 1,
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 465000,
@@ -12602,8 +12602,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 1,
-				"total": 9
+				"matches": 3,
+				"total": 8
 			},
 			"class": "1-speech",
 			"tStart": 466000,
@@ -12629,8 +12629,8 @@
 			"hotlist": {
 				"class": "unsure",
 				"file": null,
-				"matches": 3,
-				"total": 30
+				"matches": 2,
+				"total": 13
 			},
 			"class": "1-speech",
 			"tStart": 467000,
@@ -12657,7 +12657,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 1
 			},
 			"class": "1-speech",
 			"tStart": 468000,
@@ -12684,7 +12684,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 13
+				"total": 4
 			},
 			"class": "1-speech",
 			"tStart": 469000,
@@ -12711,7 +12711,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 5
+				"total": 2
 			},
 			"class": "1-speech",
 			"tStart": 470000,
@@ -12738,7 +12738,7 @@
 				"class": "unsure",
 				"file": null,
 				"matches": 1,
-				"total": 4
+				"total": 6
 			},
 			"class": "1-speech",
 			"tStart": 471000,
@@ -12783,16 +12783,6 @@
 		{
 			"class": "unsure",
 			"tStart": 54000,
-			"tEnd": 58000
-		},
-		{
-			"class": "2-music",
-			"tStart": 58000,
-			"tEnd": 59000
-		},
-		{
-			"class": "unsure",
-			"tStart": 59000,
 			"tEnd": 63000
 		},
 		{
@@ -12828,16 +12818,6 @@
 		{
 			"class": "1-speech",
 			"tStart": 132000,
-			"tEnd": 159000
-		},
-		{
-			"class": "2-music",
-			"tStart": 159000,
-			"tEnd": 160000
-		},
-		{
-			"class": "1-speech",
-			"tStart": 160000,
 			"tEnd": 216000
 		},
 		{
@@ -12858,16 +12838,6 @@
 		{
 			"class": "1-speech",
 			"tStart": 253000,
-			"tEnd": 262000
-		},
-		{
-			"class": "2-music",
-			"tStart": 262000,
-			"tEnd": 263000
-		},
-		{
-			"class": "1-speech",
-			"tStart": 263000,
 			"tEnd": 310000
 		},
 		{
@@ -12915,16 +12885,6 @@
 		{
 			"class": "1-speech",
 			"tStart": 132000,
-			"tEnd": 159000
-		},
-		{
-			"class": "unsure",
-			"tStart": 159000,
-			"tEnd": 160000
-		},
-		{
-			"class": "1-speech",
-			"tStart": 160000,
 			"tEnd": 216000
 		},
 		{
@@ -12945,16 +12905,6 @@
 		{
 			"class": "1-speech",
 			"tStart": 253000,
-			"tEnd": 262000
-		},
-		{
-			"class": "unsure",
-			"tStart": 262000,
-			"tEnd": 263000
-		},
-		{
-			"class": "1-speech",
-			"tStart": 263000,
 			"tEnd": 310000
 		},
 		{
