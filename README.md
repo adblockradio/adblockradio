@@ -1,6 +1,8 @@
 # Adblock Radio
 An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
+![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
+
 ## Outline
 This module determines if the content of live radio streams or podcasts is advertisement, talk or music. Unlike previous implementations by other authors, [relying on metadata](https://github.com/quasoft/adblockradio) or [on precise jingles](https://blog.rekawek.eu/2016/02/24/radio-adblock/), this solution can be applied to all webradios streams. Being the engine of [Adblock Radio](https://www.adblockradio.com), it has been tested with real-world data from 60+ radios from 7 countries.
 
