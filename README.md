@@ -4,7 +4,22 @@ An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
+## Overview
 A technical discussion is available [here](TODO).
+
+Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`. 
+
+In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
+
+Chunks of about one second of PCM audio are piped into two sub-modules:
+- a time-frequency analyser (`predictor-ml/ml.js`), that analyses spectral content with a neural network.
+- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles. 
+
+In `post-processing.js`, results are gathered for each audio segment and cleaned.
+
+A Readable interface, `Analyser`, is exposed to the end user. It streams objects containing the audio itself and all analysis results.
+
+On a regular laptop CPU, computations run at 5-10X for files and at 10-20% usage for live stream.
 
 ## Getting started
 
