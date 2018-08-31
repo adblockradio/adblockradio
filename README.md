@@ -7,13 +7,13 @@ Engine of [AdblockRadio.com](https://www.adblockradio.com).
 ## Overview
 A technical discussion is available [here](TODO).
 
-Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`. 
+Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`.
 
 In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
 
 Chunks of about one second of PCM audio are piped into two sub-modules:
 - a time-frequency analyser (`predictor-ml/ml.js`), that analyses spectral content with a neural network.
-- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles. 
+- a fingerprint matcher (`predictor-db/hotlist.js`), that searches for exact occurrences of known ads, musics or jingles.
 
 In `post-processing.js`, results are gathered for each audio segment and cleaned.
 
@@ -220,7 +220,7 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
 
 - `tBuffer*`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
-  
+
 - `predictorStartTime*`: timestamp of the algorithm startup. Useful to get the uptime.
 
 - `playTime*`: approximate timestamp of when the given audio is to be played. TODO check this.
@@ -317,8 +317,6 @@ Names of radios match those in [radio-browser.info](http://www.radio-browser.inf
 Integrations of this module are welcome. Suggestions are available [here](TODO).
 
 ## License
-AGPL-3.0 (see LICENSE file)
+See LICENSE file
 
 Your contribution to this project is welcome, but might be subject to a contributor's license agreement.
-
-The license of this code release might not be convenient for integrators. The authors willing to use Adblock Radio with another license are invited to contact the author Alexandre Storelli at a_npm [at] storelli.fr.

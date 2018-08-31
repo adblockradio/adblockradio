@@ -1,3 +1,9 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+// Copyright (c) 2018 Alexandre Storelli
+
 "use strict";
 const { log } = require("abr-log")("post-processing");
 const Predictor = require("./predictor.js");
@@ -29,6 +35,7 @@ class PostProcessor extends Transform {
 		this.streamInfo = null;
 		this.startTime = +new Date();
 		this.config = config;
+		//log.debug("fileMode=" + this.config.fileMode);
 	}
 
 	_write(obj, enc, next) {
@@ -212,6 +219,7 @@ class PostProcessor extends Transform {
 				tEnd: this.cache[i].tEnd,
 			});
 		} else {
+			//log.debug("streamInfo=" + JSON.stringify(this.streamInfo, null, "\t"));
 			Object.assign(out, { // results specific to stream analysis mode
 				audio: this.cache[i].audio,
 				predictorStartTime: this.startTime,
@@ -221,6 +229,8 @@ class PostProcessor extends Transform {
 				tBuffer: +this.cache[i].tBuf.toFixed(2),
 			});
 		}
+
+		//log.debug(JSON.stringify(Object.assign(out, { audio: undefined }), null, "\t"));
 
 		this.push(out);
 	}

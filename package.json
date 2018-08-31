@@ -13,7 +13,7 @@
     "broadcast"
   ],
   "author": "Alexandre Storelli <a_npm@storelli.fr>",
-  "license": "AGPL-3.0",
+  "license": "MPL-2.0",
   "dependencies": {
     "abr-log": "^1.0.2",
     "async": "^2.6.1",
