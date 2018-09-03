@@ -19,7 +19,7 @@
     "async": "^2.6.1",
     "sqlite3": "^3.1.13",
     "stream-audio-fingerprint": "^1.0.3",
-    "stream-tireless-baler": "^1.0.5",
+    "stream-tireless-baler": "^1.0.6",
     "webradio-metadata": "^0.1.26"
   }
 }

@@ -110,7 +110,7 @@ class Predictor {
 	_onData(dataObj) {
 		if (!this.dbs) return log.error("no dbs!!");
 
-		const tBuffer = dataObj.tBuffer;
+		//const tBuffer = dataObj.tBuffer;
 		//log.debug("received " + dataObj.data.length + " bytes. newSegment=" + dataObj.newSegment);
 		// dataObj.newSegment is true when the chunk of data we receive belongs to a new audio segment.
 		// it happens once every [predInterval] seconds.
@@ -153,7 +153,7 @@ class Predictor {
 			//log.debug("new segment. predcounter=" + self.predCounter + "/" + self.config.saveDuration);
 
 			const finish = function() {
-				//log.debug("dl+decoder resume");
+				//log.debug("finish: dl+decoder resume");
 				self.decoder.stdout.resume();
 				self.dl.resume();
 				out();

@@ -134,14 +134,14 @@ class PostProcessor extends Transform {
 		if (this.ended) return log.warn('abort _postProcessing event because stream is ended.');
 
 		const i = this.cache.map(e => e.ts).indexOf(tsRef);
-		if (i < 0) return log.warn("_postProcessing: cache item not found");
+		if (i < 0) return log.warn("_postProcessing: cache item not found for tsRef=" + tsRef);
 
 		const availableSlotsFuture = Math.min(i, 4); // consts.MOV_AVG_WEIGHTS supports up to 4 slots in the future.
 		const availableSlotsPast = Math.min(this.cache.length - 1 - i, consts.MOV_AVG_WEIGHTS[0].weights.length - availableSlotsFuture - 1); // verification: first slot ever (i=0, cache.len=1) leads to zero past slots.
 
-        /*if (availableSlotsFuture + availableSlotsPast < 10) {
-            return log.warn("_postProcessing: i=" + i + " n=" + this.cache[i].n + " not enough cache. future=" + availableSlotsFuture + " past=" + availableSlotsPast);
-        }*/
+		/*if (availableSlotsFuture + availableSlotsPast < 10) {
+			return log.warn("_postProcessing: i=" + i + " n=" + this.cache[i].n + " not enough cache. future=" + availableSlotsFuture + " past=" + availableSlotsPast);
+		}*/
 
 		// smoothing over time of ML predictions.
 		let mlOutput = null;
@@ -290,6 +290,7 @@ class Analyser extends Readable {
 
 		this.postProcessor.on("end", function() {
 			log.info("postProcessor ended");
+			if (!self.data) return self.push(null);
 			self.mergeClassBlocks(self.data, function(blocksCleaned) {
 				self.push({ blocksCleaned: blocksCleaned });
 				self.push(null);
