@@ -253,10 +253,30 @@ class Predictor {
 
 	stop() {
 		log.info("close predictor");
+
+		if (this.mlPredictor) {
+			log.debug("unpipe decoder stdout and mlPredictor");
+			this.decoder.stdout.unpipe(this.mlPredictor);
+		}
+
+		log.debug("will stop dl");
 		this.dl.stopDl();
+
+		log.debug("will stop decoder");
 		this.decoder.kill();
-		if (this.hotlist) this.hotlist.destroy();
-		if (this.mlPredictor) this.mlPredictor.destroy();
+
+		if (this.hotlist) {
+			log.debug("will close hotlist");
+			this.hotlist.end();
+		} else {
+			log.debug("no hotlist to close");
+		}
+		if (this.mlPredictor) {
+			log.debug("will close ML predictor");
+			this.mlPredictor.end();
+		} else {
+			log.debug("no ML predictor to close");
+		}
 	}
 
 }
