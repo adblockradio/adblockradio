@@ -20,6 +20,6 @@
     "sqlite3": "^4.0.2",
     "stream-audio-fingerprint": "^1.0.3",
     "stream-tireless-baler": "^1.0.6",
-    "webradio-metadata": "^0.1.26"
+    "webradio-metadata": "^0.1.27"
   }
 }
