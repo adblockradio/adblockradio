@@ -26,7 +26,7 @@ On a regular laptop CPU, computations run at 5-10X for files and at 10-20% usage
 ### Installation
 
 As prerequisites, you need:
-- Node.js and NPM. This project has been tested with node v9.9.0 and NPM 5.6.0. If you need to manage several node versions on your platform, you might want to use [NVM](https://github.com/creationix/nvm).
+- Node.js and NPM. This project has been tested with node 8.* and 10.* (NPM 5.6.0 and 6.2.0 respectively). If you need to manage several node versions on your platform, you might want to use [NVM](https://github.com/creationix/nvm).
 - Python (tested with v2.7.9).
 - Keras (tested with v2.0.8). Keras installation instructions are available [here](https://keras.io/#installation).
 - Tensorflow (tested with `tensorflow` v1.4.0 and `tensorflow-gpu` v1.3.0). Installation instructions are [here](https://www.tensorflow.org/install/).
@@ -47,10 +47,16 @@ The time-frequency analyser needs a compatible machine-learning model (`*.keras`
 Grab demo files for French station RTL with the following commands: (TODO)
 ```bash
 cd model/
-wget https://www.adblockradio.com/models/France_RTL.keras
-wget https://www.adblockradio.com/models/France_RTL.sqlite
+wget https://www.adblockradio.com/models/France_RTL.keras.tar.gz
+tar -zxvf France_RTL.keras.tar.gz
+rm France_RTL.keras.tar.gz
+wget https://www.adblockradio.com/models/France_RTL.sqlite.tar.gz
+tar -zxvf France_RTL.sqlite.tar.gz
+rm France_RTL.sqlite.tar.gz
 cd ..
 ```
+
+Note that you can check for updates of those model files by first downloading checksum files (`*.tar.gz.sha256sum`) and comparing its contents with a local copy.
 
 #### Live stream analysis
 Run the demo on French RTL live radio stream:
