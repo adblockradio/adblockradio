@@ -25,5 +25,6 @@ const abr = new Analyser({
 });
 
 abr.on("data", function(obj) {
+	obj.liveResult.audio = "[redacted]";
 	log.info("status=" + JSON.stringify(Object.assign(obj, { audio: undefined }), null, "\t"));
 });
