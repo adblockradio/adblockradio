@@ -173,6 +173,8 @@ Property|Description|Default
 `name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `file`|File to analyse (optional, analyse the live stream otherwise)|None
 
+Keep in mind that you need to download models as shown in the demo section above.
+
 ### Optional configuration
 Properties marked with a `*` are meant to be used only with live radio stream analysis, not file analysis where they are ignored.
 
