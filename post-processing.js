@@ -266,7 +266,7 @@ class Analyser extends Readable {
 		const self = this;
 		this.postProcessor.on("data", function(obj) {
 			if (!self.config.file && !obj.audio) {
-				log.warn("empty audio! " + JSON.stringify(obj, null, "\t"));
+				log.warn("empty audio! " + JSON.stringify(obj));
 			}
 
 			const metadataPath = obj.metadataPath;

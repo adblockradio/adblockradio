@@ -64,7 +64,7 @@ class Predictor {
 		// optional custom config
 		Object.assign(this.config, options.config);
 
-		log.info("run predictor with config=" + JSON.stringify(this.config, null, "\t"));
+		log.info("run predictor with config=" + JSON.stringify(this.config));
 
 		this._onData = this._onData.bind(this);
 		this._newAudioSegment = this._newAudioSegment.bind(this);
@@ -90,7 +90,7 @@ class Predictor {
 		this.refreshPredictorMl();
 
 		this.dl.on("metadata", function(metadata) { // this happens once at the beginning of stream download
-			log.info(self.country + "_" + self.name + " metadata=" + JSON.stringify(metadata, null, "\t"));
+			log.info(self.country + "_" + self.name + " metadata=" + JSON.stringify(metadata));
 
 			self.listener.write({ type: "dlinfo", data: metadata });
 

@@ -89,7 +89,7 @@ class PredictorFile {
 		// optional custom config
 		Object.assign(this.config, options.config);
 
-		log.info("run predictor on file " + this.file + " with config=" + JSON.stringify(this.config, null, "\t"));
+		log.info("run predictor on file " + this.file + " with config=" + JSON.stringify(this.config));
 
 		this._onData = this._onData.bind(this);
 
