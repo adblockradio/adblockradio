@@ -80,7 +80,7 @@ class MlPredictor extends Transform {
 			let outData = {
 				type: results.type,
 				confidence: results.confidence,
-				softmaxs: results.softmax,
+				softmaxraw: results.softmax.concat([0]), // the last class is about jingles. ML does not detect them.
 				//date: new Date(stream.lastData.getTime() + Math.round(stream.tBuffer*1000)),
 				gain: results.rms,
 				lenPcm: results.lenpcm
