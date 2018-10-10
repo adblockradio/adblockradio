@@ -172,11 +172,14 @@ class Hotlist extends Transform {
 			// confidence factors
 			const ratioFingersReference = largestCount / fingersCountRef; // how many of the fingerprints in the reference track have we detected here?
 			const ratioFingersMeasurements = largestCount / tcodes.length; // how many of the fingerprints in the measurements have contributed to the detection?
-			const matchingFocus = std ? durationRef / std : 1; // are fingerprints detections focused in time in the reference track? (<<1 = yes; ~1 = no)
+			const matchingFocus = std ? durationRef / std : 0; // are fingerprints detections focused in time in the reference track? (<<1 = yes; ~1 = no)
 
-			const activationFun = (x) => (1 - Math.exp(-x)); // f(x) ~ x near zero, then converges to 1.
-			const confidence1 = activationFun(ratioFingersReference * ratioFingersMeasurements);
-			const confidence2 = activationFun(ratioFingersReference * ratioFingersMeasurements * matchingFocus);
+			const targetConfidence1 = 0.01; // empirical threshold above which detections have been found to be reliable
+			const targetConfidence2 = 0.02; // empirical threshold above which detections have been found to be reliable
+
+			const activationFun = (x) => (1 - Math.exp(-x)); // f(x) ~ x near zero, then converges to 1. actFun(1) = 1 - e^-1 ~ 0.63
+			const confidence1 = activationFun(ratioFingersReference * ratioFingersMeasurements / targetConfidence1);
+			const confidence2 = activationFun(ratioFingersReference * ratioFingersMeasurements * matchingFocus / targetConfidence2);
 
 			// softmax vector, similar to that of ML module.
 			let softmax = new Array(4);

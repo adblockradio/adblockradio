@@ -21,7 +21,9 @@ const consts = {
 		{ "weights": [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.45, 0.70, 0.80, 1.00], "sum": 4.30 }, // r=2
 		{ "weights": [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00], "sum": 5.50 }, // r=3
 		{ "weights": [0.25, 0.35, 0.50, 0.70, 0.90, 1.00, 1.00, 0.80, 0.70, 0.20], "sum": 6.20 }  // r=4
-	]
+	],
+	ML_CONFIDENCE_THRESHOLD: 0.65,
+	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
 }
 
 class PostProcessor extends Transform {
@@ -136,11 +138,19 @@ class PostProcessor extends Transform {
 		next();
 	}
 
+	// average the softmax vectors over time, to smooth the results.
+	// the average uses a window function in consts.MOV_AVG_WEIGHTS
+	//
+	// parameters: i: index in this.cache[] being analyzed
+	//             prop: either 'ml' or 'hotlist', the softmax to consider
+	//             availableSlotsPast: number of time slots to look at in the past
+	//             availableSlotsFuture: number of time slots to look at in the future
 	_movAvg(i, prop, availableSlotsPast, availableSlotsFuture) {
 		let movAvg = new Array(4);
 		let iMaxMovAvg = 0;
 		let maxMovAvg = 0;
-
+		let localMax = 0;
+		let iLocalMax = 0;
 
 		for (let ic = 0; ic < movAvg.length; ic++) {
 			movAvg[ic] = 0;
@@ -152,33 +162,46 @@ class PostProcessor extends Transform {
 				}*/
 				if (this.cache[i + availableSlotsPast - j][prop] && this.cache[i + availableSlotsPast - j][prop].softmaxraw) {
 					if (ic == 0 && isNaN(this.cache[i + availableSlotsPast - j][prop].softmaxraw[ic])) {
-						log.warn("this.cache[i + availableSlotsPast - j]." + prop + ".softmaxraw[ic] is NaN." +
+						log.warn(this.config.country + "_" + this.config.name + " _movAvg this.cache[i + availableSlotsPast - j]." + prop + ".softmaxraw[ic] is NaN." +
 							" i=" + i + " availableSlotsPast=" + availableSlotsPast + " j=" + j + " ic=" + ic);
 					}
 					if (ic == 0 && isNaN(consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j])) {
-						log.warn("consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j] is NaN." +
+						log.warn(this.config.country + "_" + this.config.name + " _movAvg consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j] is NaN." +
 							" availableSlotsFuture=" + availableSlotsFuture + " j=" + j);
 					}
 					movAvg[ic] += this.cache[i + availableSlotsPast - j][prop].softmaxraw[ic] * consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
 					sum += consts.MOV_AVG_WEIGHTS[availableSlotsFuture].weights[j];
 				}
 			}
-			if (!sum) log.warn("_movAvg: sum is zero. i=" + i + " prop=" + prop + " ic=" + ic + " past=" + availableSlotsPast + " future=" + availableSlotsFuture);
+			if (!sum) log.warn(this.config.country + "_" + this.config.name + " _movAvg: sum is zero. i=" + i + " prop=" + prop + " ic=" + ic + " past=" + availableSlotsPast + " future=" + availableSlotsFuture);
 			movAvg[ic] = sum ? (movAvg[ic] / sum) : null;
 			if (movAvg[ic] && movAvg[ic] > maxMovAvg) {
 				maxMovAvg = movAvg[ic];
 				iMaxMovAvg = ic;
 			}
+
+			if (this.cache[i][prop] && this.cache[i][prop].softmaxraw && this.cache[i][prop].softmaxraw[ic] > localMax) {
+				localMax = this.cache[i][prop].softmaxraw[ic];
+				iLocalMax = ic;
+			}
 		}
 		//log.debug("movAvg=" + JSON.stringify(movAvg));
-		return { movAvg: movAvg, maxMovAvg: maxMovAvg, iMaxMovAvg: iMaxMovAvg };
+		return {
+			movAvg: movAvg, // average softmax
+
+			maxMovAvg: maxMovAvg, // max value of the average softmax
+			iMaxMovAvg: iMaxMovAvg, // index of that max value
+
+			localMax: localMax, // max value of the softmax at the time considered
+			iLocalMax: iLocalMax, // index of that max value
+		};
 	}
 
 	_postProcessing(tsRef) {
-		if (this.ended) return log.warn('abort _postProcessing event because stream is ended.');
+		if (this.ended) return log.warn(this.config.country + "_" + this.config.name + ' abort _postProcessing event because stream is ended.');
 
 		const i = this.cache.map(e => e.ts).indexOf(tsRef);
-		if (i < 0) return log.warn("_postProcessing: cache item not found for tsRef=" + tsRef);
+		if (i < 0) return log.warn(this.config.country + "_" + this.config.name + " _postProcessing: cache item not found for tsRef=" + tsRef);
 
 		const availableSlotsFuture = Math.min(i, 4); // consts.MOV_AVG_WEIGHTS supports up to 4 slots in the future.
 		const availableSlotsPast = Math.min(this.cache.length - 1 - i, consts.MOV_AVG_WEIGHTS[0].weights.length - availableSlotsFuture - 1); // verification: first slot ever (i=0, cache.len=1) leads to zero past slots.
@@ -190,7 +213,7 @@ class PostProcessor extends Transform {
 
 			// pruning of unsure ML predictions
 			// confidence = 1.0-math.exp(1-mp[2]/mp[1])
-			const mlConfident = maxMovAvg > 0.65;
+			const mlConfident = maxMovAvg > consts.ML_CONFIDENCE_THRESHOLD;
 			//log.debug("out: movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg.map(e => +e.toFixed(3)) + " confident=" + mlConfident);
 			mlOutput = {
 				class: mlConfident ? consts.WLARRAY[iMaxMovAvg] : consts.UNSURE,
@@ -204,13 +227,18 @@ class PostProcessor extends Transform {
 		// smoothing over time of hotlist detections
 		let hotlistOutput = null;
 		if (this.cache[i].hotlist) {
-			const { movAvg, maxMovAvg, iMaxMovAvg } = this._movAvg(i, "hotlist", availableSlotsPast, availableSlotsFuture);
-			const hlConfident = maxMovAvg > 0.65;
+			const { movAvg, maxMovAvg, iMaxMovAvg, localMax, iLocalMax } = this._movAvg(i, "hotlist", availableSlotsPast, availableSlotsFuture);
 			hotlistOutput = Object.assign({}, this.cache[i].hotlist);
 			hotlistOutput.softmaxraw = hotlistOutput.softmaxraw.map(e => +e.toFixed(3));
-			hotlistOutput.softmax = movAvg.map(e => +e.toFixed(3)),
+			hotlistOutput.softmax = movAvg.map(e => +e.toFixed(3));
+
+			const hlConfident = maxMovAvg > consts.HOTLIST_CONFIDENCE_THRESHOLD;
 			hotlistOutput.class = hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : consts.UNSURE;
-			hotlistOutput.file = hlConfident ? hotlistOutput.file : null;
+
+			// only give the file when it is a local detection. otherwise, could give wrong info
+			// if just after a detection, nothing locally detected but movAvg still above threshold.
+			const localHlConfident = localMax > consts.HOTLIST_CONFIDENCE_THRESHOLD;
+			hotlistOutput.file = localHlConfident ? hotlistOutput.file : null;
 		}
 
 		// synthesis of predictions. Average the softmax vectors.
@@ -223,7 +251,7 @@ class PostProcessor extends Transform {
 				count += 1;
 			}
 			if (hotlistOutput) {
-				finalSoftmax[i] +=hotlistOutput.softmax[i];
+				finalSoftmax[i] += hotlistOutput.softmax[i];
 				count += 1;
 			}
 			if (count) finalSoftmax[i] /= count;
@@ -290,6 +318,8 @@ class Analyser extends Readable {
 		Object.assign(this.config, options.config);
 
 		this.postProcessor = new PostProcessor({
+			country: this.country,
+			name: this.name,
 			verbose: this.config.verbose,
 			fileMode: !!this.config.file,
 		});
@@ -397,6 +427,9 @@ class Analyser extends Readable {
 		});
 	}
 
+	// used in the context of file analysis
+	// merge contiguous data with identical class
+	// to present a more compact result.
 	mergeClassBlocks(data, callback) {
 		//const self = this;
 		const path = this.config.file + ".json";
