@@ -6,12 +6,29 @@
 
 const { log } = require("abr-log")("demo");
 const { Analyser } = require("./post-processing.js");
+const cp = require("child_process");
+const fs = require("fs");
+
+const country = "France";
+const name = "RTL";
+
+log.info("download model...");
+
+cp.execSync("wget https://www.adblockradio.com/models/" + country + "_" + name + ".keras.tar.gz");
+cp.execSync("tar -zxvf " + country + "_" + name + ".keras.tar.gz");
+cp.execSync("mv " + country + "_" + name + ".keras model/.");
+cp.execSync("rm " + country + "_" + name + ".keras.tar.gz");
+
+cp.execSync("wget https://www.adblockradio.com/models/" + country + "_" + name + ".sqlite.tar.gz");
+cp.execSync("tar -zxvf " + country + "_" + name + ".sqlite.tar.gz");
+cp.execSync("mv " + country + "_" + name + ".sqlite model/.");
+cp.execSync("rm " + country + "_" + name + ".sqlite.tar.gz");
 
 log.info("start analyser!");
 
 const abr = new Analyser({
-	country: "France",
-	name: "RTL",
+	country: country,
+	name: name,
 	config: {
 		predInterval: 1,
 		saveDuration: 10,
