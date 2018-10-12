@@ -9,7 +9,7 @@ const { log } = require("abr-log")("predictor");
 const Hotlist = require("./predictor-db/hotlist.js");
 const MlPredictor = require("./predictor-ml/ml.js");
 const { StreamDl } = require("stream-tireless-baler");
-const { getMeta } = require("webradio-metadata");
+const { getMeta, isAvailable } = require("webradio-metadata");
 const async = require("async");
 const cp = require("child_process");
 const fs = require("fs");
@@ -63,6 +63,16 @@ class Predictor {
 
 		// optional custom config
 		Object.assign(this.config, options.config);
+
+		// check that the metadata fetch module has a parser for this stream
+		if (this.config.fetchMetadata) {
+			if (isAvailable(this.country, this.name)) {
+				log.info("metadata is available for this stream");
+			} else {
+				log.warn("metadata is not available for this stream. will not fetch it.");
+				this.config.fetchMetadata = false;
+			}
+		}
 
 		log.info("run predictor with config=" + JSON.stringify(this.config));
 

@@ -27,9 +27,9 @@ const consts = {
 class Hotlist extends Transform {
 	constructor(options) {
 		super({ objectMode: true });
-		const country = options.country;
-		const name = options.name;
-		const path = options.fileDB || "predictor-db/hotlist" + '/' + country + "_" + name + ".sqlite";
+		this.country = options.country;
+		this.name = options.name;
+		const path = options.fileDB || "predictor-db/hotlist" + '/' + this.country + "_" + this.name + ".sqlite";
 
 		this.fingerprinter = new Codegen();
 		this.fingerbuffer = { tcodes: [], hcodes: [] };
@@ -50,14 +50,14 @@ class Hotlist extends Transform {
 				log.warn(path + " not found, hotlist module disabled");
 				self.db = null;
 			} else if (err) {
-				log.error("unknown error: " + err);
+				log.error(self.country + "_" + self.name + " unknown error: " + err);
 				self.db = null;
 			} else {
 				log.info("db found");
 				self.db.all('SELECT file, fingersCount, length FROM tracks;', function(err, trackList) {
 					if (err) log.warn("could not get tracklist from hotlist " + path + ". err=" + err);
 					self.trackList = trackList;
-					log.info('Hotlist ready');
+					log.info(self.country + "_" + self.name + ': Hotlist ready');
 					self.ready = true;
 				});
 			}
@@ -80,7 +80,7 @@ class Hotlist extends Transform {
 		if (!tcodes.length) {
 			this.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
 			if (callback) callback();
-			return log.warn("onFingers: no fingerprints to search");
+			return log.warn("onFingers: " + this.country + "_" + this.name + " no fingerprints to search");
 		}
 
 		// create a single query for all fingerprints.
@@ -99,7 +99,7 @@ class Hotlist extends Transform {
 			"INNER JOIN tracks ON tracks.id = track_id " +
 			"WHERE finger IN " + inStr + ";", fingerVector, function(err, res) {
 
-			if (err) return log.error("onFingers: query error=" + err);
+			if (err) return log.error("onFingers: " + self.country + "_" + self.name + " query error=" + err);
 			if (!res || !res.length) {
 				//log.warn("onFingers: no results for a query of " + tcodes.length);
 				self.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
@@ -223,9 +223,10 @@ class Hotlist extends Transform {
 	}
 
 	_final(next) {
-		log.info("closing hotlist DB");
+		log.info(self.country + "_" + self.name + " closing hotlist DB");
+		const self = this;
 		this.db.close(function(err) {
-			if (err) log.warn("could not close DB. err=" + err);
+			if (err) log.warn(self.country + "_" + self.name + " could not close DB. err=" + err);
 			next();
 		});
 	}

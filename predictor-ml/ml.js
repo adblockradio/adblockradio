@@ -21,7 +21,7 @@ class MlPredictor extends Transform {
 		this.fileModel = options.fileModel || __dirname + "/model/" + this.canonical + ".keras";
 		this.ready = false;
 		this.onReadyCallback = options.onReadyCallback;
-		var self = this;
+		const self = this;
 		this.finalCallback = null;
 		this.readyToCallFinal = false;
 		this.dataWrittenSinceLastSeg = false;
@@ -64,9 +64,9 @@ class MlPredictor extends Transform {
 			var ijson = msg.indexOf(parseTestText) + parseTestText.length;
 			if (ijson < parseTestText.length) {
 				if (msg.includes("Model not found, cannot tag audio")) {
-					log.error("Keras ML file not found. Cannot tag audio");
+					log.error(self.canonical + " Keras ML file not found. Cannot tag audio");
 				} else {
-					log.debug("mlpredict child: " + msg);
+					log.debug(self.canonical + " mlpredict child: " + msg);
 				}
 				return; // optCallback();
 			}
@@ -104,16 +104,16 @@ class MlPredictor extends Transform {
 		});
 
 		this.predictChild.stderr.on("data", function(msg) {
-			log.warn("mlpredict child stderr data: " + msg);
+			log.warn(self.canonical + " mlpredict child stderr data: " + msg);
 		});
 		this.predictChild.stdin.on("error", function(err) {
-			log.warn("mlpredict child stdin error: " + err);
+			log.warn(self.canonical + " mlpredict child stdin error: " + err);
 		});
 		this.predictChild.stdout.on("error", function(err) {
-			log.warn("mlpredict child stdout error: " + err);
+			log.warn(self.canonical + " mlpredict child stdout error: " + err);
 		});
 		this.predictChild.stderr.on("error", function(err) {
-			log.warn("mlpredict child stderr error: " + err);
+			log.warn(self.canonical + " mlpredict child stderr error: " + err);
 		});
 		this.predictChild.stdout.on("end", function() {
 			//log.debug("pc stdout end");
@@ -135,7 +135,7 @@ class MlPredictor extends Transform {
 			this.dataWrittenSinceLastSeg = false;
 			this.onDataCallback = callback;
 		} else if (callback) {
-			if (this.ready2) log.warn("stopword sent but no data written since last one");
+			if (this.ready2) log.warn(this.canonical + " stopword sent but no data written since last one");
 			callback();
 		}
 	}
