@@ -72,6 +72,7 @@ bitdepth = int(sys.argv[5])
 bitrate = sampleRate * nchannels * bitdepth / 8
 #readAmount = int(bitrate * float(sys.argv[6]))
 stopword = sys.argv[6]
+stopwordcount = int(sys.argv[7])
 
 mfccStepT = 0.02  # in seconds
 mfccWinlen = 0.05  # in seconds
@@ -110,6 +111,7 @@ else:
 		logerror("Model not found, cannot tag audio")
 		sys.exit()
 
+stopword = stopword * stopwordcount
 stopwordlen = len(stopword)
 stopwordindex = 0
 ignoreamount = 0
@@ -126,7 +128,11 @@ while True:
 			logdebug("IOError")
 			break
 
+		#tl0 = timer()
 		pos = chars.find(stopword)
+		#tl1 = timer()
+		#logdebug("spent {} to search for stopword".format(str(tl1-tl0)))
+
 		if pos >= 0:
 			logdebug("stop word detected at pos " + str(pos))
 			data += chars[0:pos]

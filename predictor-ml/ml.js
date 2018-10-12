@@ -11,7 +11,8 @@ const { log } = require("abr-log")("pred-ml");
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"],
-	STOP_WORD: "foobar1234"
+	STOP_WORD: "foobar1234",
+	STOP_WORDS_COUNT: 1000 // have a 10*1000 = 10kbyte stop word is a good compromise between reactivity and respect on the CPU usage
 }
 
 class MlPredictor extends Transform {
@@ -37,7 +38,8 @@ class MlPredictor extends Transform {
 			22050,				// hardcoded: sample rate
 			1,					// hardcoded: number of channels
 			16,					// hardcoded: bits per sample
-			consts.STOP_WORD	// stop word, to tell the subprocess to generate a prediction
+			consts.STOP_WORD,	// stop word, to tell the subprocess to generate a prediction
+			consts.STOP_WORDS_COUNT
 		], { stdio: ['pipe', 'pipe', 'pipe'] });
 
 		const onData = function(msg) {
@@ -124,8 +126,8 @@ class MlPredictor extends Transform {
 	}
 
 	_sendStopWord() {
-		this.predictChild.stdin.write(consts.STOP_WORD);
-		this.predictChild.stdin.write(Buffer.alloc(consts.STOP_WORD.length*10, ' '));
+		this.predictChild.stdin.write(consts.STOP_WORD.repeat(consts.STOP_WORDS_COUNT));
+		this.predictChild.stdin.write(Buffer.alloc(consts.STOP_WORD.length*consts.STOP_WORDS_COUNT*10, ' '));
 	}
 
 	sendStopWord(callback) {
