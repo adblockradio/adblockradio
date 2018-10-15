@@ -78,7 +78,8 @@ class MlPredictor(object):
 	def load(self, fileModel):
 		if os.path.isfile(fileModel):
 			logger.debug("load model from file %s", fileModel)
-			self.model = load_model(fileModel)
+			# utf8 encoding prevents an error in Keras: TypeError: Required Group, str or dict. Received: <type 'unicode'>.
+			self.model = load_model(fileModel.encode('utf8'))
 			logger.info("model loaded")
 			return True
 		else:
@@ -89,7 +90,7 @@ class MlPredictor(object):
 
 			if os.path.isfile(defaultFileModel):
 				logger.info("load default model from file.")
-				self.model = load_model(defaultFileModel)
+				self.model = load_model(defaultFileModel.encode('utf8'))
 				logger.info("model loaded")
 				return True
 			else:
