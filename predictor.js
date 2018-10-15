@@ -148,7 +148,7 @@ class Predictor {
 		async.parallel([
 
 			function(cb) {
-				return self.config.enablePredictorMl && self.mlPredictor.ready ? self.mlPredictor.sendStopWord(cb) : setImmediate(cb);
+				return self.config.enablePredictorMl && self.mlPredictor.ready ? self.mlPredictor.predict(cb) : setImmediate(cb);
 			},
 			function(cb) {
 				return self.config.enablePredictorHotlist ? self.hotlist.onFingers(cb) : setImmediate(cb);

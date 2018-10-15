@@ -124,7 +124,7 @@ class PredictorFile {
 			function(cb) {
 				if (!self.config.enablePredictorMl) return setImmediate(cb);
 				self.mlPredictor.write(dataObj.data);
-				self.mlPredictor.sendStopWord(cb);
+				self.mlPredictor.predict(cb);
 			},
 			function(cb) {
 				if (!self.config.enablePredictorHotlist) return setImmediate(cb);

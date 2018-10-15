@@ -8,12 +8,7 @@
 const { Transform } = require("stream");
 const cp = require("child_process");
 const { log } = require("abr-log")("pred-ml");
-
-const consts = {
-	WLARRAY: ["0-ads", "1-speech", "2-music", "9-unsure", "todo"],
-	STOP_WORD: "foobar1234",
-	STOP_WORDS_COUNT: 1000 // have a 10*1000 = 10kbyte stop word is a good compromise between reactivity and respect on the CPU usage
-}
+const zerorpc = require("zerorpc");
 
 class MlPredictor extends Transform {
 	constructor(options) {
@@ -34,49 +29,85 @@ class MlPredictor extends Transform {
 			'-u',
 			__dirname + '/mlpredict.py',
 			this.canonical,
-			this.fileModel,
-			22050,				// hardcoded: sample rate
-			1,					// hardcoded: number of channels
-			16,					// hardcoded: bits per sample
-			consts.STOP_WORD,	// stop word, to tell the subprocess to generate a prediction
-			consts.STOP_WORDS_COUNT
 		], { stdio: ['pipe', 'pipe', 'pipe'] });
 
-		const onData = function(msg) {
+		this.client = new zerorpc.Client();
+		this.client.connect("ipc:///tmp/" + this.canonical);
 
-			const optCallback = function() {
-				if (self.onDataCallback) {
-					self.onDataCallback();
-					self.onDataCallback = null;
-				}
+		this.client.on("error", function(error) {
+			log.error("RPC client error:", error);
+		});
+
+		this.client.invoke("load", this.fileModel, function(error, res, more) {
+			if (error && error === "model not found") {
+				return log.error(self.canonical + " Keras ML file not found. Cannot tag audio");
+			} else if (error) {
+				return log.error(error);
 			}
 
-			if (msg.indexOf("model loaded") >= 0 && !self.ready) {
-				log.info(self.canonical + " predictor process is ready to crunch audio");
-				self.ready = true;
-				if (self.onReadyCallback) {
-					self.onReadyCallback();
-					self.onReadyCallback = null;
-				}
-				optCallback();
-				return self.uncork();
-			}
+			log.info(self.canonical + " predictor process is ready to crunch audio");
+			self.ready = true;
+			if (self.onReadyCallback) self.onReadyCallback();
+			return self.uncork();
+		});
 
-			var parseTestText = "audio predicted probs=";
-			var ijson = msg.indexOf(parseTestText) + parseTestText.length;
-			if (ijson < parseTestText.length) {
-				if (msg.includes("Model not found, cannot tag audio")) {
-					log.error(self.canonical + " Keras ML file not found. Cannot tag audio");
-				} else {
-					log.debug(self.canonical + " mlpredict child: " + msg);
-				}
-				return; // optCallback();
-			}
+		this.predictChild.stdout.on('data', function(msg) { // received messages from python worker
+			const msgS = msg.toString().split("\n");
 
+			// sometimes, several lines arrive at once. separate them.
+			for (let i=0; i<msgS.length; i++) {
+				if (msgS[i].length > 0) log.debug(msgS[i]);
+			}
+		});
+
+		this.predictChild.stderr.on("data", function(msg) {
+			if (msg.includes("Using TensorFlow backend.")) return;
+			log.error(self.canonical + " mlpredict child stderr data: " + msg);
+		});
+		this.predictChild.stdin.on("error", function(err) {
+			log.warn(self.canonical + " mlpredict child stdin error: " + err);
+		});
+		this.predictChild.stdout.on("error", function(err) {
+			log.warn(self.canonical + " mlpredict child stdout error: " + err);
+		});
+		this.predictChild.stderr.on("error", function(err) {
+			log.warn(self.canonical + " mlpredict child stderr error: " + err);
+		});
+		this.predictChild.stdout.on("end", function() {
+			//log.debug("cp stdout end");
+			self.readyToCallFinal = true;
+			if (self.finalCallback) self.finalCallback();
+		});
+	}
+
+	_write(buf, enc, next) {
+		this.dataWrittenSinceLastSeg = true;
+		this.client.invoke("write", buf, function(err, res, more) {
+			if (err) {
+				log.error("_write client returned error=" + err);
+			}
+		});
+		next();
+	}
+
+	predict(callback) {
+		const self = this;
+		if (!this.dataWrittenSinceLastSeg) {
+			log.debug("skip predict as no data is available for analysis");
+			return callback();
+		}
+		this.dataWrittenSinceLastSeg = false;
+		this.client.invoke("predict", function(err, res, more) {
+			if (err) {
+				log.error("_sendStopWord: predict() returned error=" + err);
+				return callback(err);
+			}
 			try {
-				var results = JSON.parse(msg.slice(ijson, msg.length));
+				var results = JSON.parse(res);
+				//log.debug("results=" + JSON.stringify(results))
 			} catch(e) {
-				log.warn(self.canonical + " could not parse json results: " + e + " original data=|" + msg.slice(ijson, msg.length) + "|");
+				log.error(self.canonical + " could not parse json results: " + e + " original data=|" + res + "|");
+				return callback(err);
 			}
 
 			let outData = {
@@ -89,73 +120,18 @@ class MlPredictor extends Transform {
 			}
 
 			self.push({ type:"ml", data: outData, array: true });
-
-			optCallback();
-		}
-
-		this.predictChild.stdout.on('data', function(msg) {
-			//log('Received message from Python worker:\n' + msg.toString());
-			const msgS = msg.toString().split("\n");
-
-			//if (msg[msg.length-1] == "\n") msg = msg.slice(0,msg.length-1); // remove \n at the end
-
-			// sometimes, several lines arrive at once. separate them.
-			for (let i=0; i<msgS.length; i++) {
-				if (msgS[i].length > 0) onData(msgS[i]);
-			}
+			callback(null);
 		});
-
-		this.predictChild.stderr.on("data", function(msg) {
-			log.warn(self.canonical + " mlpredict child stderr data: " + msg);
-		});
-		this.predictChild.stdin.on("error", function(err) {
-			log.warn(self.canonical + " mlpredict child stdin error: " + err);
-		});
-		this.predictChild.stdout.on("error", function(err) {
-			log.warn(self.canonical + " mlpredict child stdout error: " + err);
-		});
-		this.predictChild.stderr.on("error", function(err) {
-			log.warn(self.canonical + " mlpredict child stderr error: " + err);
-		});
-		this.predictChild.stdout.on("end", function() {
-			//log.debug("pc stdout end");
-			self.readyToCallFinal = true;
-			if (self.finalCallback) self.finalCallback();
-		});
-
-	}
-
-	_sendStopWord() {
-		this.predictChild.stdin.write(consts.STOP_WORD.repeat(consts.STOP_WORDS_COUNT));
-		this.predictChild.stdin.write(Buffer.alloc(consts.STOP_WORD.length*consts.STOP_WORDS_COUNT*10, ' '));
-	}
-
-	sendStopWord(callback) {
-		if (this.dataWrittenSinceLastSeg) { // avoid sending a stop word after zero data. this is the way to close the predictChild.
-			//log.debug("send stop word to ML subprocess");
-			this._sendStopWord();
-			this.dataWrittenSinceLastSeg = false;
-			this.onDataCallback = callback;
-		} else if (callback) {
-			if (this.ready2) log.warn(this.canonical + " stopword sent but no data written since last one");
-			callback();
-		}
-	}
-
-	_write(buf, enc, next) {
-		this.dataWrittenSinceLastSeg = true;
-		this.predictChild.stdin.write(buf);
-		next();
 	}
 
 	_final(next) {
 		log.info("closing ML predictor");
-		//log.debug("ml.js final");
 
-		// sending two consecutive stop words without
-		// data in between causes the child process to exit.
-		this._sendStopWord();
-		this._sendStopWord();
+		this.client.invoke("exit", function(err, res, more) {
+			if (err) {
+				log.error("_final: exit() returned error=" + err);
+			}
+		});
 
 		// if not enough, kill it directly!
 		this.predictChild.stdin.end();
