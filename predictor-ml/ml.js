@@ -15,7 +15,8 @@ class MlPredictor extends Transform {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
 		this.fileModel = options.fileModel || __dirname + "/model/" + this.canonical + ".keras";
-		this.ready = false;
+		this.ready = false; // becomes true when ML model is loaded
+		this.ready2 = false; // becomes true when audio data is piped to this module
 		this.onReadyCallback = options.onReadyCallback;
 		const self = this;
 		this.finalCallback = null;
@@ -31,7 +32,9 @@ class MlPredictor extends Transform {
 			this.canonical,
 		], { stdio: ['pipe', 'pipe', 'pipe'] });
 
-		this.client = new zerorpc.Client();
+		// increase default timeouts, otherwise this would fail at model loading on some CPU-bound devices.
+		// https://github.com/0rpc/zerorpc-node#clients
+		this.client = new zerorpc.Client({ timeout: 20, heartbeatInterval: 15000 });
 		this.client.connect("ipc:///tmp/" + this.canonical);
 
 		this.client.on("error", function(error) {
@@ -82,9 +85,10 @@ class MlPredictor extends Transform {
 
 	_write(buf, enc, next) {
 		this.dataWrittenSinceLastSeg = true;
+		const self = this;
 		this.client.invoke("write", buf, function(err, res, more) {
 			if (err) {
-				log.error("_write client returned error=" + err);
+				log.error(self.canonical + " _write client returned error=" + err);
 			}
 		});
 		next();
@@ -93,13 +97,13 @@ class MlPredictor extends Transform {
 	predict(callback) {
 		const self = this;
 		if (!this.dataWrittenSinceLastSeg) {
-			log.debug("skip predict as no data is available for analysis");
+			if (this.ready2) log.warn(this.canonical + " skip predict as no data is available for analysis");
 			return callback();
 		}
 		this.dataWrittenSinceLastSeg = false;
 		this.client.invoke("predict", function(err, res, more) {
 			if (err) {
-				log.error("_sendStopWord: predict() returned error=" + err);
+				log.error(self.canonical + " predict() returned error=" + err);
 				return callback(err);
 			}
 			try {
@@ -125,11 +129,12 @@ class MlPredictor extends Transform {
 	}
 
 	_final(next) {
-		log.info("closing ML predictor");
+		log.info(this.canonical + " closing ML predictor");
 
+		const self = this;
 		this.client.invoke("exit", function(err, res, more) {
 			if (err) {
-				log.error("_final: exit() returned error=" + err);
+				log.error(self.canonical + "_final: exit() returned error=" + err);
 			}
 		});
 
