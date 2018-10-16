@@ -34,7 +34,7 @@ class MlPredictor extends Transform {
 
 		// increase default timeouts, otherwise this would fail at model loading on some CPU-bound devices.
 		// https://github.com/0rpc/zerorpc-node#clients
-		this.client = new zerorpc.Client({ timeout: 20, heartbeatInterval: 15000 });
+		this.client = new zerorpc.Client({ timeout: 30, heartbeatInterval: 15000 });
 		this.client.connect("ipc:///tmp/" + this.canonical);
 
 		this.client.on("error", function(error) {
