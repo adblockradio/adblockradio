@@ -76,26 +76,28 @@ class MlPredictor(object):
 		self.buf = None
 
 	def load(self, fileModel):
+		# utf8 encoding prevents an error in Keras: TypeError: Required Group, str or dict. Received: <type 'unicode'>.
+		fileModel = fileModel.encode('utf8')
 		if os.path.isfile(fileModel):
-			logger.debug("load model from file %s", fileModel)
-			# utf8 encoding prevents an error in Keras: TypeError: Required Group, str or dict. Received: <type 'unicode'>.
-			self.model = load_model(fileModel.encode('utf8'))
+			logger.debug(u"load model from file %s", fileModel)
+			self.model = load_model(fileModel)
 			logger.info("model loaded")
 			return True
 		else:
 			fileModelSplit = fileModel.split("/")
 			fileModelSplit[-1] = "all.keras"
 			defaultFileModel = "/".join(fileModelSplit)
-			logger.info("default file " + defaultFileModel)
+			logger.info(u"default file %s", defaultFileModel)
 
 			if os.path.isfile(defaultFileModel):
 				logger.info("load default model from file.")
-				self.model = load_model(defaultFileModel.encode('utf8'))
+				self.model = load_model(defaultFileModel)
 				logger.info("model loaded")
 				return True
 			else:
 				logger.error("Model not found, cannot tag audio")
 				raise Exception("model not found")
+
 
 	def write(self, data):
 		self.buf = data if self.buf is None else np.append(self.buf, data)
