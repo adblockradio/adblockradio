@@ -70,10 +70,11 @@ class MlPredictor(object):
 		self.radio = radio
 		self.sampleRate = 22050 # Hz
 		self.nchannels = 1 # single channel only
-		self.bitdepth = 2 # 16 bit audio only
-		self.bitrate = self.sampleRate * self.nchannels * self.bitdepth / 8
+		self.bitdepth = 16 / 8 # 16 bit audio only
+		self.bitrate = self.sampleRate * self.nchannels * self.bitdepth # in bytes / s
 		self.pcm = None
-		self.buf = None
+		self.buf = []
+		self.model = None
 
 	def load(self, fileModel):
 		# utf8 encoding prevents an error in Keras: TypeError: Required Group, str or dict. Received: <type 'unicode'>.
@@ -100,19 +101,19 @@ class MlPredictor(object):
 
 
 	def write(self, data):
-		self.buf = data if self.buf is None else self.buf + data
+		self.buf.append(data) # = data if self.buf is None else np.append(self.buf, data) # or self.buf + data
 
 	def predict(self):
-		if (self.buf is None):
+		if (len(self.buf) == 0):
 			logger.debug("request to predict, but no (new) data to process. abort.")
 			raise Exception("no data to process")
 
-		if (self.buf is None):
+		if (self.model is None):
 			logger.debug("request to predict, but no model is loaded. please do it first. abort.")
 			raise Exception("no model loaded")
 
-		data = self.buf
-		self.buf = None
+		data = ''.join(self.buf)
+		self.buf = []
 
 		duration = 1.0 * len(data) / self.bitrate
 		logger.debug("py received " + str(duration) + " s (" + str(len(data)) + " bytes)")
