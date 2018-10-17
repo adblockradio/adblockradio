@@ -100,7 +100,7 @@ class MlPredictor(object):
 
 
 	def write(self, data):
-		self.buf = data if self.buf is None else np.append(self.buf, data)
+		self.buf = data if self.buf is None else self.buf + data
 
 	def predict(self):
 		if (self.buf is None):
