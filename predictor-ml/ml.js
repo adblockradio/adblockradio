@@ -124,7 +124,7 @@ class MlPredictor extends Transform {
 			}
 
 			self.push({ type:"ml", data: outData, array: true });
-			callback(null);
+			callback(null, outData);
 		});
 	}
 
