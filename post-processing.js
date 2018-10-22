@@ -24,6 +24,9 @@ const consts = {
 	],
 	ML_CONFIDENCE_THRESHOLD: 0.65,
 	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
+	MINIMUM_BUFFER: 2, // in seconds. some radio streams have very small buffers. just like players
+	                   // that wait for a minimal buffer before playing, wait for N seconds before streaming data.
+	DOWNSTREAM_LATENCY: 500 // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
 }
 
 class PostProcessor extends Transform {
@@ -47,7 +50,7 @@ class PostProcessor extends Transform {
 			case "audio": // only in stream analysis mode
 				if (obj.newSegment && this.cache[0] && this.cache[0].audio && this.cache[0].audio.length > 0) {
 					if (this.config.verbose) log.info("in: audio => " + this.cache[0].audio.length + " bytes, tBuf=" + obj.tBuffer.toFixed(2) + "s");
-					this._newCacheSlot(obj.tBuffer);
+					this._newCacheSlot(Math.max(obj.tBuffer, consts.MINIMUM_BUFFER));
 				}
 				this.cache[0].audio = this.cache[0].audio ? Buffer.concat([this.cache[0].audio, obj.data]) : obj.data;
 				this.cache[0].metadataPath = obj.metadataPath;
@@ -124,7 +127,7 @@ class PostProcessor extends Transform {
 			// schedule the postprocessing for this slot, according to the buffer available.
 			// "now" is used as a reference for _postProcessing, so it knows which slot to process
 			// postProcessing happens 500ms before audio playback, so that clients / players have time to act.
-			setTimeout(this._postProcessing, Math.max(tBuffer, 2) * 1000 - 500, now);
+			setTimeout(this._postProcessing, tBuffer * 1000 - consts.DOWNSTREAM_LATENCY, now);
 		}
 
 		if (this.cache.length > consts.CACHE_MAX_LEN) this.cache.pop();

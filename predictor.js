@@ -64,25 +64,27 @@ class Predictor {
 		// optional custom config
 		Object.assign(this.config, options.config);
 
+		this.canonical = this.country + "_" + this.name; // radio name in logs
+
 		// check that the metadata fetch module has a parser for this stream
 		if (this.config.fetchMetadata) {
 			if (isAvailable(this.country, this.name)) {
-				log.info(this.country + "_" + this.name + " metadata is available for this stream");
+				log.info(this.canonical + " metadata is available for this stream");
 			} else {
-				log.warn(this.country + "_" + this.name + " metadata is not available for this stream. will not fetch it.");
+				log.warn(this.canonical + " metadata is not available for this stream. will not fetch it.");
 				this.config.fetchMetadata = false;
 			}
 		}
 
-		log.info(this.country + "_" + this.name + " run predictor with config=" + JSON.stringify(this.config));
+		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config));
 
 		this._onData = this._onData.bind(this);
 		this._newAudioSegment = this._newAudioSegment.bind(this);
 
-		var self = this;
+		const self = this;
 		this.dl = new StreamDl({ country: this.country, name: this.name, segDuration: self.config.predInterval });
 		this.dl.on("error", function(err) {
-			log.error(self.country + "_" + self.name + " dl err=" + err);
+			log.error(self.canonical + " dl err=" + err);
 		});
 		this.dl.pause();
 
@@ -99,21 +101,29 @@ class Predictor {
 		this.refreshPredictorHotlist();
 		this.refreshPredictorMl();
 
-		this.dl.on("metadata", function(metadata) { // this happens once at the beginning of stream download
-			log.info(self.country + "_" + self.name + " metadata=" + JSON.stringify(metadata));
-
+		this.dbs = null;
+		this.dl.on("metadata", function(metadata) {
+			log.info(self.canonical + " metadata=" + JSON.stringify(metadata));
 			self.listener.write({ type: "dlinfo", data: metadata });
-
 			self.audioExt = metadata.ext;
 
-			self.dbs = null;
-			self.predCounter = 0
+			if (!self.dbs) {
+				// this happens once at the beginning of stream download.
+				// if the download recovers from a temporary fail, it is not executed
+				self.predCounter = 0
 
-			self._newAudioSegment(function() {
-				self.dl.resume();
-			});
+				self._newAudioSegment(function() {
+					self.dl.on("data", self._onData);
+					self.dl.resume();
+				});
+			}
+		});
 
-			self.dl.on("data", self._onData);
+		// if things go wrong and the listener is not writable anymore, avoid pushing data to it
+		this.listenerClosed = false;
+		this.listener.on("close", function() {
+			log.info(self.canonical + " listener closed.");
+			self.listenerClosed = true;
 		});
 	}
 
@@ -128,10 +138,14 @@ class Predictor {
 		const self = this;
 		const out = function() {
 			if (self.config.saveAudio) self.dbs.audio.write(dataObj.data);
-			self.listener.write(Object.assign(dataObj, {
-				type: "audio",
-				metadataPath: self.dbs.metadataPath
-			}));
+			if (!self.listenerClosed) {
+				self.listener.write(Object.assign(dataObj, {
+					type: "audio",
+					metadataPath: self.dbs.metadataPath
+				}));
+			} else {
+				log.error(self.canonical + " attempt to write audio data but the listener is closed");
+			}
 			self.decoder.stdin.write(dataObj.data);
 		}
 
@@ -156,7 +170,7 @@ class Predictor {
 
 		], function(err) {
 
-			if (err) log.warn(self.country + "_" + self.name + " a predictor returned the following error: " + JSON.stringify(err));
+			if (err) log.warn(self.canonical + " a predictor returned the following error: " + JSON.stringify(err));
 
 			// save audio and metadata less frequently than status updates. to do so, we count the audio segments.
 			self.predCounter += 1;
@@ -184,7 +198,7 @@ class Predictor {
 
 		if (this.config.enablePredictorMl && this.mlPredictor.ready && !this.mlPredictor.ready2) {
 			// this happens only once, when mlPredictor is ready to crunch data
-			log.info(this.country + "_" + this.name + ": piping audio to mlPredictor");
+			log.info(this.canonical + ": piping audio to mlPredictor");
 			this.decoder.stdout.pipe(this.mlPredictor);
 			this.mlPredictor.ready2 = true;
 		}
@@ -212,9 +226,13 @@ class Predictor {
 			// but... metadata may be an ingredient to help the algorithm. so it shall stay here.
 			if (self.config.fetchMetadata) {
 				getMeta(self.country, self.name, function(err, parsedMeta, corsEnabled) {
-					if (err) return log.warn(self.country + "_" + self.name + ": getMeta: error fetching title meta. err=" + err);
+					if (err) return log.warn(self.canonical + ": getMeta: error fetching title meta. err=" + err);
 					//log.info(self.country + "_" + self.name + " meta=" + JSON.stringify(parsedMeta));
-					self.listener.write({ type: "title", data: parsedMeta });
+					if (!self.listenerClosed) {
+						self.listener.write({ type: "title", data: parsedMeta });
+					} else {
+						log.error(self.canonical + " attempt to write title data but the listener is closed");
+					}
 				});
 			}
 			callback();
@@ -262,7 +280,7 @@ class Predictor {
 	}
 
 	stop() {
-		log.info(this.country + "_" + this.name + " close predictor");
+		log.info(this.canonical + " close predictor");
 
 		if (this.mlPredictor) {
 			log.debug("unpipe decoder stdout and mlPredictor");
