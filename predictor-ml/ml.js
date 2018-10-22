@@ -18,13 +18,16 @@ class MlPredictor extends Transform {
 		this.ready = false; // becomes true when ML model is loaded
 		this.ready2 = false; // becomes true when audio data is piped to this module
 		this.onReadyCallback = options.onReadyCallback;
-		const self = this;
 		this.finalCallback = null;
 		this.readyToCallFinal = false;
 		this.dataWrittenSinceLastSeg = false;
 		this.onDataCallback = null;
 
-		// spawn python subprocess
+		this.spawn();
+	}
+
+	spawn() { // spawn python subprocess
+		const self = this;
 		this.cork();
 		this.predictChild = cp.spawn('python', [
 			'-u',
@@ -38,7 +41,7 @@ class MlPredictor extends Transform {
 		this.client.connect("ipc:///tmp/" + this.canonical);
 
 		this.client.on("error", function(error) {
-			log.error("RPC client error:", error);
+			log.error(self.canonical + " RPC client error:" + error);
 		});
 
 		this.client.invoke("load", this.fileModel, function(error, res, more) {

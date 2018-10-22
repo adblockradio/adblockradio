@@ -223,7 +223,7 @@ class Hotlist extends Transform {
 	}
 
 	_final(next) {
-		log.info(self.country + "_" + self.name + " closing hotlist DB");
+		log.info(this.country + "_" + this.name + " closing hotlist DB");
 		const self = this;
 		this.db.close(function(err) {
 			if (err) log.warn(self.country + "_" + self.name + " could not close DB. err=" + err);
