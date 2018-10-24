@@ -42,21 +42,11 @@ npm install
 
 ### Demo
 
-The time-frequency analyser needs a compatible machine-learning model (`*.keras`). The fingerprint matcher needs a fingerprint database (`*.sqlite`).
+The time-frequency analyser needs a compatible machine-learning model (`*.keras`). The fingerprint matcher needs a fingerprint database (`*.sqlite`). Those are available at [adblockradio.com/models/](https://adblockradio.com/models/).
 
-Grab demo files for French station RTL with the following commands: (TODO)
-```bash
-cd model/
-wget https://www.adblockradio.com/models/France_RTL.keras.tar.gz
-tar -zxvf France_RTL.keras.tar.gz
-rm France_RTL.keras.tar.gz
-wget https://www.adblockradio.com/models/France_RTL.sqlite.tar.gz
-tar -zxvf France_RTL.sqlite.tar.gz
-rm France_RTL.sqlite.tar.gz
-cd ..
-```
+Customize the fields `country` and `name` in `demo.js`. The model files will be automatically downloaded.
 
-Note that you can check for updates of those model files by first downloading checksum files (`*.tar.gz.sha256sum`) and comparing its contents with a local copy.
+It is not necessary to download the models at each execution. You better check for updates by comparing the checksums between local and remote copies (`*.tar.gz.sha256sum`).
 
 #### Live stream analysis
 Run the demo on French RTL live radio stream:
@@ -145,7 +135,7 @@ Gradual outputs are similar to those of live stream analysis. An additional post
 	}
 ]
 ```
-Note that when analyzing audio files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but will probably be in the future.
+Note that when analyzing audio files, you still need to provide the name of a radio stream, because the algorithm has to load acoustic parameters and DB of known samples. Analysis of podcasts not tied to a radio is not yet supported, but may possibly be in the future.
 
 ## Documentation
 
