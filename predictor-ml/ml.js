@@ -14,21 +14,17 @@ class MlPredictor extends Transform {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
-		this.fileModel = options.fileModel || __dirname + "/model/" + this.canonical + ".keras";
 		this.ready = false; // becomes true when ML model is loaded
-		this.ready2 = false; // becomes true when audio data is piped to this module
-		this.onReadyCallback = options.onReadyCallback;
+		this.ready2 = false; // becomes true when audio data is piped to this module. managed externally
 		this.finalCallback = null;
 		this.readyToCallFinal = false;
 		this.dataWrittenSinceLastSeg = false;
-		this.onDataCallback = null;
 
 		this.spawn();
 	}
 
 	spawn() { // spawn python subprocess
 		const self = this;
-		this.cork();
 		this.predictChild = cp.spawn('python', [
 			'-u',
 			__dirname + '/mlpredict.py',
@@ -42,19 +38,6 @@ class MlPredictor extends Transform {
 
 		this.client.on("error", function(error) {
 			log.error(self.canonical + " RPC client error:" + error);
-		});
-
-		this.client.invoke("load", this.fileModel, function(error, res, more) {
-			if (error && error === "model not found") {
-				return log.error(self.canonical + " Keras ML file not found. Cannot tag audio");
-			} else if (error) {
-				return log.error(error);
-			}
-
-			log.info(self.canonical + " predictor process is ready to crunch audio");
-			self.ready = true;
-			if (self.onReadyCallback) self.onReadyCallback();
-			return self.uncork();
 		});
 
 		this.predictChild.stdout.on('data', function(msg) { // received messages from python worker
@@ -83,6 +66,27 @@ class MlPredictor extends Transform {
 			//log.debug("cp stdout end");
 			self.readyToCallFinal = true;
 			if (self.finalCallback) self.finalCallback();
+		});
+	}
+
+	load(fileModel, callback) {
+		const self = this;
+		this.cork();
+		this.ready = false;
+		this.client.invoke("load", fileModel, function(error, res, more) {
+			if (error) {
+				if (error === "model not found") {
+					log.error(self.canonical + " Keras ML file not found. Cannot tag audio");
+				} else {
+					log.error(error);
+				}
+				return callback(error);
+			}
+
+			log.info(self.canonical + " predictor process is ready to crunch audio");
+			self.ready = true;
+			self.uncork();
+			return callback(null);
 		});
 	}
 

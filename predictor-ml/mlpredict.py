@@ -16,7 +16,7 @@ import audioop
 from keras.models import load_model
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # reduce log spam from tensorflow. cf https://github.com/tensorflow/tensorflow/issues/7778
 import tensorflow as tf		# https://groups.google.com/forum/#!topic/keras-users/MFUEY9P1sc8
-import keras.backend.tensorflow_backend as KTF
+from keras.backend import clear_session, tensorflow_backend
 import psutil
 import zerorpc
 import logging
@@ -60,7 +60,7 @@ def get_session(gpu_fraction=0.05):
 	else:
 		return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
-KTF.set_session(get_session())
+tensorflow_backend.set_session(get_session())
 
 radio = sys.argv[1]
 logger.debug("radio: " + radio)
@@ -81,6 +81,9 @@ class MlPredictor(object):
 		fileModel = fileModel.encode('utf8')
 		if os.path.isfile(fileModel):
 			logger.debug(u"load model from file %s", fileModel)
+			if self.model is not None:
+				clear_session()
+				del self.model
 			self.model = load_model(fileModel)
 			logger.info("model loaded")
 			return True
@@ -92,11 +95,14 @@ class MlPredictor(object):
 
 			if os.path.isfile(defaultFileModel):
 				logger.info("load default model from file.")
+				if self.model is not None:
+					clear_session()
+					del self.model
 				self.model = load_model(defaultFileModel)
 				logger.info("model loaded")
 				return True
 			else:
-				logger.error("Model not found, cannot tag audio")
+				logger.error("Model not found")
 				raise Exception("model not found")
 
 

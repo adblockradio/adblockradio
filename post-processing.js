@@ -379,6 +379,8 @@ class Analyser extends Readable {
 			});
 		}
 
+		this.refreshPredictorHotlist = this.refreshPredictorHotlist.bind(this);
+		this.refreshPredictorMl = this.refreshPredictorMl.bind(this);
 		/*
 		// only to test mergeClassBlocks method
 		fs.readFile(this.config.file + ".json", function(err, data) {

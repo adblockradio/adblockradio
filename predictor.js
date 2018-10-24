@@ -155,7 +155,7 @@ class Predictor {
 		//log.debug("dl+decoder pause");
 
 		this.dl.pause();
-		self.decoder.stdout.pause();
+		this.decoder.stdout.pause();
 
 		// TODO: do the hotlist search only if mlPredictor is unsure?
 
@@ -196,15 +196,7 @@ class Predictor {
 
 		if (this.dbs && this.config.saveAudio) this.dbs.audio.end();
 
-		if (this.config.enablePredictorMl && this.mlPredictor.ready && !this.mlPredictor.ready2) {
-			// this happens only once, when mlPredictor is ready to crunch data
-			log.info(this.canonical + ": piping audio to mlPredictor");
-			this.decoder.stdout.pipe(this.mlPredictor);
-			this.mlPredictor.ready2 = true;
-		}
-
 		const self = this;
-
 		const now = new Date();
 		const dirDate = (now.getUTCFullYear()) + "-" + (now.getUTCMonth()+1 < 10 ? "0" : "") + (now.getUTCMonth()+1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + (now.getUTCDate());
 		const dir = this.config.saveAudioPath + '/' + dirDate + "/" + this.country + "_" + this.name + "/todo/";
@@ -240,6 +232,7 @@ class Predictor {
 	}
 
 	refreshPredictorHotlist() {
+		log.info(this.canonical + " refresh hotlist predictor");
 		if (this.hotlist) {
 			this.hotlist.unpipe(this.listener);
 			this.decoder.stdout.unpipe(this.hotlist);
@@ -260,22 +253,40 @@ class Predictor {
 	}
 
 	refreshPredictorMl() {
-		if (this.mlPredictor) {
-			this.mlPredictor.unpipe(this.listener);
-			if (this.mlPredictor.ready2) this.decoder.stdout.pipe(this.mlPredictor);
-			this.mlPredictor.destroy();
-			delete this.mlPredictor;
-		}
+		log.info(this.canonical + " refresh ML predictor");
 		if (this.config.enablePredictorMl) {
-			this.mlPredictor = new MlPredictor({
-				country: this.country,
-				name: this.name,
-				fileModel: this.config.modelPath + '/' + this.country + '_' + this.name + '.keras'
+			if (!this.mlPredictor) {
+				this.mlPredictor = new MlPredictor({
+					country: this.country,
+					name: this.name,
+				});
+				this.mlPredictor.pipe(this.listener);
+			} else if (this.mlPredictor.ready2) {
+				this.decoder.stdout.unpipe(this.mlPredictor);
+			}
+
+			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
+			const self = this;
+			this.mlPredictor.ready2 = false;
+			this.mlPredictor.load(this.config.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
+				if (err) return log.error(self.canonical + " could not load ML model. err=" + err);
+				setTimeout(function() {
+					if (self.config.enablePredictorMl && self.mlPredictor.ready && !self.mlPredictor.ready2) {
+						log.info(self.canonical + ": piping audio to mlPredictor");
+						self.decoder.stdout.pipe(self.mlPredictor);
+						self.mlPredictor.ready2 = true;
+					} else {
+						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
+					}
+				}, 3000); // to not overwhelm the CPU in CPU-bound systems
 			});
-			this.mlPredictor.pipe(this.listener);
-			// we pipe decoder to mlPredictor later, once mlPredictor is ready to process data.
 		} else {
-			this.mlPredictor = null;
+			if (this.mlPredictor) {
+				this.mlPredictor.unpipe(this.listener);
+				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
+				this.mlPredictor.destroy();
+				this.mlPredictor = null;
+			}
 		}
 	}
 
