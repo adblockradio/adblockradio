@@ -166,12 +166,13 @@ Keep in mind that you need to download models as shown in the demo section above
 ### Optional configuration
 Properties marked with a `*` are meant to be used only with live radio stream analysis, not file analysis where they are ignored.
 
-#### Stream segmentation
+#### Scheduling
 
 Property|Description|Default
 --------|-----------|-------
 `predInterval`|send stream status to listener every N seconds|`1`
-`saveDuration*`|save audio file and metadata every N `predInterval` times|`10`
+`saveDuration*`|if enabled, save audio file and metadata every N `predInterval` times|`10`
+`modelUpdatesInterval`|if enabled, update model files every N minutes|`60`
 
 #### Switches
 
@@ -182,6 +183,7 @@ Property|Description|Periodicity|Default
 `saveAudio*`|save stream audio data in segments on hard drive|`saveDuration`|`true`
 `saveMetadata`|save a JSON with predictions|`saveDuration`|`true`
 `fetchMetadata*`|gather metadata from radio websites|`saveDuration`|`true`
+`modelUpdates`|keep ML and hotlist files up to date|`modelUpdatesInterval`|`true`
 
 #### Paths
 
