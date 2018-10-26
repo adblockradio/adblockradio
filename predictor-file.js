@@ -69,6 +69,7 @@ class PredictorFile {
 		this.country = options.country; 	// mandatory argument
 		this.name = options.name;			// mandatory argument
 		this.file = options.file;			// mandatory argument
+		this.modelPath = options.modelPath; // mandatory argument - directory where ML models and hotlist DBs are stored
 
 		// output of predictions
 		this.listener = options.listener;	// mandatory argument, instance of a Writable Stream.
@@ -82,7 +83,6 @@ class PredictorFile {
 			predInterval: 1, // send stream status to listener every N seconds
 			enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
 			enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
-			modelPath: __dirname + '/model', // directory where ML models and hotlist DBs are stored
 			file: null, // analyse a file directly, instead of downloading a stream
 		}
 
@@ -154,7 +154,7 @@ class PredictorFile {
 			this.hotlist = new Hotlist({
 				country: this.country,
 				name: this.name,
-				fileDB: this.config.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
+				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
 			});
 			this.hotlist.pipe(this.listener);
 		} else {
@@ -167,7 +167,7 @@ class PredictorFile {
 			this.mlPredictor = new MlPredictor({
 				country: this.country,
 				name: this.name,
-				fileModel: this.config.modelPath + '/' + this.country + '_' + this.name + '.keras'
+				fileModel: this.modelPath + '/' + this.country + '_' + this.name + '.keras'
 			});
 			this.mlPredictor.pipe(this.listener);
 		} else {

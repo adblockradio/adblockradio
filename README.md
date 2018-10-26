@@ -42,11 +42,9 @@ npm install
 
 ### Demo
 
-The time-frequency analyser needs a compatible machine-learning model (`*.keras`). The fingerprint matcher needs a fingerprint database (`*.sqlite`). Those are available at [adblockradio.com/models/](https://adblockradio.com/models/).
-
-Customize the fields `country` and `name` in `demo.js`. The model files will be automatically downloaded.
-
-It is not necessary to download the models at each execution. You better check for updates by comparing the checksums between local and remote copies (`*.tar.gz.sha256sum`).
+At startup and periodically during runtime, two files are automatically updated from [adblockradio.com/models/](https://adblockradio.com/models/):
+- a compatible machine-learning model (`*.keras`), for the time-frequency analyser.
+- a fingerprint database (`*.sqlite`), for the fingerprint matcher.
 
 #### Live stream analysis
 Run the demo on French RTL live radio stream:

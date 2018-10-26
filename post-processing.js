@@ -10,6 +10,8 @@ const Predictor = require("./predictor.js");
 const PredictorFile = require("./predictor-file.js");
 const { Transform, Readable } = require("stream");
 const fs = require("fs");
+const checkModelUpdates = require("./check-model-updates.js");
+
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
@@ -315,9 +317,12 @@ class Analyser extends Readable {
 
 		// default module options
 		this.config = {
-			saveMetadata: true, // save a JSON with predictions (saveDuration intervals)
+			saveMetadata: true,                 // save a JSON with predictions (saveDuration intervals)
 			verbose: false,
-			file: null, // analyse a file instead of a HTTP stream
+			file: null,                         // analyse a file instead of a HTTP stream
+			modelPath: __dirname + '/model',    // directory where ML models and hotlist DBs are stored
+			modelUpdates: true,                 // periodically fetch ML and hotlist models and refresh predictors
+			modelUpdateInterval: 60             // update model files every N minutes
 		}
 
 		// optional custom config
@@ -367,19 +372,36 @@ class Analyser extends Readable {
 		if (this.config.file) {
 			if (fs.existsSync(this.config.file + ".json")) fs.unlinkSync(this.config.file + ".json");
 			this.predictor = new PredictorFile({
-				country: self.country,
-				name: self.name,
+				country: this.country,
+				name: this.name,
 				file: this.config.file,
 				config: options.config,
 				listener: this.postProcessor
 			});
 		} else {
-			this.predictor = new Predictor({
-				country: self.country,
-				name: self.name,
-				config: options.config,
-				listener: this.postProcessor
-			});
+			(async function() {
+				// download and/or update models at startup
+				if (self.config.modelUpdates) {
+					await checkModelUpdates(self.country, self.name, self.config.modelPath);
+				} else {
+					log.info(self.country + '_' + self.name + ' module updates are disabled');
+				}
+				self.predictor = new Predictor({
+					country: self.country,
+					name: self.name,
+					modelPath: self.config.modelPath,
+					config: options.config,
+					listener: self.postProcessor
+				});
+
+				if (self.config.modelUpdates) {
+					setInterval(function() {
+						log.info('update models');
+						checkModelUpdates(self.country, self.name, self.config.modelPath,
+							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
+					}, self.config.modelUpdateInterval * 60000);
+				}
+			})();
 		}
 
 		this.refreshPredictorHotlist = this.refreshPredictorHotlist.bind(this);

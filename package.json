@@ -17,9 +17,12 @@
   "dependencies": {
     "abr-log": "^1.0.2",
     "async": "^2.6.1",
+    "axios": "^0.18.0",
+    "fs-extra": "^7.0.0",
     "sqlite3": "^4.0.3",
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.14",
+    "tar": "^4.4.6",
     "webradio-metadata": "^0.1.29",
     "zerorpc": "^0.9.8"
   }

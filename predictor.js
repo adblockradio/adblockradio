@@ -41,6 +41,7 @@ class Predictor {
 		// stream identification
 		this.country = options.country; 	// mandatory argument
 		this.name = options.name;			// mandatory argument
+		this.modelPath = options.modelPath; // mandatory argument - directory where ML models and hotlist DBs are stored
 
 		// output of predictions
 		this.listener = options.listener;	// mandatory argument, instance of a Writable Stream.
@@ -58,7 +59,6 @@ class Predictor {
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
 			saveAudioPath: __dirname + '/records', // root folder where audio and metadata are saved
 			fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
-			modelPath: __dirname + '/model', // directory where ML models and hotlist DBs are stored
 		}
 
 		// optional custom config
@@ -243,7 +243,7 @@ class Predictor {
 			this.hotlist = new Hotlist({
 				country: this.country,
 				name: this.name,
-				fileDB: this.config.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
+				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
 			});
 			this.hotlist.pipe(this.listener);
 			this.decoder.stdout.pipe(this.hotlist);
@@ -268,7 +268,7 @@ class Predictor {
 			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
 			const self = this;
 			this.mlPredictor.ready2 = false;
-			this.mlPredictor.load(this.config.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
+			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
 				if (err) return log.error(self.canonical + " could not load ML model. err=" + err);
 				setTimeout(function() {
 					if (self.config.enablePredictorMl && self.mlPredictor.ready && !self.mlPredictor.ready2) {
