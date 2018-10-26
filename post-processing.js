@@ -24,6 +24,7 @@ const consts = {
 	],
 	ML_CONFIDENCE_THRESHOLD: 0.65,
 	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
+	FINAL_CONFIDENCE_THRESHOLD: 0.45,
 	MINIMUM_BUFFER: 2, // in seconds. some radio streams have very small buffers. just like players
 	                   // that wait for a minimal buffer before playing, wait for N seconds before streaming data.
 	DOWNSTREAM_LATENCY: 500 // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
@@ -214,8 +215,7 @@ class PostProcessor extends Transform {
 		if (this.cache[i].ml) {
 			const { movAvg, maxMovAvg, iMaxMovAvg } = this._movAvg(i, "ml", availableSlotsPast, availableSlotsFuture);
 
-			// pruning of unsure ML predictions
-			// confidence = 1.0-math.exp(1-mp[2]/mp[1])
+			// tell if the ML prediction is unsure. Purely informative, as the threshold does not affect the final class
 			const mlConfident = maxMovAvg > consts.ML_CONFIDENCE_THRESHOLD;
 			//log.debug("out: movAvg: slot n=" + this.cache[i].n + " i=" + i + " movAvg=" + movAvg.map(e => +e.toFixed(3)) + " confident=" + mlConfident);
 			mlOutput = {
@@ -235,6 +235,7 @@ class PostProcessor extends Transform {
 			hotlistOutput.softmaxraw = hotlistOutput.softmaxraw.map(e => +e.toFixed(3));
 			hotlistOutput.softmax = movAvg.map(e => +e.toFixed(3));
 
+			// tell if the hotlist prediction is unsure. Purely informative, as the threshold does not affect the final class
 			const hlConfident = maxMovAvg > consts.HOTLIST_CONFIDENCE_THRESHOLD;
 			hotlistOutput.class = hlConfident ? consts.WLARRAY[this.cache[i].hotlist.class] : consts.UNSURE;
 
@@ -263,7 +264,9 @@ class PostProcessor extends Transform {
 				iFinalClass = i;
 			}
 		}
-		const finalClass = consts.WLARRAY[iFinalClass];
+
+		// final class has an hysteresis behaviour
+		const finalClass = maxSoftmax > consts.FINAL_CONFIDENCE_THRESHOLD ? consts.WLARRAY[iFinalClass] : consts.UNSURE;
 
 		// final output
 		let out = {
