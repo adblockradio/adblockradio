@@ -395,7 +395,7 @@ class Analyser extends Readable {
 				});
 
 				if (self.config.modelUpdates) {
-					setInterval(function() {
+					self.modelUpdatesInterval = setInterval(function() {
 						log.info('update models');
 						checkModelUpdates(self.country, self.name, self.config.modelPath,
 							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
@@ -406,6 +406,8 @@ class Analyser extends Readable {
 
 		this.refreshPredictorHotlist = this.refreshPredictorHotlist.bind(this);
 		this.refreshPredictorMl = this.refreshPredictorMl.bind(this);
+		this.stopDl = this.stopDl.bind(this);
+
 		/*
 		// only to test mergeClassBlocks method
 		fs.readFile(this.config.file + ".json", function(err, data) {
@@ -539,6 +541,8 @@ class Analyser extends Readable {
 		this.predictor.stop();
 		this.postProcessor.ended = true;
 		this.postProcessor.end();
+		if (this.modelUpdatesInterval) clearInterval(this.modelUpdatesInterval);
+		this.push(null);
 	}
 
 	_read() {

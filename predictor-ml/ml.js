@@ -145,6 +145,8 @@ class MlPredictor extends Transform {
 			}
 		});
 
+		this.client.close();
+
 		// if not enough, kill it directly!
 		this.predictChild.stdin.end();
 		this.predictChild.kill();
