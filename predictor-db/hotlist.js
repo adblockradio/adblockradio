@@ -9,6 +9,7 @@ const sqlite3 = require("sqlite3").verbose();
 const { Transform } = require("stream");
 const { log } = require("abr-log")("pred-hotlist");
 const Codegen = require("stream-audio-fingerprint");
+const async = require("async");
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
@@ -30,6 +31,7 @@ class Hotlist extends Transform {
 		this.country = options.country;
 		this.name = options.name;
 		const path = options.fileDB || "predictor-db/hotlist" + '/' + this.country + "_" + this.name + ".sqlite";
+		const MEMORY_DB = options.memoryDB === undefined ? true : !!options.memoryDB;
 
 		this.fingerprinter = new Codegen();
 		this.fingerbuffer = { tcodes: [], hcodes: [] };
@@ -41,10 +43,70 @@ class Hotlist extends Transform {
 			//log.debug(JSON.stringify(data));
 		});
 
-		log.info("open hotlist db " + path)
+		log.info("open hotlist db " + path + " (memory=" + MEMORY_DB + ")");
 		this.ready = false;
 		this.trackList = [];
-		this.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY, function(err) {
+
+		async.waterfall(MEMORY_DB ? [
+			// dumping the database in memory annihilates the I/O load and allows updates of the db file during operations.
+			// to turn off if the database is too large for the available memory.
+			function(cb) {
+				self.db = new sqlite3.Database(':memory:', cb);
+			}, function(cb) {
+				self.db.run('ATTACH \'' + path + '\' AS M', cb);
+			}, function(cb) {
+				log.info("db found");
+				self.db.run('CREATE TABLE IF NOT EXISTS "tracks" (' +
+					'`file` TEXT NOT NULL UNIQUE,' +
+					'`class` INTEGER NOT NULL,' +
+					'`id` INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,' +
+					'`fingersCount` INTEGER,' +
+					'`length` INTEGER)', cb);
+			}, function(cb) {
+				self.db.run('CREATE TABLE IF NOT EXISTS "fingers" (' +
+					'`track_id` INTEGER NOT NULL,' +
+					'`dt` INTEGER NOT NULL,' +
+					'`finger` INTEGER NOT NULL)', cb);
+			}, function(cb) {
+				self.db.run('CREATE TABLE IF NOT EXISTS "info" (' +
+					'`modelsha` TEXT NOT NULL)', cb);
+			}, function(cb) {
+				self.db.run('CREATE INDEX IF NOT EXISTS "fingerIndex" ' +
+					'ON "fingers" ("finger")', cb);
+			}, function(cb) {
+				const fields = 'file, class, id, fingersCount, length';
+				self.db.run('INSERT INTO main.tracks(' + fields + ') ' +
+					'SELECT ' + fields + ' FROM M.tracks', cb);
+			}, function(cb) {
+				const fields = 'track_id, dt, finger';
+				self.db.run('INSERT INTO main.fingers(' + fields + ') ' +
+					'SELECT ' + fields + ' FROM M.fingers', cb);
+			}, function(cb) {
+				self.db.run('DETACH M', cb);
+			}, function(cb) {
+				self.db.all('SELECT file, fingersCount, length FROM tracks;', cb);
+			}, function(trackList, cb) {
+				self.trackList = trackList;
+				log.info(self.country + "_" + self.name + ': Hotlist ready');
+				self.ready = true;
+				setImmediate(cb);
+			}
+		]
+		:
+		// loading operations when file is to be read directly
+		[
+			function(cb) {
+				self.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY, cb);
+			}, function(cb) {
+				log.info("db found");
+				self.db.all('SELECT file, fingersCount, length FROM tracks;', cb);
+			}, function(trackList, cb) {
+				self.trackList = trackList;
+				log.info(self.country + "_" + self.name + ': Hotlist ready');
+				self.ready = true;
+				setImmediate(cb);
+			}
+		], function(err) {
 			// example of err object structure: { "errno": 14, "code": "SQLITE_CANTOPEN" }
 			if (err && err.code === "SQLITE_CANTOPEN") {
 				log.warn(path + " not found, hotlist module disabled");
@@ -52,17 +114,8 @@ class Hotlist extends Transform {
 			} else if (err) {
 				log.error(self.country + "_" + self.name + " unknown error: " + err);
 				self.db = null;
-			} else {
-				log.info("db found");
-				self.db.all('SELECT file, fingersCount, length FROM tracks;', function(err, trackList) {
-					if (err) log.warn("could not get tracklist from hotlist " + path + ". err=" + err);
-					self.trackList = trackList;
-					log.info(self.country + "_" + self.name + ': Hotlist ready');
-					self.ready = true;
-				});
 			}
 		});
-		//setInterval(self.onFingers, 2000); // search every 2 seconds, to group queries and reduce CPU & I/O load.
 	}
 
 	_write(audioData, enc, next) {
