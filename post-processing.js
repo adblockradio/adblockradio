@@ -26,7 +26,7 @@ const consts = {
 	],
 	ML_CONFIDENCE_THRESHOLD: 0.65,
 	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
-	FINAL_CONFIDENCE_THRESHOLD: 0.45,
+	FINAL_CONFIDENCE_THRESHOLD: 0.40,
 	MINIMUM_BUFFER: 2, // in seconds. some radio streams have very small buffers. just like players
 	                   // that wait for a minimal buffer before playing, wait for N seconds before streaming data.
 	DOWNSTREAM_LATENCY: 500 // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
