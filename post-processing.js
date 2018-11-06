@@ -100,6 +100,7 @@ class PostProcessor extends Transform {
 				if (this.config.verbose) log.info("in: dlinfo => " + JSON.stringify(obj.data));
 				this.streamInfo = {
 					url: obj.data.url,
+					bitrate: obj.data.bitrate,
 					favicon: obj.data.favicon,
 					homepage: obj.data.homepage,
 					audioExt: obj.data.ext
@@ -396,7 +397,6 @@ class Analyser extends Readable {
 
 				if (self.config.modelUpdates) {
 					self.modelUpdatesInterval = setInterval(function() {
-						log.info('update models');
 						checkModelUpdates(self.country, self.name, self.config.modelPath,
 							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
 					}, self.config.modelUpdateInterval * 60000);

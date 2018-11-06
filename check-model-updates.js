@@ -13,11 +13,12 @@ const isToUpdate = async function(path, file) {
 	try {
 		localChecksum = await fs.readFile(path + '/' + file + CHECKSUM_SUFFIX);
 	} catch (e) {
-		log.info('checksum for ' + path + '/' + file + ' not found. read err=' + e);
+		log.info('checksum for ' + file + ' not found. Will update anyway.');
 		return true;
 	}
+	const remotePath = URL_PREFIX + file + CHECKSUM_SUFFIX;
 	try {
-		const remoteChecksum = await axios.get(URL_PREFIX + file + CHECKSUM_SUFFIX);
+		const remoteChecksum = await axios.get(remotePath);
 		if ('' + localChecksum !== '' + remoteChecksum.data) {
 			//log.info('different checksums local=' + localChecksum + ' remote=' + remoteChecksum.data);
 			return true;
@@ -26,7 +27,7 @@ const isToUpdate = async function(path, file) {
 			return false;
 		}
 	} catch (e) {
-		log.warn('could not fetch checksum for ' + path + '/' + file + '. err=' + e);
+		log.warn('could not fetch ' + remotePath + '. err=' + e);
 		return false;
 	}
 }

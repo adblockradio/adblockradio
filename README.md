@@ -213,7 +213,7 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - `metadata*`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
 
-- `streamInfo*`: static metadata about the stream. Contains stream `url`, `favicon`, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL.
+- `streamInfo*`: static metadata about the stream. Contains stream `url`, `favicon`, `bitrate` in bytes / s, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL.
 
 - `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
 

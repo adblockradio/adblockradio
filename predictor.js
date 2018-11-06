@@ -98,7 +98,9 @@ class Predictor {
 			'pipe:1'
 		], { stdio: ['pipe', 'pipe', process.stderr] });
 
+		this.refreshPredictorHotlist = this.refreshPredictorHotlist.bind(this);
 		this.refreshPredictorHotlist();
+		this.refreshPredictorMl = this.refreshPredictorMl.bind(this);
 		this.refreshPredictorMl();
 
 		this.dbs = null;

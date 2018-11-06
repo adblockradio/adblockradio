@@ -55,7 +55,7 @@ class Hotlist extends Transform {
 			}, function(cb) {
 				self.db.run('ATTACH \'' + path + '\' AS M', cb);
 			}, function(cb) {
-				log.info("db found");
+				log.info(path + " db found");
 				self.db.run('CREATE TABLE IF NOT EXISTS "tracks" (' +
 					'`file` TEXT NOT NULL UNIQUE,' +
 					'`class` INTEGER NOT NULL,' +
@@ -98,7 +98,7 @@ class Hotlist extends Transform {
 			function(cb) {
 				self.db = new sqlite3.Database(path, sqlite3.OPEN_READONLY, cb);
 			}, function(cb) {
-				log.info("db found");
+				log.info(path + " found");
 				self.db.all('SELECT file, fingersCount, length FROM tracks;', cb);
 			}, function(trackList, cb) {
 				self.trackList = trackList;
