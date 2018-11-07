@@ -2,6 +2,8 @@
 An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
+Demo standalone player [available here](https://github.com/adblockradio/buffer-player).
+
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
 ## Overview
@@ -40,7 +42,7 @@ cd adblockradio
 npm install
 ```
 
-### Demo
+### Command-line demo
 
 At startup and periodically during runtime, two files are automatically updated from [adblockradio.com/models/](https://adblockradio.com/models/):
 - a compatible machine-learning model (`*.keras`), for the time-frequency analyser.
@@ -233,7 +235,9 @@ The list of supported radios is [available here](https://github.com/dest4/availa
 ### Note to developers
 Integrations of this module are welcome. Suggestions are available [here](TODO).
 
+A standalone demo player for web browsers is [available here](https://github.com/adblockradio/buffer-player).
+
 ## License
-See LICENSE file
+See LICENSE file.
 
 Your contribution to this project is welcome, but might be subject to a contributor's license agreement.
