@@ -13,12 +13,12 @@ const isToUpdate = async function(path, file) {
 	try {
 		localChecksum = await fs.readFile(path + '/' + file + CHECKSUM_SUFFIX);
 	} catch (e) {
-		log.info('checksum for ' + file + ' not found. Will update anyway.');
+		log.info('checksum for ' + path + '/' + file + ' not found. Will fetch models.');
 		return true;
 	}
 	const remotePath = URL_PREFIX + file + CHECKSUM_SUFFIX;
 	try {
-		const remoteChecksum = await axios.get(remotePath);
+		const remoteChecksum = await axios.get(encodeURI(remotePath));
 		if ('' + localChecksum !== '' + remoteChecksum.data) {
 			//log.info('different checksums local=' + localChecksum + ' remote=' + remoteChecksum.data);
 			return true;
@@ -35,14 +35,14 @@ const isToUpdate = async function(path, file) {
 const update = async function(path, file) {
 	log.info('update ' + path + '/' + file);
 	try {
-		const checksumData = await axios.get(URL_PREFIX + file + CHECKSUM_SUFFIX);
+		const checksumData = await axios.get(encodeURI(URL_PREFIX + file + CHECKSUM_SUFFIX));
 		await fs.writeFile(path + '/' + file + CHECKSUM_SUFFIX, checksumData.data);
-		const data = await axios.get(URL_PREFIX + file, { responseType: 'arraybuffer' });
+		const data = await axios.get(encodeURI(URL_PREFIX + file), { responseType: 'arraybuffer' });
 		await fs.writeFile(path + '/' + file, data.data);
 		await tar.x({ file: path + '/' + file, cwd: path, strict: true });
 		await fs.unlink(path + '/' + file);
 	} catch (e) {
-		log.warn('could not update ' + path + '/' + file + '. err=' + e);
+		log.warn('could not update with remote ' + URL_PREFIX + file + '. err=' + e);
 	}
 }
 
