@@ -57,7 +57,7 @@ class Predictor {
 			enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
 			enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
-			saveAudioPath: __dirname + '/records', // root folder where audio and metadata are saved
+			saveAudioPath: process.cwd() + '/records', // root folder where audio and metadata are saved
 			fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
 		}
 

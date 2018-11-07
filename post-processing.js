@@ -318,12 +318,12 @@ class Analyser extends Readable {
 
 		// default module options
 		this.config = {
-			saveMetadata: true,                 // save a JSON with predictions (saveDuration intervals)
+			saveMetadata: true,                  // save a JSON with predictions (saveDuration intervals)
 			verbose: false,
-			file: null,                         // analyse a file instead of a HTTP stream
-			modelPath: __dirname + '/model',    // directory where ML models and hotlist DBs are stored
-			modelUpdates: true,                 // periodically fetch ML and hotlist models and refresh predictors
-			modelUpdateInterval: 60             // update model files every N minutes
+			file: null,                          // analyse a file instead of a HTTP stream
+			modelPath: process.cwd() + '/model', // directory where ML models and hotlist DBs are stored
+			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
+			modelUpdateInterval: 60              // update model files every N minutes
 		}
 
 		// optional custom config
@@ -371,7 +371,7 @@ class Analyser extends Readable {
 		});
 
 		if (this.config.file) {
-			if (fs.existsSync(this.config.file + ".json")) fs.unlinkSync(this.config.file + ".json");
+			if (fs.existsSync(process.cwd() + "/" + this.config.file + ".json")) fs.unlinkSync(process.cwd() + "/" + this.config.file + ".json");
 			this.predictor = new PredictorFile({
 				country: this.country,
 				name: this.name,

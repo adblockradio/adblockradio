@@ -25,12 +25,19 @@ class MlPredictor extends Transform {
 
 	spawn() { // spawn python subprocess
 		const self = this;
-		this.predictChild = cp.spawn('python', [
-			'-u',
-			__dirname + '/mlpredict.py',
-			this.canonical,
-		], { stdio: ['pipe', 'pipe', 'pipe'] });
+		log.info("__dirname=" + __dirname);
+		if (__dirname.indexOf("/snapshot/") === 0 || __dirname.indexOf("C:\\snapshot\\") === 0) {
+			// in a PKG environment (https://github.com/zeit/pkg)
+			this.predictChild = cp.spawn(process.cwd() + "/dist/mlpredict/mlpredict",
+				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
 
+		} else {
+			this.predictChild = cp.spawn('python', [
+				'-u',
+				__dirname + '/mlpredict.py',
+				this.canonical,
+			], { stdio: ['pipe', 'pipe', 'pipe'] });
+		}
 		// increase default timeouts, otherwise this would fail at model loading on some CPU-bound devices.
 		// https://github.com/0rpc/zerorpc-node#clients
 		this.client = new zerorpc.Client({ timeout: 60, heartbeatInterval: 15000 });

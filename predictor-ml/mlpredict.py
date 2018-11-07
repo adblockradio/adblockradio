@@ -13,6 +13,7 @@ import math
 import sounddevice as sd
 import python_speech_features as psf
 import audioop
+os.environ["PBR_VERSION"]='3.1.1'
 from keras.models import load_model
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2' # reduce log spam from tensorflow. cf https://github.com/tensorflow/tensorflow/issues/7778
 import tensorflow as tf		# https://groups.google.com/forum/#!topic/keras-users/MFUEY9P1sc8
