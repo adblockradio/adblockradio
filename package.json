@@ -4,7 +4,8 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "install-app-deps"
   },
   "keywords": [
     "adblock",
@@ -18,12 +19,19 @@
     "abr-log": "^1.0.2",
     "async": "^2.6.1",
     "axios": "^0.18.0",
-    "fs-extra": "^7.0.0",
-    "sqlite3": "^4.0.3",
+    "fs-extra": "^7.0.1",
+    "sqlite3": "^4.0.4",
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.14",
-    "tar": "^4.4.6",
-    "webradio-metadata": "^0.1.30",
+    "tar": "^4.4.8",
+    "webradio-metadata": "^0.1.31",
+    "zeromq": "^5.1.0",
     "zerorpc": "^0.9.8"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.353.0",
+    "electron-builder": "^20.34.0",
+    "electron-prebuilt": "^1.4.13",
+    "electron-rebuild": "^1.8.2"
   }
 }

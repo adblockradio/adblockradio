@@ -300,7 +300,11 @@ class PostProcessor extends Transform {
 
 		//log.debug(JSON.stringify(Object.assign(out, { audio: undefined }), null, "\t"));
 
-		this.push(out);
+		try {
+			this.push(out);
+		} catch (e) {
+			log.warn("could not push. err=" + e);
+		}
 	}
 }
 

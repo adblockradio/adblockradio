@@ -59,6 +59,7 @@ class Predictor {
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
 			saveAudioPath: process.cwd() + '/records', // root folder where audio and metadata are saved
 			fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
+			waitAfterMlModelLoad: 0, // (ms) in CPU-bound systems, wait between ML model load and audio pipe to not overwhelm the system
 		}
 
 		// optional custom config
@@ -141,14 +142,22 @@ class Predictor {
 		const out = function() {
 			if (self.config.saveAudio) self.dbs.audio.write(dataObj.data);
 			if (!self.listenerClosed) {
-				self.listener.write(Object.assign(dataObj, {
-					type: "audio",
-					metadataPath: self.dbs.metadataPath
-				}));
+				try {
+					self.listener.write(Object.assign(dataObj, {
+						type: "audio",
+						metadataPath: self.dbs.metadataPath
+					}));
+				} catch (e) {
+					log.warn("could not write to listener. err=" + e);
+				}
 			} else {
 				log.error(self.canonical + " attempt to write audio data but the listener is closed");
 			}
-			self.decoder.stdin.write(dataObj.data);
+			try {
+				self.decoder.stdin.write(dataObj.data);
+			} catch (e) {
+				log.warn("could not write to decoder. err=" + e);
+			}
 		}
 
 		if (!dataObj.newSegment) return out();
@@ -271,7 +280,15 @@ class Predictor {
 			const self = this;
 			this.mlPredictor.ready2 = false;
 			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
-				if (err) return log.error(self.canonical + " could not load ML model. err=" + err);
+				if (err && err.indexOf("Lost remote after 30000ms") >= 0) {
+					log.warn(self.canonical + " lost remote Python worker. will restart it");
+					self.mlPredictor.unpipe(this.listener);
+					self.mlPredictor.destroy();
+					self.refreshPredictorMl();
+
+				} else if (err) {
+					return log.error(self.canonical + " could not load ML model. err=" + err);
+				}
 				setTimeout(function() {
 					if (self.config.enablePredictorMl && self.mlPredictor.ready && !self.mlPredictor.ready2) {
 						log.info(self.canonical + ": piping audio to mlPredictor");
@@ -280,7 +297,7 @@ class Predictor {
 					} else {
 						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
 					}
-				}, 3000); // to not overwhelm the CPU in CPU-bound systems
+				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
 			});
 		} else {
 			if (this.mlPredictor) {

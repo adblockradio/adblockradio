@@ -26,11 +26,18 @@ class MlPredictor extends Transform {
 	spawn() { // spawn python subprocess
 		const self = this;
 		log.info("__dirname=" + __dirname);
-		if (__dirname.indexOf("/snapshot/") === 0 || __dirname.indexOf("C:\\snapshot\\") === 0) {
-			// in a PKG environment (https://github.com/zeit/pkg)
+
+		const isPKG = __dirname.indexOf("/snapshot/") === 0 || __dirname.indexOf("C:\\snapshot\\") === 0; // in a PKG environment (https://github.com/zeit/pkg)
+		const isElectron = !!(process && process.versions['electron']); // in a Electron environment (https://github.com/electron/electron/issues/2288)
+
+		log.info("env: PKG=" + isPKG + " Electron=" + isElectron);
+
+		if (isPKG) {
 			this.predictChild = cp.spawn(process.cwd() + "/dist/mlpredict/mlpredict",
 				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
-
+		} else if (isElectron) {
+			this.predictChild = cp.spawn(process.cwd() + "/../build/dist/mlpredict/mlpredict",
+				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
 		} else {
 			this.predictChild = cp.spawn('python', [
 				'-u',
