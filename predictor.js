@@ -280,9 +280,9 @@ class Predictor {
 			const self = this;
 			this.mlPredictor.ready2 = false;
 			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
-				if (err && err.indexOf("Lost remote after 30000ms") >= 0) {
+				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
 					log.warn(self.canonical + " lost remote Python worker. will restart it");
-					self.mlPredictor.unpipe(this.listener);
+					self.mlPredictor.unpipe(self.listener);
 					self.mlPredictor.destroy();
 					self.refreshPredictorMl();
 
