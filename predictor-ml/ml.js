@@ -36,7 +36,7 @@ class MlPredictor extends Transform {
 			this.predictChild = cp.spawn(process.cwd() + "/dist/mlpredict/mlpredict",
 				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
 		} else if (isElectron) {
-			this.predictChild = cp.spawn(process.cwd() + "/../build/dist/mlpredict/mlpredict",
+			this.predictChild = cp.spawn(process.cwd() + "/node_modules/adblockradio/predictor-ml/dist/mlpredict/mlpredict",
 				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
 		} else {
 			this.predictChild = cp.spawn('python', [
