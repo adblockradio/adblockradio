@@ -380,7 +380,7 @@ class Analyser extends Readable {
 				country: this.country,
 				name: this.name,
 				file: this.config.file,
-				config: options.config,
+				config: this.config,
 				listener: this.postProcessor
 			});
 		} else {
@@ -395,7 +395,7 @@ class Analyser extends Readable {
 					country: self.country,
 					name: self.name,
 					modelPath: self.config.modelPath,
-					config: options.config,
+					config: self.config,
 					listener: self.postProcessor
 				});
 
@@ -542,9 +542,11 @@ class Analyser extends Readable {
 
 	stopDl() {
 		// TODO
-		this.predictor.stop();
-		this.postProcessor.ended = true;
-		this.postProcessor.end();
+		if (this.predictor) this.predictor.stop();
+		if (this.postProcessor) {
+			this.postProcessor.ended = true;
+			this.postProcessor.end();
+		}
 		if (this.modelUpdatesInterval) clearInterval(this.modelUpdatesInterval);
 		this.push(null);
 	}

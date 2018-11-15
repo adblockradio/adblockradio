@@ -208,23 +208,8 @@ class Predictor {
 		if (this.dbs && this.config.saveAudio) this.dbs.audio.end();
 
 		const self = this;
-		const now = new Date();
-		const dirDate = (now.getUTCFullYear()) + "-" + (now.getUTCMonth()+1 < 10 ? "0" : "") + (now.getUTCMonth()+1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + (now.getUTCDate());
-		const dir = this.config.saveAudioPath + '/' + dirDate + "/" + this.country + "_" + this.name + "/todo/";
-		const path = dir + now.toISOString();
 
-		//log.debug("saveAudioSegment: path=" + path);
-
-		cp.exec("mkdir -p \"" + dir + "\"", function(error, stdout, stderr) {
-			if (error) {
-				log.error("warning, could not create path " + path);
-			}
-
-			self.dbs = {
-				audio: self.config.saveAudio ? new fs.createWriteStream(path + "." + self.audioExt) : null,
-				metadataPath: path + ".json"
-			};
-
+		const cb = function() {
 			// TODO put fetch metadata out of this process, it may delay it.
 			// but... metadata may be an ingredient to help the algorithm. so it shall stay here.
 			if (self.config.fetchMetadata) {
@@ -242,8 +227,34 @@ class Predictor {
 					}
 				});
 			}
+		}
+
+		if (!this.config.saveAudio && !this.config.saveMetadata) {
+			self.dbs = {
+				audio: null,
+				metadataPath: null
+			};
+			cb();
 			callback();
-		});
+
+		} else {
+
+			const now = new Date();
+			const dirDate = (now.getUTCFullYear()) + "-" + (now.getUTCMonth()+1 < 10 ? "0" : "") + (now.getUTCMonth()+1) + "-" + (now.getUTCDate() < 10 ? "0" : "") + (now.getUTCDate());
+			const dir = this.config.saveAudioPath + '/' + dirDate + "/" + this.country + "_" + this.name + "/todo/";
+			const path = dir + now.toISOString();
+			//log.debug("saveAudioSegment: path=" + path);
+
+			cp.exec("mkdir -p \"" + dir + "\"", function(error, stdout, stderr) {
+				if (error) log.error("warning, could not create path " + path);
+				self.dbs = {
+					audio: self.config.saveAudio ? new fs.createWriteStream(path + "." + self.audioExt) : null,
+					metadataPath: path + ".json"
+				};
+				cb();
+				callback();
+			});
+		}
 	}
 
 	refreshPredictorHotlist() {

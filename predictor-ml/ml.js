@@ -44,10 +44,13 @@ class MlPredictor extends Transform {
 
 			for (let i=0; i<paths.length; i++) {
 				const path = process.cwd() + paths[i] + "/node_modules/adblockradio/predictor-ml/dist/mlpredict/mlpredict"
-				const stat = fs.statSync(path);
-				if (stat.isFile()) {
+				try {
+					fs.accessSync(path);
+					log.info("mlpredict found at " + path);
 					this.predictChild = cp.spawn(path, [ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
 					break;
+				} catch (e) {
+					// pass
 				}
 				if (i === paths.length - 1) {
 					const msg = "Could not locate mlpredict. cwd=" + process.cwd() + " paths=" + JSON.stringify(paths);
