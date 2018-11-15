@@ -232,7 +232,11 @@ class Predictor {
 					if (err) return log.warn(self.canonical + ": getMeta: error fetching title meta. err=" + err);
 					//log.info(self.country + "_" + self.name + " meta=" + JSON.stringify(parsedMeta));
 					if (!self.listenerClosed) {
-						self.listener.write({ type: "title", data: parsedMeta });
+						try {
+							self.listener.write({ type: "title", data: parsedMeta });
+						} catch (e) {
+							log.error(self.canonical + " attempt to write title data but err=" + e);
+						}
 					} else {
 						log.error(self.canonical + " attempt to write title data but the listener is closed");
 					}

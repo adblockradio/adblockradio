@@ -140,7 +140,7 @@ class PostProcessor extends Transform {
 	_final(next) { // only in file mode, because radio streams "never" end
 		log.info('flushing post processor cache');
 		for (let i=3; i>=1; i--) {
-			this._postProcessing(this.cache[i].ts);
+			if (this.cache[i]) this._postProcessing(this.cache[i].ts);
 		}
 		next();
 	}

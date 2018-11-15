@@ -9,6 +9,7 @@ const { Transform } = require("stream");
 const cp = require("child_process");
 const { log } = require("abr-log")("pred-ml");
 const zerorpc = require("zerorpc");
+const fs = require("fs");
 
 class MlPredictor extends Transform {
 	constructor(options) {
@@ -36,8 +37,25 @@ class MlPredictor extends Transform {
 			this.predictChild = cp.spawn(process.cwd() + "/dist/mlpredict/mlpredict",
 				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
 		} else if (isElectron) {
-			this.predictChild = cp.spawn(process.cwd() + "/node_modules/adblockradio/predictor-ml/dist/mlpredict/mlpredict",
-				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
+			const paths = [
+				"",
+				"/Adblock Radio Buffer-linux-x64/resources/app"
+			];
+
+			for (let i=0; i<paths.length; i++) {
+				const path = process.cwd() + paths[i] + "/node_modules/adblockradio/predictor-ml/dist/mlpredict/mlpredict"
+				const stat = fs.statSync(path);
+				if (stat.isFile()) {
+					this.predictChild = cp.spawn(path, [ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
+					break;
+				}
+				if (i === paths.length - 1) {
+					const msg = "Could not locate mlpredict. cwd=" + process.cwd() + " paths=" + JSON.stringify(paths);
+					log.error(msg);
+					throw new Error(msg);
+				}
+			}
+
 		} else {
 			this.predictChild = cp.spawn('python', [
 				'-u',
