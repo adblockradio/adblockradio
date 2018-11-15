@@ -9,7 +9,7 @@ Demo standalone player [available here](https://github.com/adblockradio/buffer-p
 ## Overview
 A technical discussion is available [here](TODO).
 
-Radio streams are downloaded in `predictor.js` with the module [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`.
+Radio streams are downloaded in `predictor.js` with the module [adblockradio/stream-tireless-baler](https://github.com/adblockradio/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`.
 
 In both cases, audio is then decoded to single-channel, `22050 Hz` PCM with `ffmpeg`.
 
@@ -37,7 +37,7 @@ As prerequisites, you need:
 Then install this module:
 
 ```bash
-git clone https://github.com/dest4/adblockradio.git
+git clone https://github.com/adblockradio/adblockradio.git
 cd adblockradio
 npm install
 ```
@@ -202,7 +202,7 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - `ml`: `null` if not available, otherwise an object containing the results of the time-frequency analyser
   * `softmaxraw`: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
-  * `softmax`: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/dest4/adblockradio/blob/master/post-processing.js).
+  * `softmax`: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/adblockradio/adblockradio/blob/master/post-processing.js).
   * `class`: either `0-ads`, `1-speech`, `2-music` or `unsure`. The classification according to `softmax`.
 
 - `hotlist`: null if not available, otherwise an object containing the results of the fingerprint matcher.
@@ -213,13 +213,13 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 
 - `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`.
 
-- `metadata*`: live metadata, fetched and parsed by the module [dest4/webradio-metadata](https://github.com/dest4/webradio-metadata).
+- `metadata*`: live metadata, fetched and parsed by the module [adblockradio/webradio-metadata](https://github.com/adblockradio/webradio-metadata).
 
 - `streamInfo*`: static metadata about the stream. Contains stream `url`, `favicon`, `bitrate` in bytes / s, audio files extension `audioExt` (`mp3` or `aac`) and `homepage` URL.
 
-- `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/dest4/adblockradio/blob/master/predictor-ml/mlpredict.py).
+- `gain`: a [dB](https://en.wikipedia.org/wiki/Decibel) value representing the average volume of the stream. Useful if you wish to normalize the playback volume. Calculated by [`mlpredict.py`](https://github.com/adblockradio/adblockradio/blob/master/predictor-ml/mlpredict.py).
 
-- `tBuffer*`: seconds of audio buffer. Calculated by [dest4/stream-tireless-baler](https://github.com/dest4/stream-tireless-baler).
+- `tBuffer*`: seconds of audio buffer. Calculated by [adblockradio/stream-tireless-baler](https://github.com/adblockradio/stream-tireless-baler).
 
 - `predictorStartTime*`: timestamp of the algorithm startup. Useful to get the uptime.
 
@@ -230,10 +230,10 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - `tEnd**`: upper boundary of the time interval linked with the prediction (in milliseconds)
 
 ## Supported radios
-The list of supported radios is [available here](https://github.com/dest4/available-models).
+The list of supported radios is [available here](https://github.com/adblockradio/available-models).
 
 ### Note to developers
-Integrations of this module are welcome. Suggestions are available [here](TODO).
+Integrations of this module are welcome. Suggestions are available [here](https://www.adblockradio.com/blog/2018/11/15/designing-audio-ad-block-radio-podcast/#product-design).
 
 A standalone demo player for web browsers is [available here](https://github.com/adblockradio/buffer-player).
 
