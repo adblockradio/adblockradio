@@ -24,13 +24,13 @@
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.14",
     "tar": "^4.4.8",
-    "webradio-metadata": "^0.1.31",
+    "webradio-metadata": "^0.1.32",
     "zeromq": "^5.1.0",
     "zerorpc": "^0.9.8"
   },
   "devDependencies": {
-    "aws-sdk": "^2.353.0",
-    "electron-builder": "^20.34.0",
+    "aws-sdk": "^2.362.0",
+    "electron-builder": "^20.36.2",
     "electron-prebuilt": "^1.4.13",
     "electron-rebuild": "^1.8.2"
   }
