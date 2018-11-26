@@ -11,7 +11,7 @@ const Hotlist = require("./predictor-db/hotlist.js");
 const MlPredictor = require("./predictor-ml/ml.js");
 const async = require("async");
 const cp = require("child_process");
-const fs = require("fs");
+const fs = require("fs-extra");
 
 class ChunkAudioRead extends Readable {
 	constructor(options) {
@@ -19,6 +19,7 @@ class ChunkAudioRead extends Readable {
 		super(options);
 
 		this.file = options.file;
+		this.records = options.records;
 		this.predInterval = options.predInterval;
 		const self = this;
 
@@ -32,7 +33,22 @@ class ChunkAudioRead extends Readable {
 			'pipe:1'
 		], { stdio: ['pipe', 'pipe', process.stderr] });
 
-		fs.createReadStream(self.file).pipe(this.decoder.stdin);
+		if (this.file) {
+			fs.createReadStream(self.file).pipe(this.decoder.stdin);
+		} else if (this.records) {
+			(async function read() {
+				for (let i=0; i<self.records.length; i++) {
+					const data = await fs.readFile(self.records[i]);
+					const needToWaitDrain = !self.decoder.stdin.write(data);
+					if (needToWaitDrain) {
+						await new Promise(function(resolve) {
+							self.decoder.stdin.once("drain", resolve);
+						});
+					}
+				}
+				self.decoder.stdin.end();
+			})();
+		}
 
 		const bitrate = 22050 * 2; // bytes per second. (16 bit, single channel)
 		const readAmount = Math.round(self.predInterval * bitrate);
@@ -66,51 +82,66 @@ class ChunkAudioRead extends Readable {
 class PredictorFile {
 	constructor(options) {
 		// stream identification
-		this.country = options.country; 	// mandatory argument
-		this.name = options.name;			// mandatory argument
-		this.file = options.file;			// mandatory argument
+		this.country = options.country;     // mandatory argument
+		this.name = options.name;           // mandatory argument
 		this.modelPath = options.modelPath; // mandatory argument - directory where ML models and hotlist DBs are stored
+
+		// input file(s) - specify one, as a relative path
+		this.file = options.file;           // arbitrary file to analyse
+		this.records = options.records;     // relative paths of audio chunks, with partial records results in JSON.
 
 		// output of predictions
 		this.listener = options.listener;	// mandatory argument, instance of a Writable Stream.
 
-		if (!this.country || !this.name || !this.listener || !this.file) {
-			return log.error("Predictor needs to be constructed with: country (string), name (string), listener (Writable stream) and file (string)");
+		if (!this.country || !this.name || !this.listener || (!this.file && !this.records)) {
+			return log.error("Predictor needs to be constructed with: country (string), name (string), listener (Writable stream) and (file (string) OR records (array of strings))");
 		}
 
 		// default module options
 		this.config = {
 			predInterval: 1, // send stream status to listener every N seconds
+			saveDuration: 10, // save audio file and metadata every N **predInterval times**.
 			enablePredictorMl: true, // perform machine learning inference (at "predInterval" intervals)
 			enablePredictorHotlist: true, // compute audio fingerprints and search them in a DB (at "predInterval" intervals)
-			file: null, // analyse a file directly, instead of downloading a stream
 		}
 
 		// optional custom config
 		Object.assign(this.config, options.config);
+		Object.assign(this.config, { file: undefined, records: undefined });
 
-		log.info("run predictor on file " + this.file + " with config=" + JSON.stringify(this.config));
+		if (this.file) {
+			log.info("run predictor on file " + this.file + " with config=" + JSON.stringify(this.config));
+		} else {
+			log.info("run predictor on " + this.records.length + " records with config=" + JSON.stringify(Object.assign(this.config)));
+		}
 
 		this._onData = this._onData.bind(this);
 
-		this.startPredictorHotlist();
-		this.startPredictorMl();
-
-		const self = this;
-
-		this.input = new ChunkAudioRead({ file: this.config.file, predInterval: this.config.predInterval });
+		this.input = new ChunkAudioRead({ file: this.file, records: this.records, predInterval: this.config.predInterval });
 		this.input.on("error", (err) => log.error("read err=" + err));
 		this.input.pause();
 
-		this.input.on("data", self._onData);
+		const self = this;
+
+		this.input.on("data", function(dataObj) {
+			if (self.records) {
+				const i = Math.floor(dataObj.tStart / 1000 / self.config.predInterval / self.config.saveDuration);
+				const s = self.records[i].split('.');
+				dataObj.metadataPath = s.slice(0, s.length - 1).join("."); // remove audio extension
+				log.debug("read " + dataObj.data.length + " bytes for file " + dataObj.metadataPath);
+			}
+			self._onData(dataObj);
+		});
 
 		this.input.on("end", function() {
 			log.info("all data has been read");
 			self.readFinished = true;
 		});
 
-		this.mlPredictor.onReadyCallback = () => this.input.resume();
-
+		this.startPredictorHotlist();
+		this.startPredictorMl(function() {
+			self.input.resume()
+		});
 	}
 
 	_onData(dataObj) {
@@ -138,8 +169,9 @@ class PredictorFile {
 			// we package all the results in listener's cache data into an object that will go in postProcessing
 			self.listener.write(Object.assign(dataObj, {
 				type: "fileChunk",
-				metadataPath: self.config.file + ".json"
+				metadataPath: (dataObj.metadataPath || self.config.file) + ".json"
 			}));
+
 			if (self.readFinished) {
 				self.stopPredictors();
 				self.listener.end();
@@ -162,12 +194,17 @@ class PredictorFile {
 		}
 	}
 
-	startPredictorMl() {
+	startPredictorMl(callback) {
 		if (this.config.enablePredictorMl) {
 			this.mlPredictor = new MlPredictor({
 				country: this.country,
 				name: this.name,
-				fileModel: this.modelPath + '/' + this.country + '_' + this.name + '.keras'
+			});
+			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
+				if (err) {
+					log.error(err);
+				}
+				callback();
 			});
 			this.mlPredictor.pipe(this.listener);
 		} else {
@@ -177,8 +214,8 @@ class PredictorFile {
 
 	stopPredictors() {
 		log.info("close predictor");
-		if (this.hotlist) this.hotlist.destroy();
-		if (this.mlPredictor) this.mlPredictor.destroy();
+		if (this.hotlist) this.hotlist.end();
+		if (this.mlPredictor) this.mlPredictor.end();
 	}
 }
 

@@ -39,12 +39,14 @@ if fetchMetadata: getMeta                    ––> listener (title)
 class Predictor {
 	constructor(options) {
 		// stream identification
-		this.country = options.country; 	// mandatory argument
-		this.name = options.name;			// mandatory argument
-		this.modelPath = options.modelPath; // mandatory argument - directory where ML models and hotlist DBs are stored
+		this.country = options.country;     // mandatory argument
+		this.name = options.name;           // mandatory argument
+
+		// directory where ML models and hotlist DBs are stored
+		this.modelPath = options.modelPath; // mandatory argument if ML or Hotlist is enabled, ignored otherwise
 
 		// output of predictions
-		this.listener = options.listener;	// mandatory argument, instance of a Writable Stream.
+		this.listener = options.listener;   // mandatory argument, instance of a Writable Stream.
 
 		if (!this.country || !this.name || !this.listener) {
 			return log.error("Predictor needs to be constructed with: country (string), name (string) and listener (Writable stream)");

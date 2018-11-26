@@ -324,7 +324,8 @@ class Analyser extends Readable {
 		this.config = {
 			saveMetadata: true,                  // save a JSON with predictions (saveDuration intervals)
 			verbose: false,
-			file: null,                          // analyse a file instead of a HTTP stream
+			file: null,                          // analyse a file instead of a HTTP stream. will not download stream
+			records: null,                       // analyse a series of previous records (relative paths). will not download stream
 			modelPath: process.cwd() + '/model', // directory where ML models and hotlist DBs are stored
 			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
 			modelUpdateInterval: 60              // update model files every N minutes
@@ -337,12 +338,12 @@ class Analyser extends Readable {
 			country: this.country,
 			name: this.name,
 			verbose: this.config.verbose,
-			fileMode: !!this.config.file,
+			fileMode: !!this.config.file || !!this.config.records,
 		});
 
 		const self = this;
 		this.postProcessor.on("data", function(obj) {
-			if (!self.config.file && !obj.audio) {
+			if (!self.config.file && !self.config.records && !obj.audio) {
 				log.warn("empty audio! " + JSON.stringify(obj));
 			}
 
@@ -360,6 +361,8 @@ class Analyser extends Readable {
 			} else if (self.config.file) {
 				self.data = self.data || { predictions: [], country: self.country, name: self.name };
 				self.data.predictions.push(obj);
+			} else if (self.config.records) {
+				self.saveMetadata(obj, metadataPath);
 			} else {
 				self.saveMetadata(obj, metadataPath);
 			}
@@ -368,10 +371,14 @@ class Analyser extends Readable {
 		this.postProcessor.on("end", function() {
 			log.info("postProcessor ended");
 			if (!self.data) return self.push(null);
-			self.mergeClassBlocks(self.data, function(blocksCleaned) {
-				self.push({ blocksCleaned: blocksCleaned });
+			if (self.config.file) {
+				self.mergeClassBlocks(self.data, function(blocksCleaned) {
+					self.push({ blocksCleaned: blocksCleaned });
+					self.push(null);
+				});
+			} else if (self.config.records) {
 				self.push(null);
-			});
+			}
 		});
 
 		if (this.config.file) {
@@ -380,9 +387,23 @@ class Analyser extends Readable {
 				country: this.country,
 				name: this.name,
 				file: this.config.file,
+				modelPath: this.config.modelPath,
 				config: this.config,
 				listener: this.postProcessor
 			});
+
+		} else if (this.config.records) {
+			this.offlinets = +new Date();
+			this.predictor = new PredictorFile({
+				country: this.country,
+				name: this.name,
+				records: this.config.records,
+				modelPath: this.config.modelPath,
+				config: this.config,
+				listener: this.postProcessor,
+				verbose: true,
+			});
+
 		} else {
 			(async function() {
 				// download and/or update models at startup
@@ -394,7 +415,6 @@ class Analyser extends Readable {
 				self.predictor = new Predictor({
 					country: self.country,
 					name: self.name,
-					modelPath: self.config.modelPath,
 					config: self.config,
 					listener: self.postProcessor
 				});
@@ -455,6 +475,10 @@ class Analyser extends Readable {
 				predictorStartTime: undefined
 			});
 
+			if (data.offlinets !== self.offlinets && self.config.records) {
+				data.predictions = [];
+				data.offlinets = self.offlinets;
+			}
 			data.predictions.push(outputData);
 
 			fs.writeFile(path, JSON.stringify(data, null, "\t"), function(err) {
@@ -464,8 +488,7 @@ class Analyser extends Readable {
 	}
 
 	// used in the context of file analysis
-	// merge contiguous data with identical class
-	// to present a more compact result.
+	// merge contiguous data with identical class to present a more compact result.
 	mergeClassBlocks(data, callback) {
 		//const self = this;
 		const path = this.config.file + ".json";
