@@ -79,7 +79,7 @@ class Predictor {
 			}
 		}
 
-		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config));
+		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config) + " modelPath=" + this.modelPath);
 
 		this._onData = this._onData.bind(this);
 		this._newAudioSegment = this._newAudioSegment.bind(this);

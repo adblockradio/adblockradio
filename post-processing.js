@@ -285,7 +285,9 @@ class PostProcessor extends Transform {
 			Object.assign(out, { // results specific to file analysis mode
 				tStart: this.cache[i].tStart,
 				tEnd: this.cache[i].tEnd,
+				//playTime: this.config.records ? +new Date(this.cache[i].metadataPath.slice(-24)) : undefined,
 			});
+
 		} else {
 			//log.debug("streamInfo=" + JSON.stringify(this.streamInfo, null, "\t"));
 			Object.assign(out, { // results specific to stream analysis mode
@@ -415,6 +417,7 @@ class Analyser extends Readable {
 				self.predictor = new Predictor({
 					country: self.country,
 					name: self.name,
+					modelPath: self.config.modelPath,
 					config: self.config,
 					listener: self.postProcessor
 				});
@@ -462,9 +465,9 @@ class Analyser extends Readable {
 
 			// extract redundant info: no need to repeat it in predictions array
 			// if the title metadata changes, only the last one is saved
-			data.metadata = outputData.metadata;
-			data.streamInfo = outputData.streamInfo;
-			data.predictorStartTime = outputData.predictorStartTime;
+			data.metadata = outputData.metadata || data.metadata;
+			data.streamInfo = outputData.streamInfo || data.streamInfo;
+			data.predictorStartTime = outputData.predictorStartTime || data.predictorStartTime;
 			data.country = self.country;
 			data.name = self.name;
 
