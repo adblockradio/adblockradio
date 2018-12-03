@@ -29,8 +29,8 @@
     "zerorpc": "^0.9.8"
   },
   "devDependencies": {
-    "aws-sdk": "^2.362.0",
-    "electron-builder": "^20.36.2",
+    "aws-sdk": "^2.368.0",
+    "electron-builder": "^20.38.2",
     "electron-prebuilt": "^1.4.13",
     "electron-rebuild": "^1.8.2"
   }
