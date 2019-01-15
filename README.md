@@ -7,7 +7,7 @@ Demo standalone player [available here](https://github.com/adblockradio/buffer-p
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
 ## Overview
-A technical discussion is available [here](TODO).
+A technical discussion is available [here](https://www.adblockradio.com/blog/2018/11/15/designing-audio-ad-block-radio-podcast/).
 
 Radio streams are downloaded in `predictor.js` with the module [adblockradio/stream-tireless-baler](https://github.com/adblockradio/stream-tireless-baler). Podcasts are downloaded in `predictor-file.js`.
 
