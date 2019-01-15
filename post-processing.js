@@ -410,10 +410,10 @@ class Analyser extends Readable {
 				// download and/or update models at startup
 				if (self.config.modelUpdates) {
 					await checkModelUpdates(self.country, self.name, self.config.modelPath);
-					await checkMetadataUpdates();
 				} else {
 					log.info(self.country + '_' + self.name + ' module updates are disabled');
 				}
+				await checkMetadataUpdates();
 
 				// we require only when metadata scraper is downloaded
 				const Predictor = require('./predictor.js');
@@ -427,13 +427,13 @@ class Analyser extends Readable {
 					listener: self.postProcessor
 				});
 
-				if (self.config.modelUpdates) {
-					self.modelUpdatesInterval = setInterval(function() {
+				self.modelUpdatesInterval = setInterval(function() {
+					if (self.config.modelUpdates) {
 						checkModelUpdates(self.country, self.name, self.config.modelPath,
 							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
-						checkMetadataUpdates(self.predictor.refreshMetadata);
-					}, self.config.modelUpdateInterval * 60000);
-				}
+					}
+					checkMetadataUpdates(self.predictor.refreshMetadata);
+				}, self.config.modelUpdateInterval * 60000);
 
 
 			})();
