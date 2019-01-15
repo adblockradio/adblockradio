@@ -9,7 +9,7 @@ const { log } = require("abr-log")("predictor");
 const Hotlist = require("./predictor-db/hotlist.js");
 const MlPredictor = require("./predictor-ml/ml.js");
 const { StreamDl } = require("stream-tireless-baler");
-let { getMeta, isAvailable } = require("./webradio-metadata.js");
+let { getMeta, isAvailable } = require(process.cwd() + "/webradio-metadata.js");
 const async = require("async");
 const cp = require("child_process");
 const fs = require("fs");
@@ -331,7 +331,7 @@ class Predictor {
 	refreshMetadata() {
 		log.info(this.canonical + " refresh metadata scraper");
 		delete require.cache[require.resolve('./webradio-metadata.js')];
-		getMeta = require("./webradio-metadata.js").getMeta;
+		getMeta = require(process.cwd() + "/webradio-metadata.js").getMeta;
 	}
 
 	stop() {
