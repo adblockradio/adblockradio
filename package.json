@@ -24,7 +24,6 @@
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.14",
     "tar": "^4.4.8",
-    "webradio-metadata": "^0.1.32",
     "zeromq": "^5.1.0",
     "zerorpc": "^0.9.8"
   },

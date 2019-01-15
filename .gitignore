@@ -4,3 +4,5 @@ node_modules/
 records/
 .vscode/
 podcasts/
+webradio-metadata.js
+webradio-metadata.js.tar.gz.sha256sum

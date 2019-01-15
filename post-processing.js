@@ -6,11 +6,10 @@
 
 "use strict";
 const { log } = require("abr-log")("post-processing");
-const Predictor = require("./predictor.js");
 const PredictorFile = require("./predictor-file.js");
 const { Transform, Readable } = require("stream");
 const fs = require("fs");
-const checkModelUpdates = require("./check-model-updates.js");
+const { checkModelUpdates, checkMetadataUpdates } = require("./check-updates.js");
 
 
 const consts = {
@@ -411,9 +410,15 @@ class Analyser extends Readable {
 				// download and/or update models at startup
 				if (self.config.modelUpdates) {
 					await checkModelUpdates(self.country, self.name, self.config.modelPath);
+					await checkMetadataUpdates();
 				} else {
 					log.info(self.country + '_' + self.name + ' module updates are disabled');
 				}
+
+				// we require only when metadata scraper is downloaded
+				const Predictor = require('./predictor.js');
+
+				// download and/or update metadata scraper at startup
 				self.predictor = new Predictor({
 					country: self.country,
 					name: self.name,
@@ -426,8 +431,11 @@ class Analyser extends Readable {
 					self.modelUpdatesInterval = setInterval(function() {
 						checkModelUpdates(self.country, self.name, self.config.modelPath,
 							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
+						checkMetadataUpdates(self.predictor.refreshMetadata);
 					}, self.config.modelUpdateInterval * 60000);
 				}
+
+
 			})();
 		}
 
@@ -564,6 +572,10 @@ class Analyser extends Readable {
 
 	refreshPredictorHotlist() {
 		this.predictor.refreshPredictorHotlist();
+	}
+
+	refreshMetadata() {
+		this.predictor.refreshMetadata();
 	}
 
 	stopDl() {

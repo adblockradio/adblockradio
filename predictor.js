@@ -9,7 +9,7 @@ const { log } = require("abr-log")("predictor");
 const Hotlist = require("./predictor-db/hotlist.js");
 const MlPredictor = require("./predictor-ml/ml.js");
 const { StreamDl } = require("stream-tireless-baler");
-const { getMeta, isAvailable } = require("webradio-metadata");
+let { getMeta, isAvailable } = require("./webradio-metadata.js");
 const async = require("async");
 const cp = require("child_process");
 const fs = require("fs");
@@ -73,9 +73,10 @@ class Predictor {
 		if (this.config.fetchMetadata) {
 			if (isAvailable(this.country, this.name)) {
 				log.info(this.canonical + " metadata is available for this stream");
+				this.willFetchMetadata = true;
 			} else {
 				log.warn(this.canonical + " metadata is not available for this stream. will not fetch it.");
-				this.config.fetchMetadata = false;
+				this.willFetchMetadata = false;
 			}
 		}
 
@@ -105,6 +106,7 @@ class Predictor {
 		this.refreshPredictorHotlist();
 		this.refreshPredictorMl = this.refreshPredictorMl.bind(this);
 		this.refreshPredictorMl();
+		this.refreshMetadata = this.refreshMetadata.bind(this);
 
 		this.dbs = null;
 		this.dl.on("metadata", function(metadata) {
@@ -214,7 +216,7 @@ class Predictor {
 		const cb = function() {
 			// TODO put fetch metadata out of this process, it may delay it.
 			// but... metadata may be an ingredient to help the algorithm. so it shall stay here.
-			if (self.config.fetchMetadata) {
+			if (self.willFetchMetadata) {
 				getMeta(self.country, self.name, function(err, parsedMeta, corsEnabled) {
 					if (err) return log.warn(self.canonical + ": getMeta: error fetching title meta. err=" + err);
 					//log.info(self.country + "_" + self.name + " meta=" + JSON.stringify(parsedMeta));
@@ -324,6 +326,12 @@ class Predictor {
 				this.mlPredictor = null;
 			}
 		}
+	}
+
+	refreshMetadata() {
+		log.info(this.canonical + " refresh metadata scraper");
+		delete require.cache[require.resolve('./webradio-metadata.js')];
+		getMeta = require("./webradio-metadata.js").getMeta;
 	}
 
 	stop() {
