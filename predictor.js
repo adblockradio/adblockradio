@@ -177,7 +177,7 @@ class Predictor {
 		async.parallel([
 
 			function(cb) {
-				return self.config.enablePredictorMl && self.mlPredictor.ready ? self.mlPredictor.predict(cb) : setImmediate(cb);
+				return self.config.enablePredictorMl ? self.mlPredictor.predict(cb) : setImmediate(cb);
 			},
 			function(cb) {
 				return self.config.enablePredictorHotlist ? self.hotlist.onFingers(cb) : setImmediate(cb);
@@ -282,21 +282,21 @@ class Predictor {
 		}
 	}
 
-	refreshPredictorMl() {
+	async refreshPredictorMl() {
 		log.info(this.canonical + " refresh ML predictor");
+		if (this.config.enablePredictorMl && !this.mlPredictor) {
+			this.mlPredictor = new MlPredictor({
+				country: this.country,
+				name: this.name,
+			});
+			this.mlPredictor.pipe(this.listener);
+			this.decoder.stdout.pipe(this.mlPredictor);
+		}
 		if (this.config.enablePredictorMl) {
-			if (!this.mlPredictor) {
-				this.mlPredictor = new MlPredictor({
-					country: this.country,
-					name: this.name,
-				});
-				this.mlPredictor.pipe(this.listener);
-			} else if (this.mlPredictor.ready2) {
-				this.decoder.stdout.unpipe(this.mlPredictor);
-			}
-
+			await this.mlPredictor.load();
+		}
 			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
-			const self = this;
+			/*const self = this;
 			this.mlPredictor.ready2 = false;
 			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
 				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
@@ -317,14 +317,13 @@ class Predictor {
 						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
 					}
 				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
-			});
-		} else {
-			if (this.mlPredictor) {
-				this.mlPredictor.unpipe(this.listener);
-				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
-				this.mlPredictor.destroy();
-				this.mlPredictor = null;
-			}
+			});*/
+
+		if (!this.config.enablePredictorMl && this.mlPredictor) {
+			this.decoder.stdout.unpipe(this.mlPredictor);
+			this.mlPredictor.unpipe(this.listener);
+			this.mlPredictor.destroy();
+			this.mlPredictor = null;
 		}
 	}
 
