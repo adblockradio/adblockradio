@@ -4,8 +4,7 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "install-app-deps"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "adblock",
@@ -16,16 +15,17 @@
   "author": "Alexandre Storelli <a_npm@storelli.fr>",
   "license": "MPL-2.0",
   "dependencies": {
+    "@tensorflow/tfjs-node": "^0.2.3",
     "abr-log": "^1.0.2",
     "async": "^2.6.1",
     "axios": "^0.18.0",
+    "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
     "fs-extra": "^7.0.1",
+    "mfcc": "git+https://git@github.com/vail-systems/node-mfcc.git",
     "sqlite3": "^4.0.4",
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.14",
-    "tar": "^4.4.8",
-    "zeromq": "^5.1.0",
-    "zerorpc": "^0.9.8"
+    "tar": "^4.4.8"
   },
   "devDependencies": {
     "aws-sdk": "^2.368.0",
