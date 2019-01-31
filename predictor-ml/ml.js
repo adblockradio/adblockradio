@@ -13,8 +13,19 @@ const { log } = require("abr-log")("pred-ml");
 //global.fetch = require('node-fetch'); // tensorflow-js uses browser API fetch. This is a polyfill for usage in Node
 //const tf = require('@tensorflow/tfjs');
 const tf = require('@tensorflow/tfjs-node');
-const dsp = require('dsp.js');
-const mfcc = require('mfcc');
+
+const SAMPLING_RATE = 22050;
+const INTAKE_SECONDS = 4; // formerly nnXlenT
+const MFCC_WINLEN = 0.05; // compute each MFCC frame with a window of that length (in seconds)
+const MFCC_WINSTEP = 0.02; // how many seconds to step between each MFCC frame
+
+const LSTM_INTAKE_SECONDS = 4; //nnXLenT = 4.0  # window of data intake, in seconds
+const LSTM_INTAKE_FRAMES = Math.floor(LSTM_INTAKE_SECONDS / MFCC_WINSTEP); //nnXLen = int(round(nnXLenT / mfccStepT))  # data intake in points
+const LSTM_STEP_SECONDS = 0.19*4; //nnXStepT = 0.19*4 # compute one LSTM prediction every N seconds.
+const LSTM_STEP_FRAMES = Math.round(LSTM_STEP_SECONDS / MFCC_WINSTEP); //nnXStep = int(round(nnXStepT / mfccStepT)) # amount of cepstral spectra read for each LSTM prediction
+
+const mfcc = require("./mfcc.js")(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP);
+
 
 class MlPredictor extends Transform {
 	constructor(options) {
@@ -27,24 +38,6 @@ class MlPredictor extends Transform {
 		//this.dataWrittenSinceLastSeg = false;
 
 		this.preemphasislastValue = 0;
-		this.SAMPLING_RATE = 22050;
-		this.INTAKE_SECONDS = 4; // formerly nnXlenT
-
-		this.PREEMPHASIS_FACTOR = 0.97; // 0 = no preemphasis
-
-		this.MFCC_WINLEN = 0.05; // compute each MFCC frame with a window of that length (in seconds)
-		this.MFCC_WINSTEP = 0.02; // how many seconds to step between each MFCC frame
-		this.MFCC_NFFT = 2048;
-		this.FFT = new dsp.FFT(this.MFCC_NFFT, this.SAMPLING_RATE);
-		this.MFCC_NFILT = 26; // number of filter banks in MFCC
-		this.MFCC_NCEPS = 13; // number of cepstral coefficients to output
-		this.MFCC_LIFT = 22; // lifting coefficient for computed MFCC
-		this.MFCC = mfcc.construct(this.MFCC_NFFT, this.MFCC_NFILT, 1e-8, this.SAMPLING_RATE / 2, this.SAMPLING_RATE);
-
-		this.LSTM_INTAKE_SECONDS = 4; //nnXLenT = 4.0  # window of data intake, in seconds
-		this.LSTM_INTAKE_FRAMES = Math.floor(this.LSTM_INTAKE_SECONDS / this.MFCC_WINSTEP); //nnXLen = int(round(nnXLenT / mfccStepT))  # data intake in points
-		this.LSTM_STEP_SECONDS = 0.19*4; //nnXStepT = 0.19*4 # compute one LSTM prediction every N seconds.
-		this.LSTM_STEP_FRAMES = Math.round(this.LSTM_STEP_SECONDS / this.MFCC_WINSTEP); //nnXStep = int(round(nnXStepT / mfccStepT)) # amount of cepstral spectra read for each LSTM prediction
 	}
 
 	/*spawn() { // spawn python subprocess
@@ -174,7 +167,7 @@ class MlPredictor extends Transform {
 			return setImmediate(callback);
 		}
 		const nSamples = this.workingBuf.length / 2;
-		const duration = nSamples / this.SAMPLING_RATE;
+		const duration = nSamples / SAMPLING_RATE;
 		log.debug("will analyse " + duration + " s (" + nSamples + " samples)");
 
 
@@ -193,9 +186,9 @@ class MlPredictor extends Transform {
 		//self.pcm = tmp if self.pcm is None else np.append(self.pcm, tmp)
 
 		// number of samples for data intake
-		//const intake_samples = Math.floor((this.INTAKE_SECONDS + duration) * this.SAMPLING_RATE);
+		//const intake_samples = Math.floor((INTAKE_SECONDS + duration) * SAMPLING_RATE);
 		// why not
-		const intake_samples = Math.floor(this.INTAKE_SECONDS * this.SAMPLING_RATE);
+		const intake_samples = Math.floor(INTAKE_SECONDS * SAMPLING_RATE);
 
 		//pcm_len_limit = int((nnXLenT + duration) * self.sampleRate)
 		/*if len(self.pcm) > pcm_len_limit:
@@ -208,89 +201,13 @@ class MlPredictor extends Transform {
 			log.debug("working buf new length=" + (this.workingBuf.length / 2));
 		}
 
-		const nWorkingSamples = this.workingBuf.length / 2;
+		const ceps = mfcc(this.workingBuf); // call here mfcc.js
 
-		// pre-emphasis
-		const filtered = new Array(nWorkingSamples);
-		filtered[0] = this.workingBuf.readInt16LE(0); // - this.PREEMPHASIS_FACTOR * ;
-		for (let i=1; i<nWorkingSamples; i++) {
-			filtered[i] = this.workingBuf.readInt16LE(2*i) - this.PREEMPHASIS_FACTOR * this.workingBuf.readInt16LE(2*(i-1));
-		}
-
-
-		// here TODO
-		// build the windowing system.
-		const nWin = Math.floor((nWorkingSamples - this.MFCC_WINLEN * this.SAMPLING_RATE) / (this.MFCC_WINSTEP * this.SAMPLING_RATE));
-		log.debug(nWorkingSamples + " samples ready to be converted to in " + nWin + " series of " + this.MFCC_NCEPS + " MFCC");
-		const ceps = new Array(nWin);
-
-		for (let i=0; i<nWin; i++) {
-			let data = filtered.slice(this.SAMPLING_RATE*i*this.MFCC_WINSTEP, this.SAMPLING_RATE*(i*this.MFCC_WINSTEP + this.MFCC_WINLEN));
-			if (data.length < this.MFCC_NFFT) { // pad with zeros
-				const nZeros = this.MFCC_NFFT - data.length;
-				data = data.concat(new Array(nZeros).fill(0));
-				//log.debug("fill with " + nZeros + " zeros");
-			}
-			//log.debug("preemphasized data");
-			//log.debug(data.map(d => Math.round(d)));
-			this.FFT.forward(data); // compute FFT in-place
-			let energy = 0;
-			for (let j=0; j<data.length; j++) { // get the power spectrum
-				data[j] = Math.pow(data[j], 2);
-				energy += data[j];
-			}
-			//log.debug("Power spectrum");
-			//log.debug(data.map(d => Math.round(d)));
-			const mfccData = this.MFCC(data, true);
-			ceps[i] = [ mfccData.power ].concat(mfccData.melCoef);
-			if (i === 0) {
-				log.debug("ceps[0] nceps " + ceps[0].length);
-			}
-
-			// replace first cepstral coefficient with log of frame energy
-			ceps[i][0] = Math.log(energy);
-
-			//log.debug("ceps");
-			//log.debug(JSON.stringify(ceps[i]));
-
-			// cepstra lifter (boost higher frequencies)
-			for (let j=0; j<this.MFCC_NCEPS; j++) {
-				ceps[i][j] *= 1 + (this.MFCC_LIFT/2) * Math.sin(Math.PI * j / this.MFCC_LIFT)
-			}
-
-			//log.debug("After lifting:");
-			//log.debug(ceps[i]);
-		}
-
-		// now ceps is an array of nWin frames of this.MFCC_NCEPS values.
-		log.debug("ceps 2D array dim=" + nWin + "x" + ceps[0].length);
-
-		/*# compute a series of mel-frequency cepstral coefficients
-		ceps = psf.mfcc(
-			self.pcm,
-			samplerate=self.sampleRate,
-			winlen=mfccWinlen,
-			winstep=mfccStepT,
-			numcep=mfccNceps,
-			nfilt=26,
-			nfft=2048,
-			lowfreq=0,
-			highfreq=None,
-			preemph=0.97,
-			ceplifter=22,
-			appendEnergy=True
-		)*/
-
-		/*#t2 = timer()
-		if ceps.shape[0] < nnXLen:
-			prevshape = ceps.shape
-			ceps = np.pad(ceps, ((nnXLen-ceps.shape[0], 0),(0,0)), 'edge')
-			logger.debug("ceps extended from " + str(prevshape) + " to " + str(ceps.shape))*/
-
-		if (nWin < this.LSTM_INTAKE_FRAMES) {
+		const nWin = ceps.length;
+		if (nWin < LSTM_INTAKE_FRAMES) {
 			// audio input is shorter than LSTM window
 			// left-pad with identical frames
-			const nMissingFrames = this.LSTM_INTAKE_FRAMES - nWin;
+			const nMissingFrames = LSTM_INTAKE_FRAMES - nWin;
 			log.warn(nMissingFrames + " frames missing to fit lstm intake")
 			const refFrame = ceps[0].slice();
 			for (let i=0; i<nMissingFrames; i++) {
@@ -298,13 +215,13 @@ class MlPredictor extends Transform {
 			}
 		}
 
-
-		const nLSTMPredictions = Math.floor((ceps.length - this.LSTM_INTAKE_FRAMES) / this.LSTM_STEP_FRAMES) + 1;
+		log.debug("ceps.l=" + ceps.length + " intake_frames=" + LSTM_INTAKE_FRAMES + " step_frames=" + LSTM_INTAKE_FRAMES);
+		const nLSTMPredictions = Math.floor((ceps.length - LSTM_INTAKE_FRAMES) / LSTM_STEP_FRAMES) + 1;
 		log.debug(ceps.length + " frames will be sent to LSTM, in " + nLSTMPredictions + " chunks.");
 		const MLInputData = new Array(nLSTMPredictions);
 
 		for (let i=0; i<nLSTMPredictions; i++) {
-			MLInputData[i] = ceps.slice(i*this.LSTM_STEP_FRAMES, i*this.LSTM_STEP_FRAMES + this.LSTM_INTAKE_FRAMES);
+			MLInputData[i] = ceps.slice(i*LSTM_STEP_FRAMES, i*LSTM_STEP_FRAMES + LSTM_INTAKE_FRAMES);
 		}
 
 
