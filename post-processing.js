@@ -26,8 +26,13 @@ const consts = {
 	ML_CONFIDENCE_THRESHOLD: 0.65,
 	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
 	FINAL_CONFIDENCE_THRESHOLD: 0.40,
-	MINIMUM_BUFFER: 2, // in seconds. some radio streams have very small buffers. just like players
-	                   // that wait for a minimal buffer before playing, wait for N seconds before streaming data.
+
+	MINIMUM_BUFFER: 2, // in seconds.
+	                   // Some radios have a very small buffer, down to zero.
+	                   // But browsers such as Firefox and Chrome only start playing after a 2 second buffer.
+	                   // So we artificially delay the predictions.
+	                   // VLC player, however, plays without such delay.
+
 	DOWNSTREAM_LATENCY: 500 // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
 }
 
@@ -118,8 +123,14 @@ class PostProcessor extends Transform {
 		if (this.config.verbose) log.debug("---------------------");
 		const now = +new Date();
 		this.slotCounter++;
-		this.cache.unshift({ ts: now, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
+		this.cache.unshift({ ts: null, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
 
+		if (this.cache[1]) {
+			this.cache[1].ts = now;
+
+		} else { // happens only at first startup.
+			this.cache[0].ts = now;
+		}
 
 		if (this.config.fileMode) {
 			if (this.cache.length >= 5) {
@@ -411,7 +422,7 @@ class Analyser extends Readable {
 				if (self.config.modelUpdates) {
 					await checkModelUpdates(self.country, self.name, self.config.modelPath);
 				} else {
-					log.info(self.country + '_' + self.name + ' module updates are disabled');
+					log.info(self.country + '_' + self.name + ' model updates are disabled');
 				}
 				await checkMetadataUpdates();
 

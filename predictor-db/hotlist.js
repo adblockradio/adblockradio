@@ -6,7 +6,7 @@
 
 "use strict";
 const sqlite3 = require("sqlite3").verbose();
-const { Transform } = require("stream");
+const { Writable } = require("stream");
 const { log } = require("abr-log")("pred-hotlist");
 const Codegen = require("stream-audio-fingerprint");
 const async = require("async");
@@ -25,7 +25,7 @@ const consts = {
 	}
 }
 
-class Hotlist extends Transform {
+class Hotlist extends Writable {
 	constructor(options) {
 		super({ objectMode: true });
 		this.country = options.country;
@@ -131,8 +131,7 @@ class Hotlist extends Transform {
 		let hcodes = this.fingerbuffer.hcodes;
 		this.fingerbuffer = { tcodes: [], hcodes: [] };
 		if (!tcodes.length) {
-			this.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
-			if (callback) callback();
+			if (callback) callback(null, consts.EMPTY_OUTPUT);
 			return log.warn("onFingers: " + this.country + "_" + this.name + " no fingerprints to search");
 		}
 
@@ -155,8 +154,7 @@ class Hotlist extends Transform {
 			if (err) return log.error("onFingers: " + self.country + "_" + self.name + " query error=" + err);
 			if (!res || !res.length) {
 				//log.warn("onFingers: no results for a query of " + tcodes.length);
-				self.push({ type: "hotlist", data: consts.EMPTY_OUTPUT });
-				if (callback) callback();
+				if (callback) callback(null, consts.EMPTY_OUTPUT);
 				return
 			}
 
@@ -270,8 +268,7 @@ class Hotlist extends Transform {
 				softmaxraw: softmax,
 			}
 
-			self.push({ type: "hotlist", data: output });
-			if (callback) callback();
+			if (callback) callback(null, output);
 		});
 	}
 

@@ -177,10 +177,26 @@ class Predictor {
 		async.parallel([
 
 			function(cb) {
-				return self.config.enablePredictorMl && self.mlPredictor.ready ? self.mlPredictor.predict(cb) : setImmediate(cb);
+				if (!self.config.enablePredictorMl || !self.mlPredictor.ready) return setImmediate(cb);
+				self.mlPredictor.predict(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "ml", data });
+					} else {
+						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			},
 			function(cb) {
-				return self.config.enablePredictorHotlist ? self.hotlist.onFingers(cb) : setImmediate(cb);
+				if (!self.config.enablePredictorHotlist) return setImmediate(cb);
+				self.hotlist.onFingers(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "hotlist", data });
+					} else {
+						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			}
 
 		], function(err) {
@@ -264,7 +280,6 @@ class Predictor {
 	refreshPredictorHotlist() {
 		log.info(this.canonical + " refresh hotlist predictor");
 		if (this.hotlist) {
-			this.hotlist.unpipe(this.listener);
 			this.decoder.stdout.unpipe(this.hotlist);
 			this.hotlist.destroy();
 			delete this.hotlist;
@@ -275,7 +290,6 @@ class Predictor {
 				name: this.name,
 				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
 			});
-			this.hotlist.pipe(this.listener);
 			this.decoder.stdout.pipe(this.hotlist);
 		} else {
 			this.hotlist = null;
@@ -290,7 +304,6 @@ class Predictor {
 					country: this.country,
 					name: this.name,
 				});
-				this.mlPredictor.pipe(this.listener);
 			} else if (this.mlPredictor.ready2) {
 				this.decoder.stdout.unpipe(this.mlPredictor);
 			}
@@ -301,7 +314,6 @@ class Predictor {
 			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
 				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
 					log.warn(self.canonical + " lost remote Python worker. will restart it");
-					self.mlPredictor.unpipe(self.listener);
 					self.mlPredictor.destroy();
 					self.refreshPredictorMl();
 
@@ -320,7 +332,6 @@ class Predictor {
 			});
 		} else {
 			if (this.mlPredictor) {
-				this.mlPredictor.unpipe(this.listener);
 				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
 				this.mlPredictor.destroy();
 				this.mlPredictor = null;

@@ -155,12 +155,26 @@ class PredictorFile {
 			function(cb) {
 				if (!self.config.enablePredictorMl) return setImmediate(cb);
 				self.mlPredictor.write(dataObj.data);
-				self.mlPredictor.predict(cb);
+				self.mlPredictor.predict(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "ml", data });
+					} else {
+						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			},
 			function(cb) {
 				if (!self.config.enablePredictorHotlist) return setImmediate(cb);
 				self.hotlist.write(dataObj.data);
-				self.hotlist.onFingers(cb);
+				self.hotlist.onFingers(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "hotlist", data });
+					} else {
+						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			}
 
 		], function(err) {
@@ -188,7 +202,6 @@ class PredictorFile {
 				name: this.name,
 				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
 			});
-			this.hotlist.pipe(this.listener);
 		} else {
 			this.hotlist = null;
 		}
@@ -206,7 +219,6 @@ class PredictorFile {
 				}
 				callback();
 			});
-			this.mlPredictor.pipe(this.listener);
 		} else {
 			this.mlPredictor = null;
 		}

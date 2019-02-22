@@ -5,13 +5,13 @@
 // Copyright (c) 2018 Alexandre Storelli
 
 "use strict";
-const { Transform } = require("stream");
+const { Writable } = require("stream");
 const cp = require("child_process");
 const { log } = require("abr-log")("pred-ml");
 const zerorpc = require("zerorpc");
 const fs = require("fs");
 
-class MlPredictor extends Transform {
+class MlPredictor extends Writable {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
@@ -165,7 +165,6 @@ class MlPredictor extends Transform {
 				lenPcm: results.lenpcm
 			}
 
-			self.push({ type:"ml", data: outData, array: true });
 			callback(null, outData);
 		});
 	}
