@@ -19,6 +19,9 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 	const MFCC_LIFT = 22; // lifting coefficient for computed MFCC
 	const MFCC = mfcc.construct(MFCC_NFFT, MFCC_NFILT, 1e-8, SAMPLING_RATE / 2, SAMPLING_RATE);
 
+	const winlen = Math.ceil(MFCC_WINLEN * SAMPLING_RATE);
+	const winstep = Math.ceil(MFCC_WINSTEP * SAMPLING_RATE);
+
 	return function(workingBuf) {
 
 		const nWorkingSamples = workingBuf.length / 2;
@@ -34,7 +37,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 		}
 
 		// divide the signal in chunks and analyse each chunk. If the last chunk is not filled with data, pad with zeros.
-		const nWin = Math.ceil((nWorkingSamples - MFCC_WINLEN * SAMPLING_RATE) / (MFCC_WINSTEP * SAMPLING_RATE));
+		const nWin = 1 + Math.ceil((nWorkingSamples - winlen) / winstep);
 		log.debug(nWorkingSamples + " samples ready to be converted to in " + nWin + " series of " + MFCC_NCEPS + " MFCC");
 		const ceps = new Array(nWin);
 
@@ -43,11 +46,16 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 				preemph: filtered.slice(0, 100),
 				nWin: nWin,
 				frames: [],
+				energy: [],
 			}
 		}
 
 		for (let i=0; i<nWin; i++) {
-			let data = filtered.slice(Math.ceil(SAMPLING_RATE*(i*MFCC_WINSTEP)), Math.ceil(SAMPLING_RATE*(i*MFCC_WINSTEP + MFCC_WINLEN)));
+			let data = filtered.slice(i*winstep, i*winstep + winlen);
+			if (data.length < winlen) {
+				log.debug("pad window " + i + " with " + (winlen - data.length) + " zeroes");
+				data = data.concat(new Array(winlen - data.length).fill(0));
+			}
 
 			if (WANT_VERBOSE_RESULTS && i < 10) {
 				verboseResults.frames.push(data);
@@ -78,6 +86,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 
 			// convert a Float64Array to list
 			const halfPowerSpectrum = [].slice.call(FFT.spectrum);
+			const energy = halfPowerSpectrum.reduce((acc, val) => acc + val);
 
 			// Fourier spectrum of a real signal is symmetrical, i.e. PS[X] = PS[NFFT-1-X]
 			// the dsp lib only gives the first NFFT/2 values. We expand the spectrum to have
@@ -103,6 +112,10 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 
 			//log.debug("After lifting:");
 			if (DEBUG) log.debug(ceps[i]);
+			if (WANT_VERBOSE_RESULTS) {
+				verboseResults.energy.push(energy);
+				verboseResults.ceps = ceps;
+			}
 		}
 
 		// now ceps is an array of nWin frames of MFCC_NCEPS values.
