@@ -21,7 +21,7 @@
     "axios": "^0.18.0",
     "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
     "fs-extra": "^7.0.1",
-    "mfcc": "git+https://git@github.com/vail-systems/node-mfcc.git",
+    "mfcc": "git+https://git@github.com/adblockradio/node-mfcc.git",
     "sqlite3": "^4.0.4",
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.14",

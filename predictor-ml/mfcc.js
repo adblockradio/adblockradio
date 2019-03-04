@@ -17,7 +17,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 	const MFCC_NFILT = 26; // number of filter banks in MFCC
 	const MFCC_NCEPS = 13; // number of cepstral coefficients to output. warning: this is also hardcoded in 'mfcc' module
 	const MFCC_LIFT = 22; // lifting coefficient for computed MFCC
-	const MFCC = mfcc.construct(MFCC_NFFT, MFCC_NFILT, 1e-8, SAMPLING_RATE / 2, SAMPLING_RATE);
+	const MFCC = mfcc.construct(MFCC_NFFT / 2, MFCC_NFILT, 0, SAMPLING_RATE / 2, SAMPLING_RATE);
 
 	const winlen = Math.ceil(MFCC_WINLEN * SAMPLING_RATE);
 	const winstep = Math.ceil(MFCC_WINSTEP * SAMPLING_RATE);
@@ -46,7 +46,9 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 				preemph: filtered.slice(0, 100),
 				nWin: nWin,
 				frames: [],
+				feat: [],
 				energy: [],
+				dct: [],
 			}
 		}
 
@@ -57,64 +59,50 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 				data = data.concat(new Array(winlen - data.length).fill(0));
 			}
 
-			if (WANT_VERBOSE_RESULTS && i < 10) {
-				verboseResults.frames.push(data);
-			}
-
 			if (data.length < MFCC_NFFT) { // pad with zeros. It's OK to fill with zeros as long as there is more data than zeros
 				const nZeros = MFCC_NFFT - data.length;
 				data = data.concat(new Array(nZeros).fill(0));
 				if (DEBUG) log.debug("fill with " + nZeros + " zeros");
 			}
-			//if (DEBUG) log.debug("preemphasized data");
-			//if (DEBUG) log.debug(data.map(d => Math.round(d)));
-			//if (DEBUG) log.debug(Math.round(data[0]))
-
-
 
 			FFT.forward(data); // compute FFT in-place
 
-			/*let energy = 0;
-			for (let j=0; j<data.length; j++) { // get the power spectrum
-				data[j] = Math.pow(data[j], 2);
-				energy += data[j];
-			}*/
-			if (DEBUG) log.debug("Power spectrum");
-			//if (DEBUG) log.debug(FFT.spectrum.map(d => Math.round(d)));
-			if (DEBUG) log.debug(Math.round(FFT.spectrum[0]));
-			//if (DEBUG) log.debug(FFT.spectrum);
+			// convert a Float64Array spectrum to a power spectrum list
+			const halfPowerSpectrum = [].slice.call(FFT.spectrum).map(e => Math.pow(e, 2) * MFCC_NFFT / 4);
 
-			// convert a Float64Array to list
-			const halfPowerSpectrum = [].slice.call(FFT.spectrum);
+			// approximation: to map as closely as possible what python_speech_features does,
+			// we add a term close to the contribution at the Nyquist frequency.
+			halfPowerSpectrum.push(halfPowerSpectrum[halfPowerSpectrum.length - 1]);
+			// now halfPowerSpectrum's length is NFFT/2 + 1.
+
 			const energy = halfPowerSpectrum.reduce((acc, val) => acc + val);
 
-			// Fourier spectrum of a real signal is symmetrical, i.e. PS[X] = PS[NFFT-1-X]
-			// the dsp lib only gives the first NFFT/2 values. We expand the spectrum to have
-			// a result of the length MFCC_NFFT.
-			const powerSpectrum = halfPowerSpectrum.concat(halfPowerSpectrum.slice().reverse());
+			const mfccData = MFCC(halfPowerSpectrum.slice(0, -1), true);
 
-			const mfccData = MFCC(powerSpectrum, true);
-			ceps[i] = mfccData.power.concat(mfccData.melCoef);
+			// cepstra lifter (boost higher frequencies)
+			for (let j=0; j<mfccData.melCoef.length; j++) {
+				mfccData.melCoef[j] *= 1 + (MFCC_LIFT/2) * Math.sin(Math.PI * (j+1) / MFCC_LIFT);
+			}
+
+			// replace first cepstral coefficient with log of frame energy
+			ceps[i] = [Math.log(energy)].concat(mfccData.melCoef);
 			if (i === 0) {
 				log.debug("ceps[0] nceps " + ceps[0].length);
 			}
 
-			// replace first cepstral coefficient with log of frame energy
-			//ceps[i][0] = Math.log(energy);
-
-			//log.debug("ceps");
-			if (DEBUG) log.debug(JSON.stringify(ceps[i]));
-
-			// cepstra lifter (boost higher frequencies)
-			for (let j=0; j<MFCC_NCEPS; j++) {
-				ceps[i][j] *= 1 + (MFCC_LIFT/2) * Math.sin(Math.PI * j / MFCC_LIFT)
-			}
-
-			//log.debug("After lifting:");
-			if (DEBUG) log.debug(ceps[i]);
 			if (WANT_VERBOSE_RESULTS) {
+				if (i < 10) verboseResults.frames.push(data);
+				if (i === 0) verboseResults.powspec = halfPowerSpectrum;
+				verboseResults.feat.push(mfccData.melSpec);
 				verboseResults.energy.push(energy);
+				verboseResults.bins = mfccData.bins;
+				verboseResults.filters = mfccData.filters;
 				verboseResults.ceps = ceps;
+				verboseResults.dct.push(require('dct')(mfccData.melSpecLog).slice(0,13).map(function(c, index) {
+					const norm = 1 / Math.sqrt(2*mfccData.melSpecLog.length);
+					if (index === 0) return c * norm / Math.sqrt(2);
+					return c * norm;
+				}));
 			}
 		}
 
