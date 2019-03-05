@@ -6,23 +6,40 @@
 
 "use strict";
 const { Transform } = require("stream");
-//const cp = require("child_process");
 const { log } = require("abr-log")("pred-ml");
-//const zerorpc = require("zerorpc");
 //const fs = require("fs");
 //global.fetch = require('node-fetch'); // tensorflow-js uses browser API fetch. This is a polyfill for usage in Node
 //const tf = require('@tensorflow/tfjs');
 const tf = require('@tensorflow/tfjs-node');
 
+// Input audio sampling rate (Hz). Note audio is assumed to be 16-bit.
 const SAMPLING_RATE = 22050;
-const INTAKE_SECONDS = 4; // formerly nnXlenT
-const MFCC_WINLEN = 0.05; // compute each MFCC frame with a window of that length (in seconds)
-const MFCC_WINSTEP = 0.02; // how many seconds to step between each MFCC frame
 
-const LSTM_INTAKE_SECONDS = 4; //nnXLenT = 4.0  # window of data intake, in seconds
-const LSTM_INTAKE_FRAMES = Math.floor(LSTM_INTAKE_SECONDS / MFCC_WINSTEP); //nnXLen = int(round(nnXLenT / mfccStepT))  # data intake in points
-const LSTM_STEP_SECONDS = 0.19*4; //nnXStepT = 0.19*4 # compute one LSTM prediction every N seconds.
-const LSTM_STEP_FRAMES = Math.round(LSTM_STEP_SECONDS / MFCC_WINSTEP); //nnXStep = int(round(nnXStepT / mfccStepT)) # amount of cepstral spectra read for each LSTM prediction
+// Compute each MFCC frame with a window of that length (in seconds)
+const MFCC_WINLEN = 0.05;
+
+// How many seconds to step between each MFCC frame
+const MFCC_WINSTEP = 0.02;
+
+// Window of audio data sent for each LSTM prediction, in seconds
+// Equivalent variable in the Python code: nnXLenT
+const LSTM_INTAKE_SECONDS = 4;
+
+// Amount of cepstral coefficients read for each LSTM prediction
+// With MFCC_WINSTEP = 0.02 and LSTM_INTAKE_SECONDS = 4, it is equal to 200.
+const LSTM_INTAKE_FRAMES = Math.floor(LSTM_INTAKE_SECONDS / MFCC_WINSTEP);
+
+// Compute one LSTM prediction every N seconds.
+// It means that you call predict more often than every LSTM_STEP_SECONDS,
+// your result will only be made of one LSTM prediction.
+// If you call predict on a larger buffer, your result will be the average of several LSTM predictions.
+// Equivalent variable in the Python code: nnXStepT
+const LSTM_STEP_SECONDS = 0.19*4;
+
+// Amount of cepstral coefficients between each LSTM prediction
+// With MFCC_WINSTEP = 0.02 and LSTM_STEP_SECONDS at 0.76, it is equal to 38
+// Equivalent variable in the Python code: nnXStep
+const LSTM_STEP_FRAMES = Math.round(LSTM_STEP_SECONDS / MFCC_WINSTEP);
 
 const mfcc = require("./mfcc.js")(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP);
 
@@ -31,174 +48,62 @@ class MlPredictor extends Transform {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;
-		//this.ready = false; // becomes true when ML model is loaded
+		this.verbose = options.verbose || false;
+		this.ready = false; // becomes true when ML model is loaded
 		//this.ready2 = false; // becomes true when audio data is piped to this module. managed externally
 		//this.finalCallback = null;
-		//this.readyToCallFinal = false;
-		//this.dataWrittenSinceLastSeg = false;
-
-		this.preemphasislastValue = 0;
+		this.readyToCallFinal = false;
 	}
 
-	/*spawn() { // spawn python subprocess
-		const self = this;
-		log.info("__dirname=" + __dirname);
-
-		const isPKG = __dirname.indexOf("/snapshot/") === 0 || __dirname.indexOf("C:\\snapshot\\") === 0; // in a PKG environment (https://github.com/zeit/pkg)
-		const isElectron = !!(process && process.versions['electron']); // in a Electron environment (https://github.com/electron/electron/issues/2288)
-
-		log.info("env: PKG=" + isPKG + " Electron=" + isElectron);
-
-		if (isPKG) {
-			this.predictChild = cp.spawn(process.cwd() + "/dist/mlpredict/mlpredict",
-				[ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
-		} else if (isElectron) {
-			const paths = [
-				"",
-				"/Adblock Radio Buffer-linux-x64/resources/app"
-			];
-
-			for (let i=0; i<paths.length; i++) {
-				const path = process.cwd() + paths[i] + "/node_modules/adblockradio/predictor-ml/dist/mlpredict/mlpredict"
-				try {
-					fs.accessSync(path);
-					log.info("mlpredict found at " + path);
-					this.predictChild = cp.spawn(path, [ this.canonical ], { stdio: ['pipe', 'pipe', 'pipe']});
-					break;
-				} catch (e) {
-					// pass
-				}
-				if (i === paths.length - 1) {
-					const msg = "Could not locate mlpredict. cwd=" + process.cwd() + " paths=" + JSON.stringify(paths);
-					log.error(msg);
-					throw new Error(msg);
-				}
-			}
-
-		} else {
-			this.predictChild = cp.spawn('python', [
-				'-u',
-				__dirname + '/mlpredict.py',
-				this.canonical,
-			], { stdio: ['pipe', 'pipe', 'pipe'] });
-		}
-		// increase default timeouts, otherwise this would fail at model loading on some CPU-bound devices.
-		// https://github.com/0rpc/zerorpc-node#clients
-		this.client = new zerorpc.Client({ timeout: 120, heartbeatInterval: 60000 });
-		this.client.connect("ipc:///tmp/" + this.canonical);
-
-		this.client.on("error", function(error) {
-			log.error(self.canonical + " RPC client error:" + error);
-		});
-
-		this.predictChild.stdout.on('data', function(msg) { // received messages from python worker
-			const msgS = msg.toString().split("\n");
-
-			// sometimes, several lines arrive at once. separate them.
-			for (let i=0; i<msgS.length; i++) {
-				if (msgS[i].length > 0) log.debug(msgS[i]);
-			}
-		});
-
-		this.predictChild.stderr.on("data", function(msg) {
-			if (msg.includes("Using TensorFlow backend.")) return;
-			log.error(self.canonical + " mlpredict child stderr data: " + msg);
-		});
-		this.predictChild.stdin.on("error", function(err) {
-			log.warn(self.canonical + " mlpredict child stdin error: " + err);
-		});
-		this.predictChild.stdout.on("error", function(err) {
-			log.warn(self.canonical + " mlpredict child stdout error: " + err);
-		});
-		this.predictChild.stderr.on("error", function(err) {
-			log.warn(self.canonical + " mlpredict child stderr error: " + err);
-		});
-		this.predictChild.stdout.on("end", function() {
-			//log.debug("cp stdout end");
-			self.readyToCallFinal = true;
-			if (self.finalCallback) self.finalCallback();
-		});
-	}*/
-
 	async load() {
+		// TODO: find a way to load model from local file
+		// see https://stackoverflow.com/a/53766926/5317732
 		const path = 'https://www.adblockradio.com/models/' + this.canonical + '/model.json';
 		this.model = await tf.loadModel(path);
 		log.info(this.canonical + ' ML model loaded');
-
-		/*const self = this;
-		this.cork();
-		this.ready = false;
-		this.client.invoke("load", fileModel, function(error, res, more) {
-			if (error) {
-				if (error === "model not found") {
-					log.error(self.canonical + " Keras ML file not found. Cannot tag audio");
-				} else {
-					log.error(error);
-				}
-				return callback(error);
-			}
-
-			log.info(self.canonical + " predictor process is ready to crunch audio");
-			self.ready = true;
-			self.uncork();
-			return callback(null);
-		});*/
+		this.ready = true;
 	}
 
 	_write(buf, enc, next) {
-		log.debug("write " + buf.length / 2 + " samples to the working buffer");
-		this.workingBuf = this.workingBuf ? Buffer.concat([this.workingBuf, buf]) : buf;
-
-
-
-		/*this.dataWrittenSinceLastSeg = true;
-		const self = this;
-		this.client.invoke("write", buf, function(err, res, more) {
-			if (err) {
-				log.error(self.canonical + " _write client returned error=" + err);
-			}
-		});*/
+		this.newBuf = this.newBuf ? Buffer.concat([this.newBuf, buf]) : buf;
+		//log.debug("write " + buf.length / 2 + " samples to the buffer. now " + this.newBuf.length / 2 + " samples in it");
 		next();
 	}
 
 	predict(callback) {
-		if (!this.workingBuf) {
+		if (!this.newBuf) {
 			log.warn("empty buffer. skip");
 			return setImmediate(callback);
+		} else if (!this.model) {
+			log.warn("model is not ready. skip");
+			return setImmediate(callback);
 		}
-		const nSamples = this.workingBuf.length / 2;
-		const duration = nSamples / SAMPLING_RATE;
-		log.debug("will analyse " + duration + " s (" + nSamples + " samples)");
 
+		const nSamples = this.newBuf.length / 2;
+		const duration = nSamples / SAMPLING_RATE;
+		if (this.verbose) log.debug("will analyse " + duration + " s (" + nSamples + " samples)");
 
 		// compute RMS for volume normalization
 		let s = 0;
 		for (let i=0; i<nSamples; i++) {
-			s += Math.pow(this.workingBuf.readInt16LE(2*i), 2);
+			s += Math.pow(this.newBuf.readInt16LE(2*i), 2);
 		}
 		const rms = isNaN(s) ? 70 : 20 * Math.log10(Math.sqrt(s/nSamples))
-		log.debug("segment rms=" + rms + " dB");
+		if (this.verbose) log.debug("segment rms=" + Math.round(rms*100)/100 + " dB");
 
-		// we are going to work on a buffer that is longer than just buf. we also include older data.
-		//this.workingBuf = this.workingBuf ? Buffer.concat([ this.workingBuf, buf ]) : buf;
-
-		//tmp = np.frombuffer(data, dtype="int16") # single channel only
-		//self.pcm = tmp if self.pcm is None else np.append(self.pcm, tmp)
-
-		// number of samples for data intake
-		//const intake_samples = Math.floor((INTAKE_SECONDS + duration) * SAMPLING_RATE);
-		// why not
-		const intake_samples = Math.floor(INTAKE_SECONDS * SAMPLING_RATE);
-
-		//pcm_len_limit = int((nnXLenT + duration) * self.sampleRate)
-		/*if len(self.pcm) > pcm_len_limit:
-			logger.debug("need to truncate pcm from " + str(len(self.pcm)) + " to " + str(pcm_len_limit))
-			self.pcm = self.pcm[-pcm_len_limit:]*/
-
-		if (this.workingBuf.length / 2 > intake_samples) {
-			log.debug("Working buf will be truncated from " + (this.workingBuf.length / 2) + " samples to " + intake_samples);
-			this.workingBuf = this.workingBuf.slice(-intake_samples);
-			log.debug("working buf new length=" + (this.workingBuf.length / 2));
+		// We take the amount of data necessary to generate a new prediction,
+		// even if the last prediction was not long ago.
+		// It means to save the correct amount of data points to fill an analysis window,
+		// then add the new points since the last prediction.
+		// Factor 2 comes from the fact that audio is 16 bit.
+		// The number of LSTM predictions will depend on LSTM_STEP_SECONDS
+		const cropBufLen = 2*Math.floor(LSTM_INTAKE_SECONDS * SAMPLING_RATE) + this.newBuf.length;
+		this.workingBuf = this.workingBuf ? Buffer.concat([this.workingBuf, this.newBuf]) : this.newBuf;
+		this.newBuf = null;
+		if (this.workingBuf.length > cropBufLen) {
+			if (this.verbose) log.debug("Working buf will be truncated from " + (this.workingBuf.length / 2) + " samples to " + cropBufLen);
+			this.workingBuf = this.workingBuf.slice(-cropBufLen);
+			if (this.verbose) log.debug("working buf new length=" + (this.workingBuf.length / 2));
 		}
 
 		const ceps = mfcc(this.workingBuf); // call here mfcc.js
@@ -208,99 +113,70 @@ class MlPredictor extends Transform {
 			// audio input is shorter than LSTM window
 			// left-pad with identical frames
 			const nMissingFrames = LSTM_INTAKE_FRAMES - nWin;
-			log.warn(nMissingFrames + " frames missing to fit lstm intake")
+			if (this.verbose) log.warn(nMissingFrames + " frames missing to fit lstm intake")
 			const refFrame = ceps[0].slice();
 			for (let i=0; i<nMissingFrames; i++) {
 				ceps.unshift(refFrame);
 			}
 		}
 
-		log.debug("ceps.l=" + ceps.length + " intake_frames=" + LSTM_INTAKE_FRAMES + " step_frames=" + LSTM_INTAKE_FRAMES);
+		if (this.verbose) log.debug("ceps.l=" + ceps.length + " intake_frames=" + LSTM_INTAKE_FRAMES + " step_frames=" + LSTM_INTAKE_FRAMES);
 		const nLSTMPredictions = Math.floor((ceps.length - LSTM_INTAKE_FRAMES) / LSTM_STEP_FRAMES) + 1;
-		log.debug(ceps.length + " frames will be sent to LSTM, in " + nLSTMPredictions + " chunks.");
+		if (this.verbose) log.debug(ceps.length + " frames will be sent to LSTM, in " + nLSTMPredictions + " chunks.");
 		const MLInputData = new Array(nLSTMPredictions);
 
 		for (let i=0; i<nLSTMPredictions; i++) {
 			MLInputData[i] = ceps.slice(i*LSTM_STEP_FRAMES, i*LSTM_STEP_FRAMES + LSTM_INTAKE_FRAMES);
 		}
 
+		const tfResults = this.model.predict(tf.tensor3d(MLInputData));
+		const flatResultsRaw = tfResults.as1D().dataSync();
 
-		/*nframes = ceps.shape[0]
-		nwin = int(math.floor((nframes-nnXLen) / nnXStep))+1
-		t = [1.*nnXLenT/2 + nnXStepT*i for i in range(nwin)]
-		logger.debug("ceps.shape " + str(ceps.shape) + " nnXLen " + str(nnXLen) + " nnXStep " + str(nnXStep) + " nwin " + str(nwin))
-		X = np.empty([nwin, nnXLen, mfccNceps])
+		// TF.js data is a 1D array. Convert it to a nLSTMPredictions * 3 2D array.
+		const resultsRaw = new Array(nLSTMPredictions).fill(0).map(function(__, index) {
+			return flatResultsRaw.slice(index*3, (index+1)*3);
+		});
 
-		#t3 = timer()
-		for i in range(nwin):
-			X[i,:,:] = ceps[i*nnXStep:(i*nnXStep+nnXLen),:]
-		*/
+		// Average the results across LSTM predictions, to get a 1D array with 3 elements.
+		let maxResult = 0;
+		let indexMaxResult = -1;
+		const resultsAvg = new Array(3).fill(0).map(function(__, index) {
+			let sum = 0;
+			for (let i=index; i<flatResultsRaw.length; i=i+3) {
+				sum += flatResultsRaw[i];
+			}
+			if (sum > maxResult) {
+				maxResult = sum;
+				indexMaxResult = index;
+			}
+			return sum / nLSTMPredictions;
+		});
 
-		//predictions = self.model.predict(X, verbose=debug)
-		this.model.predict(tf.tensor3d(MLInputData)).print();
-
-		/*
-		#t4 = timer()
-
-		mp = np.mean(predictions, axis=0)
-		mp_ref = np.array(mp, copy=True)
-		predclass = np.argmax(mp)
-		mp.sort()
-		confidence = 1.0-math.exp(1-mp[2]/mp[1])
-		logger.debug("mpref " + str(mp_ref))
-		logger.debug("mp " + str(mp))
-		logger.debug("confidence " + str(confidence))
-		logger.debug("rms " + str(rms))
-
-		result = json.dumps({
-			'type': predclass,
-			'data': predictions.tolist(),
-			'confidence': confidence,
-			'softmax': mp_ref.tolist(),
-			'rms': rms,
-			'mem': process.memory_info().rss,
-			'lenpcm': len(self.pcm),
-			#'timings': {'mfcc': str(t2-t1), 'inference': str(t4-t3)}
-		})
-
-		logger.info("audio predicted probs=" + result)*/
-
-		//return result
-
-		return setImmediate(callback);
-
-
-		/*const self = this;
-		if (!this.dataWrittenSinceLastSeg) {
-			if (this.ready2) log.warn(this.canonical + " skip predict as no data is available for analysis");
-			return callback();
+		const secondMaxResult = Math.max(...resultsAvg.slice(0, indexMaxResult).concat(resultsAvg.slice(indexMaxResult + 1)));
+		const confidence = 1 - Math.exp(1 - maxResult / nLSTMPredictions / secondMaxResult);
+		if (this.verbose) {
+			log.debug("ResultsRaw:");
+			console.log(resultsRaw);
+			log.debug("ResultsAvg:");
+			console.log(resultsAvg);
+			log.debug("pred class = " + indexMaxResult + " with softmax = " + maxResult/nLSTMPredictions);
+			log.debug("second class is " + secondMaxResult + ". confidence = " + confidence);
 		}
-		this.dataWrittenSinceLastSeg = false;
-		this.client.invoke("predict", function(err, res, more) {
-			if (err) {
-				log.error(self.canonical + " predict() returned error=" + err);
-				return callback(err);
-			}
-			try {
-				var results = JSON.parse(res);
-				//log.debug("results=" + JSON.stringify(results))
-			} catch(e) {
-				log.error(self.canonical + " could not parse json results: " + e + " original data=|" + res + "|");
-				return callback(err);
-			}
 
-			let outData = {
-				type: results.type,
-				confidence: results.confidence,
-				softmaxraw: results.softmax.concat([0]), // the last class is about jingles. ML does not detect them.
-				//date: new Date(stream.lastData.getTime() + Math.round(stream.tBuffer*1000)),
-				gain: results.rms,
-				lenPcm: results.lenpcm
-			}
+		const outData = {
+			type: indexMaxResult,
+			confidence: confidence,
+			softmaxraw: resultsAvg.concat([0]), // the last class is about jingles. ML does not detect them.
+			//date: new Date(stream.lastData.getTime() + Math.round(stream.tBuffer*1000)),
+			gain: rms,
+			lenPcm: this.workingBuf.length
+		};
 
-			self.push({ type:"ml", data: outData, array: true });
+		this.push({ type:"ml", data: outData, array: true });
+
+		setImmediate(function() {
 			callback(null, outData);
-		});*/
+		});
 	}
 
 	_final(next) {
