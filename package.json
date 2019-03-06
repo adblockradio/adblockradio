@@ -17,20 +17,20 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^0.2.3",
     "abr-log": "^1.0.2",
-    "async": "^2.6.1",
+    "async": "^2.6.2",
     "axios": "^0.18.0",
     "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
     "fs-extra": "^7.0.1",
     "mfcc": "git+https://git@github.com/adblockradio/node-mfcc.git",
-    "sqlite3": "^4.0.4",
+    "sqlite3": "^4.0.6",
     "stream-audio-fingerprint": "^1.0.4",
-    "stream-tireless-baler": "^1.0.14",
+    "stream-tireless-baler": "^1.0.15",
     "tar": "^4.4.8"
   },
   "devDependencies": {
-    "aws-sdk": "^2.368.0",
-    "electron-builder": "^20.38.2",
+    "aws-sdk": "^2.408.0",
+    "electron-builder": "^20.38.5",
     "electron-prebuilt": "^1.4.13",
-    "electron-rebuild": "^1.8.2"
+    "electron-rebuild": "^1.8.4"
   }
 }

@@ -5,7 +5,7 @@
 // Copyright (c) 2018 Alexandre Storelli
 
 "use strict";
-const { Transform } = require("stream");
+const { Writable } = require("stream");
 const { log } = require("abr-log")("pred-ml");
 //const fs = require("fs");
 //global.fetch = require('node-fetch'); // tensorflow-js uses browser API fetch. This is a polyfill for usage in Node
@@ -44,7 +44,7 @@ const LSTM_STEP_FRAMES = Math.round(LSTM_STEP_SECONDS / MFCC_WINSTEP);
 const mfcc = require("./mfcc.js")(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP);
 
 
-class MlPredictor extends Transform {
+class MlPredictor extends Writable {
 	constructor(options) {
 		super({ readableObjectMode: true });
 		this.canonical = options.country + "_" + options.name;

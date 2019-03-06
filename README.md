@@ -4,6 +4,8 @@ An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
 Demo standalone player [available here](https://github.com/adblockradio/buffer-player).
 
+<a href="https://liberapay.com/asto/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
 ## Overview
@@ -45,8 +47,8 @@ npm install
 ### Command-line demo
 
 At startup and periodically during runtime, two files are automatically updated from [adblockradio.com/models/](https://adblockradio.com/models/):
-- a compatible machine-learning model (`*.keras`), for the time-frequency analyser.
-- a fingerprint database (`*.sqlite`), for the fingerprint matcher.
+- a compatible machine-learning model (`model.keras`), for the time-frequency analyser.
+- a fingerprint database (`hotlist.sqlite`), for the fingerprint matcher.
 
 #### Live stream analysis
 Run the demo on French RTL live radio stream:
@@ -163,8 +165,6 @@ Property|Description|Default
 `name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `file`|File to analyse (optional, analyse the live stream otherwise)|None
 
-Keep in mind that you need to download models as shown in the demo section above.
-
 ### Optional configuration
 Properties marked with a `*` are meant to be used only with live radio stream analysis, not file analysis where they are ignored.
 
@@ -191,8 +191,10 @@ Property|Description|Periodicity|Default
 
 Property|Description|Default
 --------|-----------|-------
-`modelPath`|directory where ML models and hotlist DBs are stored|`__dirname + '/model'`
-`saveAudioPath*`|root folder where audio and metadata are saved|`__dirname + '/records'`
+`modelPath`|directory where ML models and hotlist DBs are stored|`process.cwd() + '/model'`
+`modelFile`|path of ML file relative to `modelPath`|`country + '_' + name + '/model.keras'`
+`hotlistFile`|path of the hotlist DB relative to `modelPath`|`country + '_' + name + '/hotlist.sqlite'`
+`saveAudioPath*`|root folder where audio and metadata are saved|`process.cwd() + '/records'`
 
 ### Output
 

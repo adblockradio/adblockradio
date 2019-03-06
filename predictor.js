@@ -42,8 +42,9 @@ class Predictor {
 		this.country = options.country;     // mandatory argument
 		this.name = options.name;           // mandatory argument
 
-		// directory where ML models and hotlist DBs are stored
-		this.modelPath = options.modelPath; // mandatory argument if ML or Hotlist is enabled, ignored otherwise
+		// paths for ML model and hotlist DB
+		this.modelFile = options.modelFile; // mandatory argument if ML is enabled, ignored otherwise
+		this.hotlistFile = options.hotlistFile; // mandatory argument if ML is enabled, ignored otherwise
 
 		// output of predictions
 		this.listener = options.listener;   // mandatory argument, instance of a Writable Stream.
@@ -80,7 +81,7 @@ class Predictor {
 			}
 		}
 
-		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config) + " modelPath=" + this.modelPath);
+		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config) + " modelFile=" + this.modelFile + " hotlistFile=" + this.hotlistFile);
 
 		this._onData = this._onData.bind(this);
 		this._newAudioSegment = this._newAudioSegment.bind(this);
@@ -177,10 +178,26 @@ class Predictor {
 		async.parallel([
 
 			function(cb) {
-				return self.config.enablePredictorMl ? self.mlPredictor.predict(cb) : setImmediate(cb);
+				if (!self.config.enablePredictorMl || !self.mlPredictor.ready) return setImmediate(cb);
+				self.mlPredictor.predict(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "ml", data });
+					} else {
+						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			},
 			function(cb) {
-				return self.config.enablePredictorHotlist ? self.hotlist.onFingers(cb) : setImmediate(cb);
+				if (!self.config.enablePredictorHotlist) return setImmediate(cb);
+				self.hotlist.onFingers(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "hotlist", data });
+					} else {
+						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			}
 
 		], function(err) {
@@ -264,7 +281,6 @@ class Predictor {
 	refreshPredictorHotlist() {
 		log.info(this.canonical + " refresh hotlist predictor");
 		if (this.hotlist) {
-			this.hotlist.unpipe(this.listener);
 			this.decoder.stdout.unpipe(this.hotlist);
 			this.hotlist.destroy();
 			delete this.hotlist;
@@ -273,9 +289,8 @@ class Predictor {
 			this.hotlist = new Hotlist({
 				country: this.country,
 				name: this.name,
-				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
+				fileDB: this.hotlistFile,
 			});
-			this.hotlist.pipe(this.listener);
 			this.decoder.stdout.pipe(this.hotlist);
 		} else {
 			this.hotlist = null;
@@ -294,14 +309,12 @@ class Predictor {
 		}
 		if (this.config.enablePredictorMl) {
 			await this.mlPredictor.load();
-		}
 			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
 			/*const self = this;
 			this.mlPredictor.ready2 = false;
-			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
+			this.mlPredictor.load(this.modelFile, function(err) {
 				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
 					log.warn(self.canonical + " lost remote Python worker. will restart it");
-					self.mlPredictor.unpipe(self.listener);
 					self.mlPredictor.destroy();
 					self.refreshPredictorMl();
 
@@ -317,13 +330,13 @@ class Predictor {
 						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
 					}
 				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
-			});*/
-
-		if (!this.config.enablePredictorMl && this.mlPredictor) {
-			this.decoder.stdout.unpipe(this.mlPredictor);
-			this.mlPredictor.unpipe(this.listener);
-			this.mlPredictor.destroy();
-			this.mlPredictor = null;
+      */
+		} else {
+			if (this.mlPredictor) {
+				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
+				this.mlPredictor.destroy();
+				this.mlPredictor = null;
+			}
 		}
 	}
 

@@ -8,7 +8,7 @@
 const { log } = require("abr-log")("post-processing");
 const PredictorFile = require("./predictor-file.js");
 const { Transform, Readable } = require("stream");
-const fs = require("fs");
+const fs = require("fs-extra");
 const { checkModelUpdates, checkMetadataUpdates } = require("./check-updates.js");
 
 
@@ -26,8 +26,13 @@ const consts = {
 	ML_CONFIDENCE_THRESHOLD: 0.65,
 	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
 	FINAL_CONFIDENCE_THRESHOLD: 0.40,
-	MINIMUM_BUFFER: 2, // in seconds. some radio streams have very small buffers. just like players
-	                   // that wait for a minimal buffer before playing, wait for N seconds before streaming data.
+
+	MINIMUM_BUFFER: 2, // in seconds.
+	                   // Some radios have a very small buffer, down to zero.
+	                   // But browsers such as Firefox and Chrome only start playing after a 2 second buffer.
+	                   // So we artificially delay the predictions.
+	                   // VLC player, however, plays without such delay.
+
 	DOWNSTREAM_LATENCY: 500 // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
 }
 
@@ -118,8 +123,14 @@ class PostProcessor extends Transform {
 		if (this.config.verbose) log.debug("---------------------");
 		const now = +new Date();
 		this.slotCounter++;
-		this.cache.unshift({ ts: now, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
+		this.cache.unshift({ ts: null, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
 
+		if (this.cache[1]) {
+			this.cache[1].ts = now;
+
+		} else { // happens only at first startup.
+			this.cache[0].ts = now;
+		}
 
 		if (this.config.fileMode) {
 			if (this.cache.length >= 5) {
@@ -321,13 +332,19 @@ class Analyser extends Readable {
 			return log.error("Analyser needs to be constructed with: country (string) and name (string)");
 		}
 
+		const defaultModelPath = process.cwd() + '/model';
+		const defaultModelFile = this.country + '_' + this.name + '/model.keras';
+		const defaultHotlistFile = this.country + '_' + this.name + '/hotlist.sqlite';
+
 		// default module options
 		this.config = {
 			saveMetadata: true,                  // save a JSON with predictions (saveDuration intervals)
 			verbose: false,
 			file: null,                          // analyse a file instead of a HTTP stream. will not download stream
 			records: null,                       // analyse a series of previous records (relative paths). will not download stream
-			modelPath: process.cwd() + '/model', // directory where ML models and hotlist DBs are stored
+			modelPath: defaultModelPath,         // directory where ML models and hotlist DBs are stored
+			modelFile: defaultModelFile,         // path of the ML model relative to modelPath
+			hotlistFile: defaultHotlistFile,     // path of the hotlist DB relative to modelPath
 			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
 			modelUpdateInterval: 60              // update model files every N minutes
 		}
@@ -382,62 +399,88 @@ class Analyser extends Readable {
 			}
 		});
 
-		if (this.config.file) {
-			if (fs.existsSync(process.cwd() + "/" + this.config.file + ".json")) fs.unlinkSync(process.cwd() + "/" + this.config.file + ".json");
-			this.predictor = new PredictorFile({
-				country: this.country,
-				name: this.name,
-				file: this.config.file,
-				modelPath: this.config.modelPath,
-				config: this.config,
-				listener: this.postProcessor
-			});
+		(async function() {
 
-		} else if (this.config.records) {
-			this.offlinets = +new Date();
-			this.predictor = new PredictorFile({
-				country: this.country,
-				name: this.name,
-				records: this.config.records,
-				modelPath: this.config.modelPath,
-				config: this.config,
-				listener: this.postProcessor,
-				verbose: true,
-			});
+			// download and/or update models at startup
+			if (self.config.modelUpdates) {
+				await checkModelUpdates({
+					localPath: self.config.modelPath,
+					files: [
+						{ file: self.config.modelFile, tar: true },
+						{ file: self.config.hotlistFile, tar: true },
+					]
+				});
+			} else {
+				log.info(self.country + '_' + self.name + ' model updates are disabled');
+			}
 
-		} else {
-			(async function() {
-				// download and/or update models at startup
-				if (self.config.modelUpdates) {
-					await checkModelUpdates(self.country, self.name, self.config.modelPath);
-				} else {
-					log.info(self.country + '_' + self.name + ' module updates are disabled');
-				}
+			if (self.config.file) {
+				// analysis of a single recording
+				// suitable for e.g. podcasts.
+				// output a file containing time stamps of transitions.
+				if (await fs.exists(process.cwd() + "/" + self.config.file + ".json")) await fs.unlink(process.cwd() + "/" + self.config.file + ".json");
+				self.predictor = new PredictorFile({
+					country: self.country,
+					name: self.name,
+					file: self.config.file,
+					modelFile: self.config.modelPath + '/' + self.config.modelFile,
+					hotlistFile: self.config.modelPath + '/' + self.config.hotlistFile,
+					config: self.config,
+					listener: self.postProcessor
+				});
+
+			} else if (self.config.records) {
+				// analysis of an array of recordings
+				// suitable for asynchronous analysis of chunks of live streams.
+				// outputs a complete analysis report for each audio chunk.
+				self.offlinets = +new Date();
+				self.predictor = new PredictorFile({
+					country: self.country,
+					name: self.name,
+					records: self.config.records,
+					modelFile: self.config.modelPath + '/' + self.config.modelFile,
+					hotlistFile: self.config.modelPath + '/' + self.config.hotlistFile,
+					config: self.config,
+					listener: self.postProcessor,
+					verbose: true,
+				});
+
+			} else {
+				// live stream analysis
+				// emits results with the Readable interface
+
 				await checkMetadataUpdates();
 
-				// we require only when metadata scraper is downloaded
+				// we require only once metadata scraper is downloaded
+				// otherwise a previous version could be cached
 				const Predictor = require('./predictor.js');
 
 				// download and/or update metadata scraper at startup
 				self.predictor = new Predictor({
 					country: self.country,
 					name: self.name,
-					modelPath: self.config.modelPath,
+					modelFile: self.config.modelPath + '/' + self.config.modelFile,
+					hotlistFile: self.config.modelPath + '/' + self.config.hotlistFile,
 					config: self.config,
 					listener: self.postProcessor
 				});
 
 				self.modelUpdatesInterval = setInterval(function() {
 					if (self.config.modelUpdates) {
-						checkModelUpdates(self.country, self.name, self.config.modelPath,
-							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
+						checkModelUpdates({
+							localPath: self.config.localPath,
+							files: [
+								{ file: self.config.modelFile, tar: true, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
+							]
+						});
 					}
 					checkMetadataUpdates(self.predictor.refreshMetadata);
 				}, self.config.modelUpdateInterval * 60000);
 
 
-			})();
-		}
+			}
+		})();
 
 		this.refreshPredictorHotlist = this.refreshPredictorHotlist.bind(this);
 		this.refreshPredictorMl = this.refreshPredictorMl.bind(this);

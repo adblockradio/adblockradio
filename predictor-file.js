@@ -84,11 +84,12 @@ class PredictorFile {
 		// stream identification
 		this.country = options.country;     // mandatory argument
 		this.name = options.name;           // mandatory argument
-		this.modelPath = options.modelPath; // mandatory argument - directory where ML models and hotlist DBs are stored
 
 		// input file(s) - specify one, as a relative path
 		this.file = options.file;           // arbitrary file to analyse
 		this.records = options.records;     // relative paths of audio chunks, with partial records results in JSON.
+		this.modelFile = options.modelFile; // ML model for analysis
+		this.hotlistFile = options.hotlistFile; // ML model for analysis
 
 		// output of predictions
 		this.listener = options.listener;	// mandatory argument, instance of a Writable Stream.
@@ -108,6 +109,12 @@ class PredictorFile {
 		// optional custom config
 		Object.assign(this.config, options.config);
 		Object.assign(this.config, { file: undefined, records: undefined });
+
+		if (this.config.enablePredictorMl && !this.modelFile) {
+			return log.error("Must specify a modelFile or disable ML prediction");
+		} else if (this.config.enablePredictorHotlist && !this.hotlistFile) {
+			return log.error("Must specify a hotlistFile or disable hotlist prediction");
+		}
 
 		if (this.file) {
 			log.info("run predictor on file " + this.file + " with config=" + JSON.stringify(this.config));
@@ -155,12 +162,26 @@ class PredictorFile {
 			function(cb) {
 				if (!self.config.enablePredictorMl) return setImmediate(cb);
 				self.mlPredictor.write(dataObj.data);
-				self.mlPredictor.predict(cb);
+				self.mlPredictor.predict(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "ml", data });
+					} else {
+						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			},
 			function(cb) {
 				if (!self.config.enablePredictorHotlist) return setImmediate(cb);
 				self.hotlist.write(dataObj.data);
-				self.hotlist.onFingers(cb);
+				self.hotlist.onFingers(function(err, data) {
+					if (!err && data) {
+						self.listener.write({ type: "hotlist", data });
+					} else {
+						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data));
+					}
+					cb(err);
+				});
 			}
 
 		], function(err) {
@@ -186,9 +207,8 @@ class PredictorFile {
 			this.hotlist = new Hotlist({
 				country: this.country,
 				name: this.name,
-				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
+				fileDB: this.hotlistFile,
 			});
-			this.hotlist.pipe(this.listener);
 		} else {
 			this.hotlist = null;
 		}
@@ -200,13 +220,12 @@ class PredictorFile {
 				country: this.country,
 				name: this.name,
 			});
-			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
+			this.mlPredictor.load(this.modelFile, function(err) {
 				if (err) {
 					log.error(err);
 				}
 				callback();
 			});
-			this.mlPredictor.pipe(this.listener);
 		} else {
 			this.mlPredictor = null;
 		}
