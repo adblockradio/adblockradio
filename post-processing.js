@@ -343,8 +343,8 @@ class Analyser extends Readable {
 			file: null,                          // analyse a file instead of a HTTP stream. will not download stream
 			records: null,                       // analyse a series of previous records (relative paths). will not download stream
 			modelPath: defaultModelPath,         // directory where ML models and hotlist DBs are stored
-			modelFile: defaultModelFile,         // TODO
-			hotlistFile: defaultHotlistFile,     // TODO
+			modelFile: defaultModelFile,         // path of the ML model relative to modelPath
+			hotlistFile: defaultHotlistFile,     // path of the hotlist DB relative to modelPath
 			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
 			modelUpdateInterval: 60              // update model files every N minutes
 		}
@@ -399,56 +399,60 @@ class Analyser extends Readable {
 			}
 		});
 
-		if (this.config.file) {
-			// analysis of a single recording
-			// suitable for e.g. podcasts.
-			// output a file containing time stamps of transitions.
-			if (fs.existsSync(process.cwd() + "/" + this.config.file + ".json")) fs.unlinkSync(process.cwd() + "/" + this.config.file + ".json");
-			this.predictor = new PredictorFile({
-				country: this.country,
-				name: this.name,
-				file: this.config.file,
-				modelFile: this.config.modelPath + '/' + this.config.modelFile,
-				hotlistFile: this.config.modelPath + '/' + this.config.hotlistFile,
-				config: this.config,
-				listener: this.postProcessor
-			});
+		(async function() {
 
-		} else if (this.config.records) {
-			// analysis of an array of recordings
-			// suitable for asynchronous analysis of chunks of live streams.
-			// outputs a complete analysis report for each audio chunk.
-			this.offlinets = +new Date();
-			this.predictor = new PredictorFile({
-				country: this.country,
-				name: this.name,
-				records: this.config.records,
-				modelFile: this.config.modelPath + '/' + this.config.modelFile,
-				hotlistFile: this.config.modelPath + '/' + this.config.hotlistFile,
-				config: this.config,
-				listener: this.postProcessor,
-				verbose: true,
-			});
+			// download and/or update models at startup
+			if (self.config.modelUpdates) {
+				await checkModelUpdates({
+					localPath: self.config.modelPath,
+					files: [
+						{ file: self.config.modelFile, tar: true },
+						{ file: self.config.hotlistFile, tar: true },
+					]
+				});
+			} else {
+				log.info(self.country + '_' + self.name + ' model updates are disabled');
+			}
 
-		} else {
-			// live stream analysis
-			// emits results with the Readable interface
-			(async function() {
-				// download and/or update models at startup
-				if (self.config.modelUpdates) {
-					await checkModelUpdates({
-						localPath: self.config.modelPath,
-						files: [
-							{ file: self.config.modelFile, tar: true },
-							{ file: self.config.hotlistFile, tar: true },
-						]
-					});
-				} else {
-					log.info(self.country + '_' + self.name + ' model updates are disabled');
-				}
+			if (self.config.file) {
+				// analysis of a single recording
+				// suitable for e.g. podcasts.
+				// output a file containing time stamps of transitions.
+				if (await fs.exists(process.cwd() + "/" + self.config.file + ".json")) await fs.unlink(process.cwd() + "/" + self.config.file + ".json");
+				self.predictor = new PredictorFile({
+					country: self.country,
+					name: self.name,
+					file: self.config.file,
+					modelFile: self.config.modelPath + '/' + self.config.modelFile,
+					hotlistFile: self.config.modelPath + '/' + self.config.hotlistFile,
+					config: self.config,
+					listener: self.postProcessor
+				});
+
+			} else if (self.config.records) {
+				// analysis of an array of recordings
+				// suitable for asynchronous analysis of chunks of live streams.
+				// outputs a complete analysis report for each audio chunk.
+				self.offlinets = +new Date();
+				self.predictor = new PredictorFile({
+					country: self.country,
+					name: self.name,
+					records: self.config.records,
+					modelFile: self.config.modelPath + '/' + self.config.modelFile,
+					hotlistFile: self.config.modelPath + '/' + self.config.hotlistFile,
+					config: self.config,
+					listener: self.postProcessor,
+					verbose: true,
+				});
+
+			} else {
+				// live stream analysis
+				// emits results with the Readable interface
+
 				await checkMetadataUpdates();
 
-				// we require only when metadata scraper is downloaded
+				// we require only once metadata scraper is downloaded
+				// otherwise a previous version could be cached
 				const Predictor = require('./predictor.js');
 
 				// download and/or update metadata scraper at startup
@@ -475,8 +479,8 @@ class Analyser extends Readable {
 				}, self.config.modelUpdateInterval * 60000);
 
 
-			})();
-		}
+			}
+		})();
 
 		this.refreshPredictorHotlist = this.refreshPredictorHotlist.bind(this);
 		this.refreshPredictorMl = this.refreshPredictorMl.bind(this);
