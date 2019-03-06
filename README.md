@@ -4,6 +4,8 @@ An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
 Demo standalone player [available here](https://github.com/adblockradio/buffer-player).
 
+<a href="https://liberapay.com/asto/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
 ## Overview
