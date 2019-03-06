@@ -303,6 +303,7 @@ class Predictor {
 			this.mlPredictor = new MlPredictor({
 				country: this.country,
 				name: this.name,
+				modelFile: this.modelFile,
 			});
 			this.mlPredictor.pipe(this.listener);
 			this.decoder.stdout.pipe(this.mlPredictor);
@@ -330,7 +331,7 @@ class Predictor {
 						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
 					}
 				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
-      */
+			*/
 		} else {
 			if (this.mlPredictor) {
 				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);

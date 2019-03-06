@@ -333,7 +333,7 @@ class Analyser extends Readable {
 		}
 
 		const defaultModelPath = process.cwd() + '/model';
-		const defaultModelFile = this.country + '_' + this.name + '/model.keras';
+		const defaultModelFile = this.country + '_' + this.name + '/model.json';
 		const defaultHotlistFile = this.country + '_' + this.name + '/hotlist.sqlite';
 
 		// default module options
@@ -406,7 +406,8 @@ class Analyser extends Readable {
 				await checkModelUpdates({
 					localPath: self.config.modelPath,
 					files: [
-						{ file: self.config.modelFile, tar: true },
+						{ file: self.config.modelFile, tar: false },
+						{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false },
 						{ file: self.config.hotlistFile, tar: true },
 					]
 				});

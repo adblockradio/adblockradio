@@ -89,6 +89,7 @@ class Hotlist extends Writable {
 				self.trackList = trackList;
 				log.info(self.country + "_" + self.name + ': Hotlist ready');
 				self.ready = true;
+				if (options.callback) options.callback();
 				setImmediate(cb);
 			}
 		]
@@ -104,6 +105,7 @@ class Hotlist extends Writable {
 				self.trackList = trackList;
 				log.info(self.country + "_" + self.name + ': Hotlist ready');
 				self.ready = true;
+				if (options.callback) options.callback();
 				setImmediate(cb);
 			}
 		], function(err) {

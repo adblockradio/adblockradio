@@ -12,6 +12,8 @@ log.info("start analyser!");
 const FILE = process.argv[2] || "podcasts/example.mp3";
 log.info("FILE=" + FILE);
 
+const t1 = new Date();
+
 const abr = new Analyser({
 	country: "France",
 	name: "RTL",
@@ -21,7 +23,7 @@ const abr = new Analyser({
 		enablePredictorHotlist: true,
 		enablePredictorMl: true,
 		saveMetadata: true,
-		verbose: true,
+		verbose: false,
 	}
 });
 
@@ -30,5 +32,6 @@ abr.on("data", function(obj) {
 });
 
 abr.on("end", function() {
-	log.info("finished analysing file " + FILE);
+	const t2 = new Date();
+	log.info("finished analysing file " + FILE + " in " + (+t2-t1)/1000 + " seconds");
 });

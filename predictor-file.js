@@ -145,9 +145,17 @@ class PredictorFile {
 			self.readFinished = true;
 		});
 
-		this.startPredictorHotlist();
-		this.startPredictorMl(function() {
-			self.input.resume()
+		// start analysis as soon as both ML and hotlist are ready
+		let hotlistReady = false;
+		if (this.config.enablePredictorHotlist) this.startPredictorHotlist(function() {
+			hotlistReady = true;
+			if ((self.config.enablePredictorMl && mlReady) || !self.config.enablePredictorMl) self.input.resume();
+		});
+
+		let mlReady = false;
+		if (this.config.enablePredictorMl) this.startPredictorMl(function() {
+			mlReady = true;
+			if ((self.config.enablePredictorHotlist && hotlistReady) || !self.config.enablePredictorHotlist) self.input.resume();
 		});
 	}
 
@@ -202,12 +210,13 @@ class PredictorFile {
 		});
 	}
 
-	startPredictorHotlist() {
+	startPredictorHotlist(callback) {
 		if (this.config.enablePredictorHotlist) {
 			this.hotlist = new Hotlist({
 				country: this.country,
 				name: this.name,
 				fileDB: this.hotlistFile,
+				callback: callback,
 			});
 		} else {
 			this.hotlist = null;
@@ -219,13 +228,13 @@ class PredictorFile {
 			this.mlPredictor = new MlPredictor({
 				country: this.country,
 				name: this.name,
+				modelFile: this.modelFile,
 			});
-			this.mlPredictor.load(this.modelFile, function(err) {
-				if (err) {
-					log.error(err);
-				}
+			const self = this;
+			(async function() {
+				await self.mlPredictor.load(self.modelFile);
 				callback();
-			});
+			})();
 		} else {
 			this.mlPredictor = null;
 		}

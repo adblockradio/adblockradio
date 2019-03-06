@@ -53,14 +53,18 @@ class MlPredictor extends Writable {
 		//this.ready2 = false; // becomes true when audio data is piped to this module. managed externally
 		//this.finalCallback = null;
 		this.readyToCallFinal = false;
+		this.modelFile = options.modelFile;
 	}
 
 	async load() {
-		// TODO: find a way to load model from local file
-		// see https://stackoverflow.com/a/53766926/5317732
-		const path = 'https://www.adblockradio.com/models/' + this.canonical + '/model.json';
-		this.model = await tf.loadModel(path);
-		log.info(this.canonical + ' ML model loaded');
+		// load model from local file
+		const handler = tf.io.fileSystem(this.modelFile); // see https://stackoverflow.com/a/53766926/5317732
+		this.model = await tf.loadModel(handler);
+
+		// load model from remote file
+		//const path = 'https://www.adblockradio.com/models/' + this.canonical + '/model.json';
+		//this.model = await tf.loadModel(path);
+		log.info(this.canonical + ': ML model loaded');
 		this.ready = true;
 	}
 
@@ -172,31 +176,13 @@ class MlPredictor extends Writable {
 			lenPcm: this.workingBuf.length
 		};
 
-		this.push({ type:"ml", data: outData, array: true });
-
-		setImmediate(function() {
-			callback(null, outData);
-		});
+		//setImmediate(function() {
+		callback(null, outData);
+		//});
 	}
 
-	_final(next) {
-		log.info(this.canonical + " closing ML predictor");
-
-		const self = this;
-		this.client.invoke("exit", function(err, res, more) {
-			if (err) {
-				log.error(self.canonical + "_final: exit() returned error=" + err);
-			}
-		});
-
-		this.client.close();
-
-		// if not enough, kill it directly!
-		this.predictChild.stdin.end();
-		this.predictChild.kill();
-
-		//if (this.readyToCallFinal) return next();
-		this.readyToCallFinal = next;
+	_final() {
+		// pass
 	}
 }
 
