@@ -38,7 +38,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 
 		// divide the signal in chunks and analyse each chunk. If the last chunk is not filled with data, pad with zeros.
 		const nWin = 1 + Math.ceil((nWorkingSamples - winlen) / winstep);
-		log.debug(nWorkingSamples + " samples ready to be converted to in " + nWin + " series of " + MFCC_NCEPS + " MFCC");
+		if (DEBUG) log.debug(nWorkingSamples + " samples ready to be converted to in " + nWin + " series of " + MFCC_NCEPS + " MFCC");
 		const ceps = new Array(nWin);
 
 		if (WANT_VERBOSE_RESULTS) {
@@ -55,7 +55,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 		for (let i=0; i<nWin; i++) {
 			let data = filtered.slice(i*winstep, i*winstep + winlen);
 			if (data.length < winlen) {
-				log.debug("pad window " + i + " with " + (winlen - data.length) + " zeroes");
+				if (DEBUG) log.debug("pad window " + i + " with " + (winlen - data.length) + " zeroes");
 				data = data.concat(new Array(winlen - data.length).fill(0));
 			}
 
@@ -87,7 +87,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 			// replace first cepstral coefficient with log of frame energy
 			ceps[i] = [Math.log(energy)].concat(mfccData.melCoef);
 			if (i === 0) {
-				log.debug("ceps[0] nceps " + ceps[0].length);
+				if (DEBUG) log.debug("ceps[0] nceps " + ceps[0].length);
 			}
 
 			if (WANT_VERBOSE_RESULTS) {
@@ -107,7 +107,7 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 		}
 
 		// now ceps is an array of nWin frames of MFCC_NCEPS values.
-		log.debug("ceps 2D array dim=" + nWin + "x" + ceps[0].length);
+		if (DEBUG) log.debug("ceps 2D array dim=" + nWin + "x" + ceps[0].length);
 
 		if (WANT_VERBOSE_RESULTS) {
 			return verboseResults;
