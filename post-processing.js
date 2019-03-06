@@ -8,7 +8,7 @@
 const { log } = require("abr-log")("post-processing");
 const PredictorFile = require("./predictor-file.js");
 const { Transform, Readable } = require("stream");
-const fs = require("fs");
+const fs = require("fs-extra");
 const { checkModelUpdates, checkMetadataUpdates } = require("./check-updates.js");
 
 
@@ -332,13 +332,19 @@ class Analyser extends Readable {
 			return log.error("Analyser needs to be constructed with: country (string) and name (string)");
 		}
 
+		const defaultModelPath = process.cwd() + '/model';
+		const defaultModelFile = this.country + '_' + this.name + '/model.keras';
+		const defaultHotlistFile = this.country + '_' + this.name + '/hotlist.sqlite';
+
 		// default module options
 		this.config = {
 			saveMetadata: true,                  // save a JSON with predictions (saveDuration intervals)
 			verbose: false,
 			file: null,                          // analyse a file instead of a HTTP stream. will not download stream
 			records: null,                       // analyse a series of previous records (relative paths). will not download stream
-			modelPath: process.cwd() + '/model', // directory where ML models and hotlist DBs are stored
+			modelPath: defaultModelPath,         // directory where ML models and hotlist DBs are stored
+			modelFile: defaultModelFile,         // TODO
+			hotlistFile: defaultHotlistFile,     // TODO
 			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
 			modelUpdateInterval: 60              // update model files every N minutes
 		}
@@ -394,33 +400,49 @@ class Analyser extends Readable {
 		});
 
 		if (this.config.file) {
+			// analysis of a single recording
+			// suitable for e.g. podcasts.
+			// output a file containing time stamps of transitions.
 			if (fs.existsSync(process.cwd() + "/" + this.config.file + ".json")) fs.unlinkSync(process.cwd() + "/" + this.config.file + ".json");
 			this.predictor = new PredictorFile({
 				country: this.country,
 				name: this.name,
 				file: this.config.file,
-				modelPath: this.config.modelPath,
+				modelFile: this.config.modelPath + '/' + this.config.modelFile,
+				hotlistFile: this.config.modelPath + '/' + this.config.hotlistFile,
 				config: this.config,
 				listener: this.postProcessor
 			});
 
 		} else if (this.config.records) {
+			// analysis of an array of recordings
+			// suitable for asynchronous analysis of chunks of live streams.
+			// outputs a complete analysis report for each audio chunk.
 			this.offlinets = +new Date();
 			this.predictor = new PredictorFile({
 				country: this.country,
 				name: this.name,
 				records: this.config.records,
-				modelPath: this.config.modelPath,
+				modelFile: this.config.modelPath + '/' + this.config.modelFile,
+				hotlistFile: this.config.modelPath + '/' + this.config.hotlistFile,
 				config: this.config,
 				listener: this.postProcessor,
 				verbose: true,
 			});
 
 		} else {
+			// live stream analysis
+			// emits results with the Readable interface
 			(async function() {
 				// download and/or update models at startup
 				if (self.config.modelUpdates) {
-					await checkModelUpdates(self.country, self.name, self.config.modelPath);
+					await checkModelUpdates({
+						localPath: self.config.modelPath,
+						files: [
+							{ file: self.config.modelFile, tar: true },
+							{ file: self.config.hotlistFile, tar: true },
+						]
+					});
 				} else {
 					log.info(self.country + '_' + self.name + ' model updates are disabled');
 				}
@@ -433,15 +455,21 @@ class Analyser extends Readable {
 				self.predictor = new Predictor({
 					country: self.country,
 					name: self.name,
-					modelPath: self.config.modelPath,
+					modelFile: self.config.modelPath + '/' + self.config.modelFile,
+					hotlistFile: self.config.modelPath + '/' + self.config.hotlistFile,
 					config: self.config,
 					listener: self.postProcessor
 				});
 
 				self.modelUpdatesInterval = setInterval(function() {
 					if (self.config.modelUpdates) {
-						checkModelUpdates(self.country, self.name, self.config.modelPath,
-							self.predictor.refreshPredictorMl, self.predictor.refreshPredictorHotlist);
+						checkModelUpdates({
+							localPath: self.config.localPath,
+							files: [
+								{ file: self.config.modelFile, tar: true, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
+							]
+						});
 					}
 					checkMetadataUpdates(self.predictor.refreshMetadata);
 				}, self.config.modelUpdateInterval * 60000);

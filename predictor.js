@@ -42,8 +42,9 @@ class Predictor {
 		this.country = options.country;     // mandatory argument
 		this.name = options.name;           // mandatory argument
 
-		// directory where ML models and hotlist DBs are stored
-		this.modelPath = options.modelPath; // mandatory argument if ML or Hotlist is enabled, ignored otherwise
+		// paths for ML model and hotlist DB
+		this.modelFile = options.modelFile; // mandatory argument if ML is enabled, ignored otherwise
+		this.hotlistFile = options.hotlistFile; // mandatory argument if ML is enabled, ignored otherwise
 
 		// output of predictions
 		this.listener = options.listener;   // mandatory argument, instance of a Writable Stream.
@@ -80,7 +81,7 @@ class Predictor {
 			}
 		}
 
-		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config) + " modelPath=" + this.modelPath);
+		log.info(this.canonical + " run predictor with config=" + JSON.stringify(this.config) + " modelFile=" + this.modelFile + " hotlistFile=" + this.hotlistFile);
 
 		this._onData = this._onData.bind(this);
 		this._newAudioSegment = this._newAudioSegment.bind(this);
@@ -288,7 +289,7 @@ class Predictor {
 			this.hotlist = new Hotlist({
 				country: this.country,
 				name: this.name,
-				fileDB: this.modelPath + '/' + this.country + '_' + this.name + '.sqlite'
+				fileDB: this.hotlistFile,
 			});
 			this.decoder.stdout.pipe(this.hotlist);
 		} else {
@@ -311,7 +312,7 @@ class Predictor {
 			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
 			const self = this;
 			this.mlPredictor.ready2 = false;
-			this.mlPredictor.load(this.modelPath + '/' + this.country + '_' + this.name + '.keras', function(err) {
+			this.mlPredictor.load(this.modelFile, function(err) {
 				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
 					log.warn(self.canonical + " lost remote Python worker. will restart it");
 					self.mlPredictor.destroy();
