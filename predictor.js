@@ -305,7 +305,6 @@ class Predictor {
 				name: this.name,
 				modelFile: this.modelFile,
 			});
-			this.mlPredictor.pipe(this.listener);
 			this.decoder.stdout.pipe(this.mlPredictor);
 		}
 		if (this.config.enablePredictorMl) {

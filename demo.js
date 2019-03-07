@@ -23,7 +23,7 @@ const abr = new Analyser({
 		saveAudio: true,
 		saveMetadata: true,
 		fetchMetadata: true,
-		verbose: false,
+		verbose: true,
 	}
 });
 
