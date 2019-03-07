@@ -4,8 +4,7 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "install-app-deps"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "adblock",
