@@ -108,6 +108,9 @@ class MlPredictor extends Writable {
 			if (this.verbose) log.debug("Working buf will be truncated from " + (this.workingBuf.length / 2) + " samples to " + cropBufLen);
 			this.workingBuf = this.workingBuf.slice(-cropBufLen);
 			if (this.verbose) log.debug("working buf new length=" + (this.workingBuf.length / 2));
+		} else if (this.workingBuf.length <= 2 * MFCC_WINLEN * SAMPLING_RATE) {
+			log.warn("Working buffer is too short. Keep it but abort prediction now.");
+			return setImmediate(callback);
 		}
 
 		const ceps = mfcc(this.workingBuf); // call here mfcc.js
