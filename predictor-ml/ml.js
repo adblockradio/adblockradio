@@ -34,7 +34,7 @@ class MlPredictor extends Writable {
 	async load() {
 		const self = this;
 		return new Promise(function(resolve, reject) {
-			self.child = cp.fork('./predictor-ml/ml-worker.js', {
+			self.child = cp.fork(__dirname + '/predictor-ml/ml-worker.js', {
 				env: {
 					canonical: self.canonical,
 					modelFile: self.modelFile,
