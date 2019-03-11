@@ -469,10 +469,12 @@ class Analyser extends Readable {
 				self.modelUpdatesInterval = setInterval(function() {
 					if (self.config.modelUpdates) {
 						checkModelUpdates({
-							localPath: self.config.localPath,
+							localPath: self.config.modelPath,
 							files: [
-								{ file: self.config.modelFile, tar: true, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.modelFile, tar: false, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false, callback: self.predictor.refreshPredictorMl },
 								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
+
 							]
 						});
 					}
