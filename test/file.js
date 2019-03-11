@@ -26,8 +26,6 @@ if (cluster.isMaster) {
 	const timer = setTimeout(function() {
 		log.error('analysis timed out or was too slow. kill it.');
 		timedOut = true;
-		console.log(getEventListeners(node));
-
 		cp.kill();
 		run();
 	}, TIMEOUT);
