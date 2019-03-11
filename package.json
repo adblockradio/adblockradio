@@ -4,7 +4,7 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --delay"
   },
   "keywords": [
     "adblock",
@@ -31,6 +31,7 @@
     "aws-sdk": "^2.408.0",
     "electron-builder": "^20.38.5",
     "electron-prebuilt": "^1.4.13",
-    "electron-rebuild": "^1.8.4"
+    "electron-rebuild": "^1.8.4",
+    "mocha": "^6.0.2"
   }
 }

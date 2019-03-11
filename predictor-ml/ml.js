@@ -83,6 +83,7 @@ class MlPredictor extends Writable {
 	_final() {
 		if (this.child) {
 			this.child.kill();
+			log.info(this.canonical + " killed child process.");
 		}
 	}
 }
