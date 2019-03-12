@@ -93,7 +93,7 @@ class Predictor {
 		});
 		this.dl.pause();
 
-		this.decoder = require('child_process').spawn('ffmpeg', [
+		this.decoder = cp.spawn('ffmpeg', [
 			'-i', 'pipe:0',
 			'-acodec', 'pcm_s16le',
 			'-ar', 22050,
@@ -112,7 +112,11 @@ class Predictor {
 		this.dbs = null;
 		this.dl.on("metadata", function(metadata) {
 			log.info(self.canonical + " metadata=" + JSON.stringify(metadata));
-			self.listener.write({ type: "dlinfo", data: metadata });
+			if (self.listener.writable) {
+				self.listener.write({ type: "dlinfo", data: metadata });
+			} else {
+				log.warn("Could not pass metadata to listener because it is not writable");
+			}
 			self.audioExt = metadata.ext;
 
 			if (!self.dbs) {
@@ -180,10 +184,10 @@ class Predictor {
 			function(cb) {
 				if (!self.config.enablePredictorMl || !self.mlPredictor.ready) return setImmediate(cb);
 				self.mlPredictor.predict(function(err, data) {
-					if (!err && data) {
+					if (!err && data && self.listener.writable) {
 						self.listener.write({ type: "ml", data });
 					} else {
-						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data));
+						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data) + " writable=" + self.listener.writable);
 					}
 					cb(err);
 				});
@@ -191,10 +195,10 @@ class Predictor {
 			function(cb) {
 				if (!self.config.enablePredictorHotlist) return setImmediate(cb);
 				self.hotlist.onFingers(function(err, data) {
-					if (!err && data) {
+					if (!err && data && self.listener.writable) {
 						self.listener.write({ type: "hotlist", data });
 					} else {
-						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data));
+						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data) + " writable=" + self.listener.writable);
 					}
 					cb(err);
 				});
@@ -266,8 +270,8 @@ class Predictor {
 			const path = dir + now.toISOString();
 			//log.debug("saveAudioSegment: path=" + path);
 
-			cp.exec("mkdir -p \"" + dir + "\"", function(error, stdout, stderr) {
-				if (error) log.error("warning, could not create path " + path);
+			fs.mkdir(dir, { recursive: true }, function(err) {
+				if (err && !("" + err).includes('EEXIST')) log.error("warning, could not create path " + path + " err=" + err);
 				self.dbs = {
 					audio: self.config.saveAudio ? new fs.createWriteStream(path + "." + self.audioExt) : null,
 					metadataPath: path + ".json"
@@ -358,7 +362,7 @@ class Predictor {
 		this.dl.stopDl();
 
 		log.debug("will stop decoder");
-		this.decoder.kill();
+		this.decoder.stdin.end();
 
 		if (this.hotlist) {
 			log.debug("will close hotlist");
@@ -373,7 +377,6 @@ class Predictor {
 			log.debug("no ML predictor to close");
 		}
 	}
-
 }
 
 

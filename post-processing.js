@@ -371,7 +371,7 @@ class Analyser extends Readable {
 				metadataPath: undefined
 			});
 
-			self.push({ liveResult: obj });
+			self.push({ liveResult: obj, metadataPath: metadataPath });
 
 			if (!self.config.saveMetadata) return;
 			if (!metadataPath) {
@@ -474,14 +474,11 @@ class Analyser extends Readable {
 								{ file: self.config.modelFile, tar: false, callback: self.predictor.refreshPredictorMl },
 								{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false, callback: self.predictor.refreshPredictorMl },
 								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
-
 							]
 						});
 					}
 					checkMetadataUpdates(self.predictor.refreshMetadata);
 				}, self.config.modelUpdateInterval * 60000);
-
-
 			}
 		})();
 

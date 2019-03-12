@@ -4,7 +4,7 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "mocha --delay"
+    "test": "mocha --delay test/file.js && mocha --delay test/online.js"
   },
   "keywords": [
     "adblock",
@@ -32,6 +32,7 @@
     "electron-builder": "^20.38.5",
     "electron-prebuilt": "^1.4.13",
     "electron-rebuild": "^1.8.4",
-    "mocha": "^6.0.2"
+    "mocha": "^6.0.2",
+    "wtfnode": "^0.8.0"
   }
 }

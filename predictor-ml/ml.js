@@ -27,7 +27,6 @@ class MlPredictor extends Writable {
 		this.ready = false; // becomes true when ML model is loaded
 		//this.ready2 = false; // becomes true when audio data is piped to this module. managed externally
 		//this.finalCallback = null;
-		this.readyToCallFinal = false;
 		this.modelFile = options.modelFile;
 	}
 

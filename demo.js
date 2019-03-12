@@ -32,8 +32,8 @@ abr.on("data", function(obj) {
 	//log.info("status=" + JSON.stringify(Object.assign(obj, { audio: undefined }), null, "\t"));
 });
 
-abr.on("close", function() {
-	log.info("analyser closed");
+abr.on("end", function() {
+	log.info("analyser ended");
 });
 
 //setTimeout(abr.stopDl, 15000);
