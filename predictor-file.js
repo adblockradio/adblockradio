@@ -38,7 +38,11 @@ class ChunkAudioRead extends Readable {
 		} else if (this.records) {
 			(async function read() {
 				for (let i=0; i<self.records.length; i++) {
-					const data = await fs.readFile(self.records[i]);
+					try {
+						var data = await fs.readFile(self.records[i]);
+					} catch (e) {
+						log.error("could not read file " + self.records[i]);
+					}
 					const needToWaitDrain = !self.decoder.stdin.write(data);
 					if (needToWaitDrain) {
 						await new Promise(function(resolve) {

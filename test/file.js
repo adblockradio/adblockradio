@@ -120,7 +120,7 @@ if (cluster.isMaster) {
 				assert(p);
 
 				if (TEST_ML) {
-					assert(p.gain > 60 && p.gain < 85);
+					assert(p.gain > 20 && p.gain < 100);
 					assert(p.ml);
 					assert(['0-ads', '1-speech', '2-music'].includes(p.ml.class));
 					assert(p.ml.softmaxraw);
@@ -183,7 +183,7 @@ if (cluster.isMaster) {
 		process.send({ type: 'data', data: obj });
 	});
 
-	abr.on("end", function() {
+	abr.on("close", function() {
 		const t2 = new Date();
 		log.info("finished analysing file " + FILE + " in " + (+t2-t1)/1000 + " seconds");
 		process.send({ type: 'end' });

@@ -4,7 +4,7 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "mocha --delay test/file.js && mocha --delay test/online.js"
+    "test": "mocha --delay test/file.js && mocha --delay test/online.js && mocha --delay test/offline.js"
   },
   "keywords": [
     "adblock",

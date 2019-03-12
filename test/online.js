@@ -142,7 +142,7 @@ if (cluster.isMaster) {
 
 					// ML module is usually not ready at startup of live stream analysis
 					if (TEST_ML && p.ml) {
-						assert(p.gain > 60 && p.gain < 85);
+						assert(p.gain > 20 && p.gain < 100);
 						assert(p.ml);
 						assert(['0-ads', '1-speech', '2-music'].includes(p.ml.class));
 						assert(p.ml.softmaxraw);
@@ -202,7 +202,7 @@ if (cluster.isMaster) {
 		process.send({ type: 'data', data: obj });
 	});
 
-	abr.on("end", function() {
+	abr.on("close", function() {
 		process.send({ type: 'end' });
 		log.info("analyser ended");
 		process.disconnect(); // otherwise the IPC prevents the subprocess from gracefully exiting
