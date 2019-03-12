@@ -54,8 +54,6 @@ if (cluster.isMaster) {
 					if (!metaFiles.includes(msg.data.metadataPath)) metaFiles.push(msg.data.metadataPath);
 				}
 			}
-		} else if (msg.type === 'stop') {
-			stopped = true;
 		} else if (msg.type === 'end') {
 			finished = true;
 		}

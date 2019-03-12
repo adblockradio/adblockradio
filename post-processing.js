@@ -402,6 +402,7 @@ class Analyser extends Readable {
 		(async function() {
 
 			// download and/or update models at startup
+			// TODO only download model/hotlist if ML/hotlist is enabled
 			if (self.config.modelUpdates) {
 				await checkModelUpdates({
 					localPath: self.config.modelPath,

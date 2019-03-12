@@ -15,6 +15,7 @@ if (cluster.isMaster) {
 
 	let cp = null;
 	let gotData = false;
+	let gotBlocks = false;
 	let finished = false;
 	let hasErrors = false;
 	let exited = false;
@@ -37,6 +38,9 @@ if (cluster.isMaster) {
 			if (msg.type === 'data') {
 				if (msg.data) {
 					gotData = true;
+				}
+				if (msg.data.blocksCleaned) {
+					gotBlocks = true;
 				}
 			} else if (msg.type === 'end') {
 				finished = true;
@@ -77,6 +81,7 @@ if (cluster.isMaster) {
 
 		it("should have emitted data", function() {
 			assert(gotData);
+			assert(gotBlocks);
 		});
 
 		it("should have reached the end of the file", function() {
