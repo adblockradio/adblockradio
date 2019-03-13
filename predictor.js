@@ -271,7 +271,7 @@ class Predictor {
 			//log.debug("saveAudioSegment: path=" + path);
 
 			fs.mkdir(dir, { recursive: true }, function(err) {
-				if (err && !("" + err).includes('EEXIST')) log.error("warning, could not create path " + path + " err=" + err);
+				if (err && !("" + err).includes('EEXIST')) log.error("warning, could not create path " + dir + " err=" + err);
 				self.dbs = {
 					audio: self.config.saveAudio ? new fs.createWriteStream(path + "." + self.audioExt) : null,
 					metadataPath: path + ".json"
