@@ -85,7 +85,7 @@ process.on('message', function(msg) {
 
 		assert(msg.buf);
 		assert.equal(msg.buf.type, 'Buffer'); // JSON.stringify represents Buffers as { type: 'Buffer', data: '' }
-		newBuf = newBuf ? Buffer.concat([newBuf, new Buffer(msg.buf.data)]) : new Buffer(msg.buf.data);
+		newBuf = newBuf ? Buffer.concat([newBuf, Buffer.from(msg.buf.data)]) : Buffer.from(msg.buf.data);
 		//log.debug("write " + buf.length / 2 + " samples to the buffer. now " + newBuf.length / 2 + " samples in it");
 
 
