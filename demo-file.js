@@ -31,7 +31,7 @@ abr.on("data", function(obj) {
 	log.info(JSON.stringify(obj, null, "\t"));
 });
 
-abr.on("end", function() {
+abr.on("close", function() {
 	const t2 = new Date();
 	log.info("finished analysing file " + FILE + " in " + (+t2-t1)/1000 + " seconds");
 });

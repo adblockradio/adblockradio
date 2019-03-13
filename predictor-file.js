@@ -202,7 +202,7 @@ class PredictorFile {
 			// we package all the results in listener's cache data into an object that will go in postProcessing
 			self.listener.write(Object.assign(dataObj, {
 				type: "fileChunk",
-				metadataPath: (dataObj.metadataPath || self.config.file) + ".json"
+				metadataPath: (dataObj.metadataPath || self.file) + ".json"
 			}));
 
 			if (self.readFinished) {

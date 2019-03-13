@@ -15,7 +15,7 @@
   "author": "Alexandre Storelli <a_npm@storelli.fr>",
   "license": "MPL-2.0",
   "dependencies": {
-    "@tensorflow/tfjs-node": "^0.2.3",
+    "@tensorflow/tfjs-node": "^0.3.2",
     "abr-log": "^1.0.2",
     "async": "^2.6.2",
     "axios": "^0.18.0",
@@ -28,8 +28,8 @@
     "tar": "^4.4.8"
   },
   "devDependencies": {
-    "aws-sdk": "^2.408.0",
-    "electron-builder": "^20.38.5",
+    "aws-sdk": "^2.420.0",
+    "electron-builder": "^20.39.0",
     "electron-prebuilt": "^1.4.13",
     "electron-rebuild": "^1.8.4",
     "mocha": "^6.0.2",
