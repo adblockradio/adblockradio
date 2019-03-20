@@ -143,6 +143,8 @@ class PostProcessor extends Transform {
 			// schedule the postprocessing for this slot, according to the buffer available.
 			// "now" is used as a reference for _postProcessing, so it knows which slot to process
 			// postProcessing happens 500ms before audio playback, so that clients / players have time to act.
+
+			// TODO: replace tBuffer with tBuffer - predInterval here.
 			const ppTimeout = setTimeout(this._postProcessing, tBuffer * 1000 - consts.DOWNSTREAM_LATENCY, now);
 			this.cache.find(c => c.ts === now).ppTimeout = ppTimeout;
 		}

@@ -98,7 +98,7 @@ process.on('message', function(msg) {
 			log.warn("model is not ready. skip");
 			return send({ type: msg.type, err: 'model is not ready. skip' });
 		}
-
+		//const t1 = new Date();
 		const nSamples = newBuf.length / 2;
 		const duration = nSamples / SAMPLING_RATE;
 		if (verbose) log.debug("will analyse " + duration + " s (" + nSamples + " samples)");
@@ -128,8 +128,9 @@ process.on('message', function(msg) {
 			log.warn("Working buffer is too short. Keep it but abort prediction now.");
 			return send({ type: msg.type, err: 'Working buffer is too short. Keep it but abort prediction now.' });
 		}
-
+		//const t11 = new Date();
 		const ceps = mfcc(workingBuf); // call here mfcc.js
+		//const t12 = new Date();
 
 		const nWin = ceps.length;
 		if (nWin < LSTM_INTAKE_FRAMES) {
@@ -151,8 +152,9 @@ process.on('message', function(msg) {
 		for (let i=0; i<nLSTMPredictions; i++) {
 			MLInputData[i] = ceps.slice(i*LSTM_STEP_FRAMES, i*LSTM_STEP_FRAMES + LSTM_INTAKE_FRAMES);
 		}
-
+		//const t2 = new Date();
 		const tfResults = model.predict(tf.tensor3d(MLInputData));
+		//const t3 = new Date();
 		const flatResultsRaw = tfResults.as1D().dataSync();
 
 		// TF.js data is a 1D array. Convert it to a nLSTMPredictions * 3 2D array.
@@ -196,5 +198,9 @@ process.on('message', function(msg) {
 		};
 
 		send({ type: msg.type, err: null, outData });
+		//const t4 = new Date();
+		//console.log("Averaged predictions: " + nLSTMPredictions);
+		//console.log("pre=" + (+t2-t1) + " ms tf=" + (+t3-t2) + " ms post=" + (+t4-t3) + " ms total=" + (+t4-t1) + " ms");
+		//console.log("pre0=" + (+t11-t1) + " pre1=" + (+t12-t11) + " pre2=" + (+t2-t12));
 	}
 });

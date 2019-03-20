@@ -3,6 +3,7 @@
 // Aims at reproducing the python_speech_features.mfcc() function
 // https://github.com/jameslyons/python_speech_features
 
+"use strict";
 const dsp = require('dsp.js');
 const mfcc = require('mfcc');
 const { log } = require("abr-log")("pred-ml/mfcc");
@@ -51,8 +52,9 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 				dct: [],
 			}
 		}
-
+		//console.log("nwin=" + nWin);
 		for (let i=0; i<nWin; i++) {
+			//const t0 = new Date();
 			let data = filtered.slice(i*winstep, i*winstep + winlen);
 			if (data.length < winlen) {
 				if (DEBUG) log.debug("pad window " + i + " with " + (winlen - data.length) + " zeroes");
@@ -64,8 +66,9 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 				data = data.concat(new Array(nZeros).fill(0));
 				if (DEBUG) log.debug("fill with " + nZeros + " zeros");
 			}
-
+			//const t1 = new Date();
 			FFT.forward(data); // compute FFT in-place
+			//const t2 = new Date();
 
 			// convert a Float64Array spectrum to a power spectrum list
 			const halfPowerSpectrum = [].slice.call(FFT.spectrum).map(e => Math.pow(e, 2) * MFCC_NFFT / 4);
@@ -76,8 +79,9 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 			// now halfPowerSpectrum's length is NFFT/2 + 1.
 
 			const energy = halfPowerSpectrum.reduce((acc, val) => acc + val);
-
+			//const t3 = new Date();
 			const mfccData = MFCC(halfPowerSpectrum.slice(0, -1), true);
+			//const t4 = new Date();
 
 			// cepstra lifter (boost higher frequencies)
 			for (let j=0; j<mfccData.melCoef.length; j++) {
@@ -104,6 +108,8 @@ module.exports = function(SAMPLING_RATE, MFCC_WINLEN, MFCC_WINSTEP, WANT_VERBOSE
 					return c * norm;
 				}));
 			}
+			//const t5 = new Date();
+			//console.log("t01=" + (+t1-t0) + " t12=" + (+t2-t1) + " t23=" + (+t3-t2) + " t34=" + (+t4-t3) + " t45=" + (+t5-t4) + " total=" + (+t5-t0));
 		}
 
 		// now ceps is an array of nWin frames of MFCC_NCEPS values.
