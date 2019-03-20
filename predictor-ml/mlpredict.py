@@ -177,9 +177,9 @@ class MlPredictor(object):
 		logger.debug("ceps.shape " + str(ceps.shape) + " nnXLen " + str(nnXLen) + " nnXStep " + str(nnXStep) + " nwin " + str(nwin))
 		X = np.empty([nwin, nnXLen, mfccNceps])
 
-		#t3 = timer()
 		for i in range(nwin):
 			X[i,:,:] = ceps[i*nnXStep:(i*nnXStep+nnXLen),:]
+		#t3 = timer()
 
 		predictions = self.model.predict(X, verbose=debug)
 
@@ -195,6 +195,7 @@ class MlPredictor(object):
 		logger.debug("confidence " + str(confidence))
 		logger.debug("rms " + str(rms))
 
+		#t5 = timer()
 		result = json.dumps({
 			'type': predclass,
 			'data': predictions.tolist(),
@@ -203,11 +204,12 @@ class MlPredictor(object):
 			'rms': rms,
 			'mem': process.memory_info().rss,
 			'lenpcm': len(self.pcm),
-			#'timings': {'mfcc': str(t2-t1), 'inference': str(t4-t3)}
+			#'timings': {'pre': str(t3-t0), 'tf': str(t4-t3), 'post': str(t5-t4), 'total': str(t5-t0)},
+			'nwin': nwin
 		})
 
 		logger.info("audio predicted probs=" + result)
-
+		#logger.info("pre=%s ms tf=%s ms post=%s ms total=%s ms" % (t3-t0, t4-t3, t5-t4, t5-t0))
 		return result
 
 	def exit(self):

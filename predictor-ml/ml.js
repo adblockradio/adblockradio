@@ -151,6 +151,7 @@ class MlPredictor extends Writable {
 			try {
 				var results = JSON.parse(res);
 				//log.debug("results=" + JSON.stringify(results))
+				//log.debug("perf: nwin=" + results.nwin + " pre=" + results.timings.pre + " tf=" + results.timings.tf + " post=" + results.timings.post + " total=" + results.timings.total);
 			} catch(e) {
 				log.error(self.canonical + " could not parse json results: " + e + " original data=|" + res + "|");
 				return callback(err);
