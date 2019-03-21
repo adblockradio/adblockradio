@@ -38,14 +38,14 @@ For best performance (~2x speedup) you should choose to do part of the computati
 - Keras (tested with v2.0.8). Keras installation instructions are available [here](https://keras.io/#installation).
 - Tensorflow (tested with `tensorflow` v1.4.0 and `tensorflow-gpu` v1.3.0). Installation instructions are [here](https://www.tensorflow.org/install/).
 
+The following should be enough:
 ```bash
 pip install keras tensorflow
 ```
-should be enough. If you do not have pip [follow these instructions to install it](https://pip.pypa.io/en/stable/installing/).
+If you do not have pip [follow these instructions to install it](https://pip.pypa.io/en/stable/installing/).
 
 
 Then install this module:
-
 ```bash
 git clone https://github.com/adblockradio/adblockradio.git
 cd adblockradio

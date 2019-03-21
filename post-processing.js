@@ -61,6 +61,7 @@ class PostProcessor extends Transform {
 				}
 				this.cache[0].audio = this.cache[0].audio ? Buffer.concat([this.cache[0].audio, obj.data]) : obj.data;
 				this.cache[0].metadataPath = obj.metadataPath;
+				if (obj.predInterval) this.cache[0].predInterval = obj.predInterval;
 				break;
 
 			case "fileChunk": // only in file analysis mode
@@ -123,7 +124,7 @@ class PostProcessor extends Transform {
 		if (this.config.verbose) log.debug("---------------------");
 		const now = +new Date();
 		this.slotCounter++;
-		this.cache.unshift({ ts: null, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter, pushed: false });
+		this.cache.unshift({ ts: null, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter, predInterval: 0, pushed: false });
 
 		if (this.cache[1]) {
 			this.cache[1].ts = now;
@@ -143,9 +144,12 @@ class PostProcessor extends Transform {
 			// schedule the postprocessing for this slot, according to the buffer available.
 			// "now" is used as a reference for _postProcessing, so it knows which slot to process
 			// postProcessing happens 500ms before audio playback, so that clients / players have time to act.
+			// Note: a given cache item is broadcast when the next one starts. so the delay between
+			// two cache slots (predInterval) is substracted from the available buffer time (tBuffer).
 
-			// TODO: replace tBuffer with tBuffer - predInterval here.
-			const ppTimeout = setTimeout(this._postProcessing, tBuffer * 1000 - consts.DOWNSTREAM_LATENCY, now);
+			const predInterval = this.cache[1] ? this.cache[1].predInterval : 0;
+			if (this.cache[1] && predInterval === 0) log.warn('zero predInterval!');
+			const ppTimeout = setTimeout(this._postProcessing, (tBuffer - predInterval) * 1000 - consts.DOWNSTREAM_LATENCY, now);
 			this.cache.find(c => c.ts === now).ppTimeout = ppTimeout;
 		}
 

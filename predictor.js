@@ -154,7 +154,8 @@ class Predictor {
 				try {
 					self.listener.write(Object.assign(dataObj, {
 						type: "audio",
-						metadataPath: self.dbs.metadataPath
+						metadataPath: self.dbs.metadataPath,
+						predInterval: self.config.predInterval,
 					}));
 				} catch (e) {
 					log.warn("could not write to listener. err=" + e);

@@ -70,7 +70,7 @@ function send(msg) {
 
 (async function() {
 	const handler = tf.io.fileSystem(process.env.modelFile); // see https://stackoverflow.com/a/53766926/5317732
-	model = await tf.loadModel(handler);
+	model = await tf.loadLayersModel(handler);
 
 	// load model from remote file
 	//const path = 'https://www.adblockradio.com/models/' + canonical + '/model.json';
