@@ -2,6 +2,7 @@ log/
 model/
 node_modules/
 records/
+test/file.mp3.json
 .vscode/
 podcasts/
 webradio-metadata.js

@@ -7,8 +7,8 @@
 const { log } = require("abr-log")("demo");
 const { Analyser } = require("./post-processing.js");
 
-const country = "France";
-const name = "RTL";
+const country = "Finland";
+const name = "Basso Radio";
 
 log.info("start analyser!");
 
@@ -29,5 +29,11 @@ const abr = new Analyser({
 
 abr.on("data", function(obj) {
 	obj.liveResult.audio = "[redacted]";
-	log.info("status=" + JSON.stringify(Object.assign(obj, { audio: undefined }), null, "\t"));
+	//log.info("status=" + JSON.stringify(Object.assign(obj, { audio: undefined }), null, "\t"));
 });
+
+abr.on("end", function() {
+	log.info("analyser ended");
+});
+
+//setTimeout(abr.stopDl, 15000);

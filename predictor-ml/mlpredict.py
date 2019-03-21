@@ -71,7 +71,7 @@ class MlPredictor(object):
 		self.radio = radio
 		self.sampleRate = 22050 # Hz
 		self.nchannels = 1 # single channel only
-		self.bitdepth = 16 / 8 # 16 bit audio only
+		self.bitdepth = 16 / 8 # 16 bit audio only, 2 bytes per sample
 		self.bitrate = self.sampleRate * self.nchannels * self.bitdepth # in bytes / s
 		self.pcm = None
 		self.buf = []

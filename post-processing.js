@@ -61,6 +61,7 @@ class PostProcessor extends Transform {
 				}
 				this.cache[0].audio = this.cache[0].audio ? Buffer.concat([this.cache[0].audio, obj.data]) : obj.data;
 				this.cache[0].metadataPath = obj.metadataPath;
+				if (obj.predInterval) this.cache[0].predInterval = obj.predInterval;
 				break;
 
 			case "fileChunk": // only in file analysis mode
@@ -123,16 +124,18 @@ class PostProcessor extends Transform {
 		if (this.config.verbose) log.debug("---------------------");
 		const now = +new Date();
 		this.slotCounter++;
-		this.cache.unshift({ ts: null, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter });
+		this.cache.unshift({ ts: null, audio: null, ml: null, hotlist: null, tBuf: tBuffer, n: this.slotCounter, predInterval: 0, pushed: false });
 
 		if (this.cache[1]) {
 			this.cache[1].ts = now;
 
-		} else { // happens only at first startup.
+		} else { // happens only once at startup, when _write is called for the first time
 			this.cache[0].ts = now;
 		}
 
 		if (this.config.fileMode) {
+			// the 5 here is a unit higher than the max number of results in the future taken into
+			// account according to consts.MOV_AVG_WEIGHTS and availableSlotsFuture in _postProcessing.
 			if (this.cache.length >= 5) {
 				this._postProcessing(this.cache[4].ts);
 			}
@@ -141,7 +144,13 @@ class PostProcessor extends Transform {
 			// schedule the postprocessing for this slot, according to the buffer available.
 			// "now" is used as a reference for _postProcessing, so it knows which slot to process
 			// postProcessing happens 500ms before audio playback, so that clients / players have time to act.
-			setTimeout(this._postProcessing, tBuffer * 1000 - consts.DOWNSTREAM_LATENCY, now);
+			// Note: a given cache item is broadcast when the next one starts. so the delay between
+			// two cache slots (predInterval) is substracted from the available buffer time (tBuffer).
+
+			const predInterval = this.cache[1] ? this.cache[1].predInterval : 0;
+			if (this.cache[1] && predInterval === 0) log.warn('zero predInterval!');
+			const ppTimeout = setTimeout(this._postProcessing, (tBuffer - predInterval) * 1000 - consts.DOWNSTREAM_LATENCY, now);
+			this.cache.find(c => c.ts === now).ppTimeout = ppTimeout;
 		}
 
 		if (this.cache.length > consts.CACHE_MAX_LEN) this.cache.pop();
@@ -149,8 +158,10 @@ class PostProcessor extends Transform {
 
 	_final(next) { // only in file mode, because radio streams "never" end
 		log.info('flushing post processor cache');
-		for (let i=3; i>=1; i--) {
-			if (this.cache[i]) this._postProcessing(this.cache[i].ts);
+		const cacheToFlush = this.cache.reverse().filter(c => !c.pushed);
+		for (let i=0; i<cacheToFlush.length; i++) {
+			this._postProcessing(cacheToFlush[i].ts);
+			clearTimeout(cacheToFlush[i].ppTimeout);
 		}
 		next();
 	}
@@ -317,6 +328,7 @@ class PostProcessor extends Transform {
 		} catch (e) {
 			log.warn("could not push. err=" + e);
 		}
+		this.cache[i].pushed = true;
 	}
 }
 
@@ -333,7 +345,6 @@ class Analyser extends Readable {
 		}
 
 		const defaultModelPath = process.cwd() + '/model';
-		const defaultModelFile = this.country + '_' + this.name + '/model.keras';
 		const defaultHotlistFile = this.country + '_' + this.name + '/hotlist.sqlite';
 
 		// default module options
@@ -343,14 +354,17 @@ class Analyser extends Readable {
 			file: null,                          // analyse a file instead of a HTTP stream. will not download stream
 			records: null,                       // analyse a series of previous records (relative paths). will not download stream
 			modelPath: defaultModelPath,         // directory where ML models and hotlist DBs are stored
-			modelFile: defaultModelFile,         // path of the ML model relative to modelPath
 			hotlistFile: defaultHotlistFile,     // path of the hotlist DB relative to modelPath
 			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
-			modelUpdateInterval: 60              // update model files every N minutes
+			modelUpdateInterval: 60,             // update model files every N minutes
+			JSPredictorMl: false,                // whether to use JS (+ native lib) instead of Python for ML. JS is simpler but slower.
 		}
 
 		// optional custom config
 		Object.assign(this.config, options.config);
+
+		const defaultModelFile = this.country + '_' + this.name + '/model.' + (this.config.JSPredictorMl ? 'json' : 'keras');
+		if (!this.config.modelFile) this.config.modelFile = defaultModelFile; // path of the ML model relative to modelPath
 
 		this.postProcessor = new PostProcessor({
 			country: this.country,
@@ -371,45 +385,59 @@ class Analyser extends Readable {
 				metadataPath: undefined
 			});
 
-			self.push({ liveResult: obj });
+			(async function() {
+				if (self.config.saveMetadata) {
+					if (!metadataPath) {
+						log.warn("did not save metadata file, because missing metadataPath parameter");
+					} else if (self.config.file) {
+						self.data = self.data || { predictions: [], country: self.country, name: self.name };
+						self.data.predictions.push(obj);
+					} else if (self.config.records) {
+						self.postProcessor.pause();
+						await self.saveMetadata(obj, metadataPath);
+						self.postProcessor.resume();
+					} else {
+						self.postProcessor.pause();
+						await self.saveMetadata(obj, metadataPath);
+						self.postProcessor.resume()
+					}
+				}
 
-			if (!self.config.saveMetadata) return;
-			if (!metadataPath) {
-				log.warn("did not save metadata file, because missing metadataPath parameter");
-			} else if (self.config.file) {
-				self.data = self.data || { predictions: [], country: self.country, name: self.name };
-				self.data.predictions.push(obj);
-			} else if (self.config.records) {
-				self.saveMetadata(obj, metadataPath);
-			} else {
-				self.saveMetadata(obj, metadataPath);
-			}
+				self.push({ liveResult: obj, metadataPath: metadataPath });
+			})();
 		});
 
 		this.postProcessor.on("end", function() {
 			log.info("postProcessor ended");
-			if (!self.data) return self.push(null);
 			if (self.config.file) {
+				if (!self.data) return self.destroy();
 				self.mergeClassBlocks(self.data, function(blocksCleaned) {
 					self.push({ blocksCleaned: blocksCleaned });
-					self.push(null);
+					self.destroy();
 				});
-			} else if (self.config.records) {
-				self.push(null);
+			} else { //if (self.config.records) {
+				self.destroy();
 			}
 		});
 
 		(async function() {
 
 			// download and/or update models at startup
+			// TODO only download model/hotlist if ML/hotlist is enabled
 			if (self.config.modelUpdates) {
-				await checkModelUpdates({
-					localPath: self.config.modelPath,
-					files: [
+				const files = self.config.JSPredictorMl ?
+					[
+						{ file: self.config.modelFile, tar: false },
+						{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false },
+						{ file: self.config.hotlistFile, tar: true },
+					]
+				:
+					[
 						{ file: self.config.modelFile, tar: true },
 						{ file: self.config.hotlistFile, tar: true },
 					]
-				});
+				;
+				await checkModelUpdates({ localPath: self.config.modelPath, files });
 			} else {
 				log.info(self.country + '_' + self.name + ' model updates are disabled');
 			}
@@ -467,18 +495,22 @@ class Analyser extends Readable {
 
 				self.modelUpdatesInterval = setInterval(function() {
 					if (self.config.modelUpdates) {
-						checkModelUpdates({
-							localPath: self.config.localPath,
-							files: [
+						const files = self.config.JSPredictorMl ?
+							[
+								{ file: self.config.modelFile, tar: false, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
+							]
+						:
+							[
 								{ file: self.config.modelFile, tar: true, callback: self.predictor.refreshPredictorMl },
 								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
 							]
-						});
+						;
+						checkModelUpdates({ localPath: self.config.modelPath, files });
 					}
 					checkMetadataUpdates(self.predictor.refreshMetadata);
 				}, self.config.modelUpdateInterval * 60000);
-
-
 			}
 		})();
 
@@ -498,53 +530,49 @@ class Analyser extends Readable {
 		*/
 	}
 
-	saveMetadata(obj, path) {
-		const self = this;
-		fs.readFile(path, function(err, readData) {
-			let data = { predictions: [] };
+	async saveMetadata(obj, path) {
+		let data = { predictions: [] };
+		try {
+			var readData = await fs.readFile(path);//, function(err, readData) {
+			data = JSON.parse(readData);
+		} catch (e) {
+			log.debug("path " + path + " read err=" + JSON.stringify(e) + ". erase any previous metadata info");
+		}
 
-			if (!err) {
-				try {
-					data = JSON.parse(readData);
-				} catch (e) {
-					log.warn("metadataPath read parsing err=" + JSON.stringify(e));
-				}
-			} else if (err && err.code !== "ENOENT") {
-				log.debug("metadataPath read err=" + JSON.stringify(err) + ". erase any previous metadata info");
-			}
-			let outputData = Object.assign({}, obj);
+		let outputData = Object.assign({}, obj);
 
-			// extract redundant info: no need to repeat it in predictions array
-			// if the title metadata changes, only the last one is saved
-			data.metadata = outputData.metadata || data.metadata;
-			data.streamInfo = outputData.streamInfo || data.streamInfo;
-			data.predictorStartTime = outputData.predictorStartTime || data.predictorStartTime;
-			data.country = self.country;
-			data.name = self.name;
+		// extract redundant info: no need to repeat it in predictions array
+		// if the title metadata changes, only the last one is saved
+		data.metadata = outputData.metadata || data.metadata;
+		data.streamInfo = outputData.streamInfo || data.streamInfo;
+		data.predictorStartTime = outputData.predictorStartTime || data.predictorStartTime;
+		data.country = this.country;
+		data.name = this.name;
 
-			Object.assign(outputData, {
-				audio: undefined,
-				metadata: undefined,
-				streamInfo: undefined,
-				predictorStartTime: undefined
-			});
-
-			if (data.offlinets !== self.offlinets && self.config.records) {
-				data.predictions = [];
-				data.offlinets = self.offlinets;
-			}
-			data.predictions.push(outputData);
-
-			fs.writeFile(path, JSON.stringify(data, null, "\t"), function(err) {
-				if (err) log.warn("metadata write err=" + JSON.stringify(err));
-			});
+		Object.assign(outputData, {
+			audio: undefined,
+			metadata: undefined,
+			streamInfo: undefined,
+			predictorStartTime: undefined
 		});
+
+		if (data.offlinets !== this.offlinets && this.config.records) {
+			data.predictions = [];
+			data.offlinets = this.offlinets;
+		}
+		data.predictions.push(outputData);
+
+		try {
+			await fs.writeFile(path, JSON.stringify(data, null, "\t"));//, function(err) {
+		} catch (e) {
+			log.warn("path " + path + " write err=" + JSON.stringify(e));
+		}
+		return;
 	}
 
 	// used in the context of file analysis
 	// merge contiguous data with identical class to present a more compact result.
 	mergeClassBlocks(data, callback) {
-		//const self = this;
 		const path = this.config.file + ".json";
 
 		data.blocksRaw = [];
@@ -622,14 +650,8 @@ class Analyser extends Readable {
 	}
 
 	stopDl() {
-		// TODO
-		if (this.predictor) this.predictor.stop();
-		if (this.postProcessor) {
-			this.postProcessor.ended = true;
-			this.postProcessor.end();
-		}
 		if (this.modelUpdatesInterval) clearInterval(this.modelUpdatesInterval);
-		this.push(null);
+		if (this.predictor) this.predictor.stop();
 	}
 
 	_read() {

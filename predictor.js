@@ -93,7 +93,7 @@ class Predictor {
 		});
 		this.dl.pause();
 
-		this.decoder = require('child_process').spawn('ffmpeg', [
+		this.decoder = cp.spawn('ffmpeg', [
 			'-i', 'pipe:0',
 			'-acodec', 'pcm_s16le',
 			'-ar', 22050,
@@ -112,7 +112,11 @@ class Predictor {
 		this.dbs = null;
 		this.dl.on("metadata", function(metadata) {
 			log.info(self.canonical + " metadata=" + JSON.stringify(metadata));
-			self.listener.write({ type: "dlinfo", data: metadata });
+			if (self.listener.writable) {
+				self.listener.write({ type: "dlinfo", data: metadata });
+			} else {
+				log.warn("Could not pass metadata to listener because it is not writable");
+			}
 			self.audioExt = metadata.ext;
 
 			if (!self.dbs) {
@@ -150,7 +154,8 @@ class Predictor {
 				try {
 					self.listener.write(Object.assign(dataObj, {
 						type: "audio",
-						metadataPath: self.dbs.metadataPath
+						metadataPath: self.dbs.metadataPath,
+						predInterval: self.config.predInterval,
 					}));
 				} catch (e) {
 					log.warn("could not write to listener. err=" + e);
@@ -180,10 +185,10 @@ class Predictor {
 			function(cb) {
 				if (!self.config.enablePredictorMl || !self.mlPredictor.ready) return setImmediate(cb);
 				self.mlPredictor.predict(function(err, data) {
-					if (!err && data) {
+					if (!err && data && self.listener.writable) {
 						self.listener.write({ type: "ml", data });
 					} else {
-						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data));
+						log.warn("skip ml result because err=" + err + " data=" + JSON.stringify(data) + " writable=" + self.listener.writable);
 					}
 					cb(err);
 				});
@@ -191,10 +196,10 @@ class Predictor {
 			function(cb) {
 				if (!self.config.enablePredictorHotlist) return setImmediate(cb);
 				self.hotlist.onFingers(function(err, data) {
-					if (!err && data) {
+					if (!err && data && self.listener.writable) {
 						self.listener.write({ type: "hotlist", data });
 					} else {
-						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data));
+						log.warn("skip hotlist result because err=" + err + " data=" + JSON.stringify(data) + " writable=" + self.listener.writable);
 					}
 					cb(err);
 				});
@@ -266,8 +271,8 @@ class Predictor {
 			const path = dir + now.toISOString();
 			//log.debug("saveAudioSegment: path=" + path);
 
-			cp.exec("mkdir -p \"" + dir + "\"", function(error, stdout, stderr) {
-				if (error) log.error("warning, could not create path " + path);
+			fs.mkdir(dir, { recursive: true }, function(err) {
+				if (err && !("" + err).includes('EEXIST')) log.error("warning, could not create path " + dir + " err=" + err);
 				self.dbs = {
 					audio: self.config.saveAudio ? new fs.createWriteStream(path + "." + self.audioExt) : null,
 					metadataPath: path + ".json"
@@ -297,20 +302,27 @@ class Predictor {
 		}
 	}
 
-	refreshPredictorMl() {
-		log.info(this.canonical + " refresh ML predictor");
-		if (this.config.enablePredictorMl) {
-			if (!this.mlPredictor) {
-				this.mlPredictor = new MlPredictor({
-					country: this.country,
-					name: this.name,
-				});
-			} else if (this.mlPredictor.ready2) {
-				this.decoder.stdout.unpipe(this.mlPredictor);
-			}
-
+	async refreshPredictorMl() {
+		log.info(this.canonical + " refresh ML predictor (" + (this.config.JSPredictorMl ? "JS" : "Python") + " child process)");
+		if (this.mlPredictor) {
+			this.decoder.stdout.unpipe(this.mlPredictor);
+			this.mlPredictor.destroy();
+		}
+		if (this.config.enablePredictorMl && !this.mlPredictor) {
+			this.mlPredictor = new MlPredictor({
+				country: this.country,
+				name: this.name,
+				modelFile: this.modelFile,
+				JSPredictorMl: this.config.JSPredictorMl,
+			});
+			this.decoder.stdout.pipe(this.mlPredictor);
+		} else {
+			this.mlPredictor = null;
+		}
+		//if (this.config.enablePredictorMl) {
+		//	await this.mlPredictor.load();
 			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
-			const self = this;
+			/*const self = this;
 			this.mlPredictor.ready2 = false;
 			this.mlPredictor.load(this.modelFile, function(err) {
 				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
@@ -330,14 +342,14 @@ class Predictor {
 						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
 					}
 				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
-			});
-		} else {
+			*/
+		/*} else {
 			if (this.mlPredictor) {
 				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
 				this.mlPredictor.destroy();
 				this.mlPredictor = null;
 			}
-		}
+		}*/
 	}
 
 	refreshMetadata() {
@@ -349,31 +361,30 @@ class Predictor {
 	stop() {
 		log.info(this.canonical + " close predictor");
 
-		if (this.mlPredictor) {
-			log.debug("unpipe decoder stdout and mlPredictor");
-			this.decoder.stdout.unpipe(this.mlPredictor);
-		}
-
 		log.debug("will stop dl");
 		this.dl.stopDl();
 
 		log.debug("will stop decoder");
-		this.decoder.kill();
+		this.decoder.stdin.end();
 
 		if (this.hotlist) {
 			log.debug("will close hotlist");
+			this.decoder.stdout.unpipe(this.hotlist);
 			this.hotlist.end();
 		} else {
 			log.debug("no hotlist to close");
 		}
 		if (this.mlPredictor) {
 			log.debug("will close ML predictor");
+			this.decoder.stdout.unpipe(this.mlPredictor);
 			this.mlPredictor.end();
 		} else {
 			log.debug("no ML predictor to close");
 		}
-	}
 
+		log.debug("will close post processor");
+		this.listener.end();
+	}
 }
 
 

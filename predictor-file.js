@@ -38,7 +38,11 @@ class ChunkAudioRead extends Readable {
 		} else if (this.records) {
 			(async function read() {
 				for (let i=0; i<self.records.length; i++) {
-					const data = await fs.readFile(self.records[i]);
+					try {
+						var data = await fs.readFile(self.records[i]);
+					} catch (e) {
+						log.error("could not read file " + self.records[i]);
+					}
 					const needToWaitDrain = !self.decoder.stdin.write(data);
 					if (needToWaitDrain) {
 						await new Promise(function(resolve) {
@@ -145,9 +149,15 @@ class PredictorFile {
 			self.readFinished = true;
 		});
 
-		this.startPredictorHotlist();
-		this.startPredictorMl(function() {
-			self.input.resume()
+		// start analysis as soon as both ML and hotlist are ready
+		Promise.all([
+			this.config.enablePredictorHotlist && this.startPredictorHotlist(),
+			this.config.enablePredictorMl && this.startPredictorMl()
+		]).then(function() {
+			log.info("hotlist and/or ml loaded");
+			self.input.resume();
+		}).catch(function(err) {
+			log.error(self.country + "_" + self.name + " predictor err=" + err);
 		});
 	}
 
@@ -190,7 +200,7 @@ class PredictorFile {
 			// we package all the results in listener's cache data into an object that will go in postProcessing
 			self.listener.write(Object.assign(dataObj, {
 				type: "fileChunk",
-				metadataPath: (dataObj.metadataPath || self.config.file) + ".json"
+				metadataPath: (dataObj.metadataPath || self.file) + ".json"
 			}));
 
 			if (self.readFinished) {
@@ -202,30 +212,40 @@ class PredictorFile {
 		});
 	}
 
-	startPredictorHotlist() {
+	async startPredictorHotlist() {
 		if (this.config.enablePredictorHotlist) {
-			this.hotlist = new Hotlist({
-				country: this.country,
-				name: this.name,
-				fileDB: this.hotlistFile,
+			const self = this;
+			return new Promise(function(resolve, reject) {
+				self.hotlist = new Hotlist({
+					country: self.country,
+					name: self.name,
+					fileDB: self.hotlistFile,
+					callback: resolve,
+				});
 			});
 		} else {
 			this.hotlist = null;
 		}
 	}
 
-	startPredictorMl(callback) {
+	async startPredictorMl() {
 		if (this.config.enablePredictorMl) {
-			this.mlPredictor = new MlPredictor({
-				country: this.country,
-				name: this.name,
+			const self = this;
+			return new Promise(function(resolve, reject) {
+				self.mlPredictor = new MlPredictor({
+					country: self.country,
+					name: self.name,
+					modelFile: self.modelFile,
+					JSPredictorMl: self.config.JSPredictorMl,
+					callback: resolve,
+				});
 			});
-			this.mlPredictor.load(this.modelFile, function(err) {
-				if (err) {
-					log.error(err);
-				}
+
+			/*const self = this;
+			(async function() {
+				await self.mlPredictor.load(self.modelFile);
 				callback();
-			});
+			})();*/
 		} else {
 			this.mlPredictor = null;
 		}
@@ -233,8 +253,8 @@ class PredictorFile {
 
 	stopPredictors() {
 		log.info("close predictor");
-		if (this.hotlist) this.hotlist.end();
-		if (this.mlPredictor) this.mlPredictor.end();
+		if (this.hotlist) this.hotlist.destroy();
+		if (this.mlPredictor) this.mlPredictor.destroy();
 	}
 }
 
