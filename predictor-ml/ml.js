@@ -196,7 +196,6 @@ class MlPredictor extends Writable {
 
 	predict(callback) {
 		const self = this;
-
 		if (this.JSPredictorMl && this.child && this.ready) {
 			this.child.send(JSON.stringify({
 				type: 'predict',
