@@ -10,6 +10,8 @@ const TEST_ML = true;
 const TEST_HOTLIST = true;
 const PRED_INTERVAL = 1; // in seconds
 
+const MLJS = process.argv.includes('--mljs');
+
 if (cluster.isMaster) {
 
 	const CLOSE_DELAY = 15000;
@@ -89,7 +91,7 @@ if (cluster.isMaster) {
 		})();
 	});
 
-	describe('Live stream analysis', function() {
+	describe('Live stream analysis (' + (MLJS ? 'JS' : 'Python') + ' child process)', function() {
 
 		it("should have emitted data", function() {
 			assert(gotData);
@@ -192,6 +194,7 @@ if (cluster.isMaster) {
 			saveMetadata: true,
 			fetchMetadata: true,
 			verbose: false,
+			JSPredictorMl: MLJS,
 		}
 	});
 

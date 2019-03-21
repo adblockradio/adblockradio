@@ -150,16 +150,14 @@ class PredictorFile {
 		});
 
 		// start analysis as soon as both ML and hotlist are ready
-		let hotlistReady = false;
-		if (this.config.enablePredictorHotlist) this.startPredictorHotlist(function() {
-			hotlistReady = true;
-			if ((self.config.enablePredictorMl && mlReady) || !self.config.enablePredictorMl) self.input.resume();
-		});
-
-		let mlReady = false;
-		if (this.config.enablePredictorMl) this.startPredictorMl(function() {
-			mlReady = true;
-			if ((self.config.enablePredictorHotlist && hotlistReady) || !self.config.enablePredictorHotlist) self.input.resume();
+		Promise.all([
+			this.config.enablePredictorHotlist && this.startPredictorHotlist(),
+			this.config.enablePredictorMl && this.startPredictorMl()
+		]).then(function() {
+			log.info("hotlist and/or ml loaded");
+			self.input.resume();
+		}).catch(function(err) {
+			log.error(self.country + "_" + self.name + " predictor err=" + err);
 		});
 	}
 
@@ -214,31 +212,40 @@ class PredictorFile {
 		});
 	}
 
-	startPredictorHotlist(callback) {
+	async startPredictorHotlist() {
 		if (this.config.enablePredictorHotlist) {
-			this.hotlist = new Hotlist({
-				country: this.country,
-				name: this.name,
-				fileDB: this.hotlistFile,
-				callback: callback,
+			const self = this;
+			return new Promise(function(resolve, reject) {
+				self.hotlist = new Hotlist({
+					country: self.country,
+					name: self.name,
+					fileDB: self.hotlistFile,
+					callback: resolve,
+				});
 			});
 		} else {
 			this.hotlist = null;
 		}
 	}
 
-	startPredictorMl(callback) {
+	async startPredictorMl() {
 		if (this.config.enablePredictorMl) {
-			this.mlPredictor = new MlPredictor({
-				country: this.country,
-				name: this.name,
-				modelFile: this.modelFile,
-			});
 			const self = this;
+			return new Promise(function(resolve, reject) {
+				self.mlPredictor = new MlPredictor({
+					country: self.country,
+					name: self.name,
+					modelFile: self.modelFile,
+					JSPredictorMl: self.config.JSPredictorMl,
+					callback: resolve,
+				});
+			});
+
+			/*const self = this;
 			(async function() {
 				await self.mlPredictor.load(self.modelFile);
 				callback();
-			})();
+			})();*/
 		} else {
 			this.mlPredictor = null;
 		}
@@ -246,8 +253,8 @@ class PredictorFile {
 
 	stopPredictors() {
 		log.info("close predictor");
-		if (this.hotlist) this.hotlist.end();
-		if (this.mlPredictor) this.mlPredictor.end();
+		if (this.hotlist) this.hotlist.destroy();
+		if (this.mlPredictor) this.mlPredictor.destroy();
 	}
 }
 

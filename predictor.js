@@ -302,17 +302,24 @@ class Predictor {
 	}
 
 	async refreshPredictorMl() {
-		log.info(this.canonical + " refresh ML predictor");
+		log.info(this.canonical + " refresh ML predictor (" + (this.config.JSPredictorMl ? "JS" : "Python") + " child process)");
+		if (this.mlPredictor) {
+			this.decoder.stdout.unpipe(this.mlPredictor);
+			this.mlPredictor.destroy();
+		}
 		if (this.config.enablePredictorMl && !this.mlPredictor) {
 			this.mlPredictor = new MlPredictor({
 				country: this.country,
 				name: this.name,
 				modelFile: this.modelFile,
+				JSPredictorMl: this.config.JSPredictorMl,
 			});
 			this.decoder.stdout.pipe(this.mlPredictor);
+		} else {
+			this.mlPredictor = null;
 		}
-		if (this.config.enablePredictorMl) {
-			await this.mlPredictor.load();
+		//if (this.config.enablePredictorMl) {
+		//	await this.mlPredictor.load();
 			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
 			/*const self = this;
 			this.mlPredictor.ready2 = false;
@@ -335,13 +342,13 @@ class Predictor {
 					}
 				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
 			*/
-		} else {
+		/*} else {
 			if (this.mlPredictor) {
 				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
 				this.mlPredictor.destroy();
 				this.mlPredictor = null;
 			}
-		}
+		}*/
 	}
 
 	refreshMetadata() {

@@ -4,7 +4,7 @@
   "description": "Distinguish ads, talk and music in radios",
   "main": "post-processing.js",
   "scripts": {
-    "test": "mocha --delay test/file.js && mocha --delay test/online.js && mocha --delay test/offline.js"
+    "test": "mocha --delay test/file.js && mocha --delay test/file.js --mljs && mocha --delay test/online.js && mocha --delay test/online.js --mljs && mocha --delay test/offline.js && mocha --delay test/offline.js --mljs"
   },
   "keywords": [
     "adblock",
@@ -25,7 +25,9 @@
     "sqlite3": "^4.0.6",
     "stream-audio-fingerprint": "^1.0.4",
     "stream-tireless-baler": "^1.0.15",
-    "tar": "^4.4.8"
+    "tar": "^4.4.8",
+    "zeromq": "^5.1.0",
+    "zerorpc": "^0.9.8"
   },
   "devDependencies": {
     "aws-sdk": "^2.420.0",

@@ -9,6 +9,8 @@ const TEST_ML = true;
 const TEST_HOTLIST = true;
 const PRED_INTERVAL = 1; // in seconds
 
+const MLJS = process.argv.includes('--mljs');
+
 if (cluster.isMaster) {
 
 	const TIMEOUT = 30000; // this must be at least the length of the audio tested
@@ -77,7 +79,7 @@ if (cluster.isMaster) {
 		run();
 	});*/
 
-	describe('File analysis', function() {
+	describe('File analysis (' + (MLJS ? 'JS' : 'Python') + ' child process)', function() {
 
 		it("should have emitted data", function() {
 			assert(gotData);
@@ -175,6 +177,7 @@ if (cluster.isMaster) {
 			enablePredictorMl: TEST_ML,
 			saveMetadata: true,
 			verbose: false,
+			JSPredictorMl: MLJS
 		}
 	});
 

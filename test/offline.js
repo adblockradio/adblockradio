@@ -10,6 +10,8 @@ const PRED_INTERVAL = 1; // in seconds
 const COUNTRY = "France";
 const NAME = "RTL";
 
+const MLJS = process.argv.includes('--mljs');
+
 if (cluster.isMaster) {
 
 	// first, download some chunks of audio
@@ -205,8 +207,8 @@ if (cluster.isMaster) {
 			}
 		}
 
-		const test = function(origNPredictions) {
-			describe('Offline analysis', function() {
+		const test = function() {
+			describe('Offline analysis (' + (MLJS ? 'JS' : 'Python') + ' child process)', function() {
 
 				it("should have emitted an end event", function() {
 					assert(oaFinished);
@@ -284,6 +286,7 @@ if (cluster.isMaster) {
 				saveMetadata: true,
 				fetchMetadata: true,
 				verbose: true,
+				JSPredictorMl: MLJS,
 			}
 		});
 
@@ -321,6 +324,7 @@ if (cluster.isMaster) {
 				enablePredictorHotlist: true,
 				enablePredictorMl: true,
 				modelUpdates: false,
+				JSPredictorMl: MLJS,
 			}
 		});
 

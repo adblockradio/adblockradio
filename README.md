@@ -23,15 +23,26 @@ In `post-processing.js`, results are gathered for each audio segment and cleaned
 
 A Readable interface, `Analyser`, is exposed to the end user. It streams objects containing the audio itself and all analysis results.
 
-On a regular laptop CPU, computations run at 5-10X for files and at 10-20% usage for live stream.
+On a regular laptop CPU and with the Python time-frequency analyser, computations run at 5-10X for files and at 10-20% usage for live stream.
 
 ## Getting started
 
 ### Installation
 
-As prerequisites, you need:
+As mandatory prerequisites, you need:
 - Node.js and NPM. This project requires a Node >= v10.12.x. Tested with NPM v6.4.1. If you need to manage several node versions on your platform, you might want to use [NVM](https://github.com/creationix/nvm).
-- FFmpeg (tested with v2.6.9). Installation instructions available [here](https://ffmpeg.org/download.html).
+- FFmpeg (tested with v2.6.9). [Installation instructions available here](https://ffmpeg.org/download.html).
+
+For best performance (~2x speedup) you should choose to do part of the computations with Python. Additional prerequisites are the following:
+- Python (tested with v2.7.9).
+- Keras (tested with v2.0.8). Keras installation instructions are available [here](https://keras.io/#installation).
+- Tensorflow (tested with `tensorflow` v1.4.0 and `tensorflow-gpu` v1.3.0). Installation instructions are [here](https://www.tensorflow.org/install/).
+
+```bash
+pip install keras tensorflow
+```
+should be enough. If you do not have pip [follow these instructions to install it](https://pip.pypa.io/en/stable/installing/).
+
 
 Then install this module:
 
@@ -52,7 +63,7 @@ npm test
 ### Command-line demo
 
 At startup and periodically during runtime, filter configuration files are automatically updated from [adblockradio.com/models/](https://adblockradio.com/models/):
-- a compatible machine-learning model (`model.json` and `group1-shard1of1`), for the time-frequency analyser.
+- a compatible machine-learning model (`model.keras` or `model.json` + `group1-shard1of1`), for the time-frequency analyser.
 - a fingerprint database (`hotlist.sqlite`), for the fingerprint matcher.
 
 #### Live stream analysis
@@ -191,6 +202,7 @@ Property|Description|Default
 Property|Description|Periodicity|Default
 --------|-----------|-----------|-------
 `enablePredictorMl`|perform machine learning inference|`predInterval`|`true`
+`JSPredictorMl`|use tfjs instead of Python for ML inference (slower)|`false`
 `enablePredictorHotlist`|compute audio fingerprints and search them in a DB|`predInterval`|`true`
 `saveAudio*`|save stream audio data in segments on hard drive|`saveDuration`|`true`
 `saveMetadata`|save a JSON with predictions|`saveDuration`|`true`

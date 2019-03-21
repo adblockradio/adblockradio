@@ -341,7 +341,6 @@ class Analyser extends Readable {
 		}
 
 		const defaultModelPath = process.cwd() + '/model';
-		const defaultModelFile = this.country + '_' + this.name + '/model.json';
 		const defaultHotlistFile = this.country + '_' + this.name + '/hotlist.sqlite';
 
 		// default module options
@@ -351,14 +350,17 @@ class Analyser extends Readable {
 			file: null,                          // analyse a file instead of a HTTP stream. will not download stream
 			records: null,                       // analyse a series of previous records (relative paths). will not download stream
 			modelPath: defaultModelPath,         // directory where ML models and hotlist DBs are stored
-			modelFile: defaultModelFile,         // path of the ML model relative to modelPath
 			hotlistFile: defaultHotlistFile,     // path of the hotlist DB relative to modelPath
 			modelUpdates: true,                  // periodically fetch ML and hotlist models and refresh predictors
-			modelUpdateInterval: 60              // update model files every N minutes
+			modelUpdateInterval: 60,             // update model files every N minutes
+			JSPredictorMl: false,                // whether to use JS (+ native lib) instead of Python for ML. JS is simpler but slower.
 		}
 
 		// optional custom config
 		Object.assign(this.config, options.config);
+
+		const defaultModelFile = this.country + '_' + this.name + '/model.' + (this.config.JSPredictorMl ? 'json' : 'keras');
+		if (!this.config.modelFile) this.config.modelFile = defaultModelFile; // path of the ML model relative to modelPath
 
 		this.postProcessor = new PostProcessor({
 			country: this.country,
@@ -419,14 +421,19 @@ class Analyser extends Readable {
 			// download and/or update models at startup
 			// TODO only download model/hotlist if ML/hotlist is enabled
 			if (self.config.modelUpdates) {
-				await checkModelUpdates({
-					localPath: self.config.modelPath,
-					files: [
+				const files = self.config.JSPredictorMl ?
+					[
 						{ file: self.config.modelFile, tar: false },
 						{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false },
 						{ file: self.config.hotlistFile, tar: true },
 					]
-				});
+				:
+					[
+						{ file: self.config.modelFile, tar: true },
+						{ file: self.config.hotlistFile, tar: true },
+					]
+				;
+				await checkModelUpdates({ localPath: self.config.modelPath, files });
 			} else {
 				log.info(self.country + '_' + self.name + ' model updates are disabled');
 			}
@@ -484,14 +491,19 @@ class Analyser extends Readable {
 
 				self.modelUpdatesInterval = setInterval(function() {
 					if (self.config.modelUpdates) {
-						checkModelUpdates({
-							localPath: self.config.modelPath,
-							files: [
+						const files = self.config.JSPredictorMl ?
+							[
 								{ file: self.config.modelFile, tar: false, callback: self.predictor.refreshPredictorMl },
 								{ file: self.config.modelFile.replace('model.json', 'group1-shard1of1'), tar: false, callback: self.predictor.refreshPredictorMl },
 								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
 							]
-						});
+						:
+							[
+								{ file: self.config.modelFile, tar: true, callback: self.predictor.refreshPredictorMl },
+								{ file: self.config.hotlistFile, tar: true, callback: self.predictor.refreshPredictorHotlist },
+							]
+						;
+						checkModelUpdates({ localPath: self.config.modelPath, files });
 					}
 					checkMetadataUpdates(self.predictor.refreshMetadata);
 				}, self.config.modelUpdateInterval * 60000);
