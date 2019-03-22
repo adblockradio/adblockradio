@@ -112,7 +112,7 @@ if (cluster.isMaster) {
 				for (let i=0; i<block.length; i++) {
 					assert(!isNaN(block[i].tStart));
 					assert(!isNaN(block[i].tEnd));
-					assert(['0-ads', '1-speech', '2-music', '3-jingles', 'unsure'].includes(block[i].class));
+					assert(['0-ads', '1-speech', '2-music', '3-jingles', '9-unsure'].includes(block[i].class));
 				}
 			}
 
@@ -124,7 +124,7 @@ if (cluster.isMaster) {
 				if (TEST_ML) {
 					assert(p.gain > 20 && p.gain < 100);
 					assert(p.ml);
-					assert(['0-ads', '1-speech', '2-music', 'unsure'].includes(p.ml.class));
+					assert(['0-ads', '1-speech', '2-music', '9-unsure'].includes(p.ml.class));
 					assert(p.ml.softmaxraw);
 					assert.equal(p.ml.softmaxraw.length, 4);
 					assert(p.ml.softmax);
@@ -137,7 +137,7 @@ if (cluster.isMaster) {
 
 				if (TEST_HOTLIST) {
 					assert(p.hotlist);
-					assert(['0-ads', '1-speech', '2-music', '3-jingles', 'unsure'].includes(p.hotlist.class));
+					assert(['0-ads', '1-speech', '2-music', '3-jingles', '9-unsure'].includes(p.hotlist.class));
 					assert(p.hotlist.softmaxraw);
 					assert.equal(p.hotlist.softmaxraw.length, 4);
 					assert(p.hotlist.softmax);
@@ -154,7 +154,7 @@ if (cluster.isMaster) {
 					assert.equal(p.hotlist, null);
 				}
 
-				assert(['0-ads', '1-speech', '2-music', '3-jingles', 'unsure'].includes(p.class));
+				assert(['0-ads', '1-speech', '2-music', '3-jingles', '9-unsure'].includes(p.class));
 				assert(!isNaN(p.tStart));
 				assert(!isNaN(p.tEnd));
 				assert(p.tEnd > p.tStart);

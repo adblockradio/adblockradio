@@ -14,7 +14,7 @@ const { checkModelUpdates, checkMetadataUpdates } = require("./check-updates.js"
 
 const consts = {
 	WLARRAY: ["0-ads", "1-speech", "2-music", "3-jingles"],
-	UNSURE: "unsure",
+	UNSURE: "9-unsure",
 	CACHE_MAX_LEN: 50,
 	MOV_AVG_WEIGHTS: [
 		{ "weights": [0.05, 0.05, 0.05, 0.10, 0.10, 0.15, 0.20, 0.30, 0.80, 1.00], "sum": 2.80 }, // r=0 same as ideal r=1 for very short buffers. so 1 step lag
@@ -594,17 +594,17 @@ class Analyser extends Readable {
 		}
 
 
-		// convert short blocks to "unsure" and merge any sequential "unsure" blocks together
+		// convert short blocks to consts.UNSURE and merge any sequential consts.UNSURE blocks together
 		data.blocksCoarse = data.blocksRaw.slice().map(b => Object.assign({}, b));
 		for (let i=data.blocksCoarse.length-1; i>=0; i--) {
 			//const l = data.blocksCoarse.length;
 			const delta = data.blocksCoarse[i].tEnd - data.blocksCoarse[i].tStart;
 			if (delta < 5000) {
-				data.blocksCoarse[i].class = "unsure";
+				data.blocksCoarse[i].class = consts.UNSURE;
 			}
 		}
 		for (let i=data.blocksCoarse.length-1; i>=1; i--) {
-			if (data.blocksCoarse[i-1].class === "unsure" && data.blocksCoarse[i].class === "unsure") {
+			if (data.blocksCoarse[i-1].class === consts.UNSURE && data.blocksCoarse[i].class === consts.UNSURE) {
 				data.blocksCoarse[i-1].tEnd = data.blocksCoarse[i].tEnd;
 				data.blocksCoarse.splice(i, 1);
 			}
@@ -613,16 +613,16 @@ class Analyser extends Readable {
 
 		// remove unsure blocks, assume neighbors are right.
 		data.blocksCleaned = data.blocksCoarse.slice().map(b => Object.assign({}, b));
-		if (data.blocksCleaned.length >= 2 && data.blocksCleaned[0].class === "unsure") { // remove first if unsure
+		if (data.blocksCleaned.length >= 2 && data.blocksCleaned[0].class === consts.UNSURE) { // remove first if unsure
 			data.blocksCleaned[1].tStart = data.blocksCleaned[0].tStart;
 			data.blocksCleaned.splice(0, 1);
 		}
-		if (data.blocksCleaned.length >= 2 && data.blocksCleaned[data.blocksCleaned.length-1].class === "unsure") { // remove last if unsure
+		if (data.blocksCleaned.length >= 2 && data.blocksCleaned[data.blocksCleaned.length-1].class === consts.UNSURE) { // remove last if unsure
 			data.blocksCleaned[data.blocksCleaned.length-2].tEnd = data.blocksCleaned[data.blocksCleaned.length-1].tEnd;
 			data.blocksCleaned.splice(data.blocksCleaned.length-1, 1);
 		}
 		for (let i=data.blocksCleaned.length-2; i>=1; i--) { // remove others if unsure
-			if (data.blocksCleaned[i].class !== "unsure") continue;
+			if (data.blocksCleaned[i].class !== consts.UNSURE) continue;
 			if (data.blocksCleaned[i+1].class !== data.blocksCleaned[i-1].class) { // unsure between two different blocks
 				const delta = data.blocksCleaned[i].tEnd - data.blocksCleaned[i].tStart;
 				data.blocksCleaned[i+1].tStart -= delta / 2;

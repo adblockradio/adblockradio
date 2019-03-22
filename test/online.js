@@ -137,7 +137,7 @@ if (cluster.isMaster) {
 				for (let j=0; j<c.predictions.length; j++) {
 					const p = c.predictions[j];
 
-					assert(['0-ads', '1-speech', '2-music', '3-jingles', 'unsure'].includes(p.class));
+					assert(['0-ads', '1-speech', '2-music', '3-jingles', '9-unsure'].includes(p.class));
 
 					assert(p.playTime);
 					assert(!isNaN(p.tBuffer));
@@ -146,7 +146,7 @@ if (cluster.isMaster) {
 					if (TEST_ML && p.ml) {
 						assert(p.gain > 20 && p.gain < 100);
 						assert(p.ml);
-						assert(['0-ads', '1-speech', '2-music', 'unsure'].includes(p.ml.class));
+						assert(['0-ads', '1-speech', '2-music', '9-unsure'].includes(p.ml.class));
 						assert(p.ml.softmaxraw);
 						assert.equal(p.ml.softmaxraw.length, 4);
 						assert(p.ml.softmax);
@@ -159,7 +159,7 @@ if (cluster.isMaster) {
 
 					if (TEST_HOTLIST) {
 						assert(p.hotlist);
-						assert(['0-ads', '1-speech', '2-music', '3-jingles', 'unsure'].includes(p.hotlist.class));
+						assert(['0-ads', '1-speech', '2-music', '3-jingles', '9-unsure'].includes(p.hotlist.class));
 						assert(p.hotlist.softmaxraw);
 						assert.equal(p.hotlist.softmaxraw.length, 4);
 						assert(p.hotlist.softmax);

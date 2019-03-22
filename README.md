@@ -100,7 +100,7 @@ Here is a sample output of the demo script, showing an ad detected:
 		"slotsPast": 5
 	},
 	"hotlist": {
-		"class": "unsure",
+		"class": "9-unsure",
 		"file": null,
 		"matches": 1,
 		"total": 7
@@ -235,15 +235,15 @@ Readable streams constructed with `Analyser` emit objects with the following pro
 - `ml`: `null` if not available, otherwise an object containing the results of the time-frequency analyser
   * `softmaxraw`: an array of three numbers representing the [softmax](https://en.wikipedia.org/wiki/Softmax_function) between ads, speech and music.
   * `softmax`: same as softmaxraw, but smoothed in time with `slotsFuture` data points in the future and `slotsPast` data points in the past. Smoothing weights are defined by `consts.MOV_AVG_WEIGHTS` in [`post-processing.js`](https://github.com/adblockradio/adblockradio/blob/master/post-processing.js).
-  * `class`: either `0-ads`, `1-speech`, `2-music` or `unsure`. The classification according to `softmax`.
+  * `class`: either `0-ads`, `1-speech`, `2-music` or `9-unsure`. The classification according to `softmax`.
 
 - `hotlist`: null if not available, otherwise an object containing the results of the fingerprint matcher.
-  * `file`: if class is not "unsure", the reference of the file recognized.
+  * `file`: if class is not "9-unsure", the reference of the file recognized.
   * `total`: number of fingerprints computed for the given audio segment.
   * `matches`: number of matching fingerprints between the audio segment and the fingerprint database.
-  * `class`: either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure` if not enough matches have been found.
+  * `class`: either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `9-unsure` if not enough matches have been found.
 
-- `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `unsure`.
+- `class`: final prediction of the algorithm. Either `0-ads`, `1-speech`, `2-music`, `3-jingles` or `9-unsure`.
 
 - `metadata*`: live metadata, fetched and parsed by the module [adblockradio/webradio-metadata](https://github.com/adblockradio/webradio-metadata).
 
