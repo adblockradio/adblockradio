@@ -124,7 +124,7 @@ if (cluster.isMaster) {
 				if (TEST_ML) {
 					assert(p.gain > 20 && p.gain < 100);
 					assert(p.ml);
-					assert(['0-ads', '1-speech', '2-music'].includes(p.ml.class));
+					assert(['0-ads', '1-speech', '2-music', 'unsure'].includes(p.ml.class));
 					assert(p.ml.softmaxraw);
 					assert.equal(p.ml.softmaxraw.length, 4);
 					assert(p.ml.softmax);
