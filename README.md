@@ -1,12 +1,17 @@
 # Adblock Radio
+
+![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
+
 An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
 Demo standalone player [available here](https://github.com/adblockradio/buffer-player).
 
-<a href="https://liberapay.com/asto/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+Build status:
+[![CircleCI](https://circleci.com/gh/adblockradio/adblockradio.svg?style=svg)](https://circleci.com/gh/adblockradio/adblockradio)
 
-![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
+Help the project grow:
+<a href="https://liberapay.com/asto/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 
 ## Overview
 A technical discussion is available [here](https://www.adblockradio.com/blog/2018/11/15/designing-audio-ad-block-radio-podcast/).
@@ -29,23 +34,26 @@ On a regular laptop CPU and with the Python time-frequency analyser, computation
 
 ### Installation
 
-As mandatory prerequisites, you need:
-- Node.js and NPM. This project requires a Node >= v10.12.x. Tested with NPM v6.4.1. If you need to manage several node versions on your platform, you might want to use [NVM](https://github.com/creationix/nvm).
-- FFmpeg (tested with v2.6.9). [Installation instructions available here](https://ffmpeg.org/download.html).
+##### Mandatory prerequisites:
+You need Node.js (>= v10.12.x, but < 11) and NPM. Download it [here](https://nodejs.org/en/download/). Pro-tip: to manage several node versions on your platform, use [NVM](https://github.com/creationix/nvm).
 
-For best performance (~2x speedup) you should choose to do part of the computations with Python. Additional prerequisites are the following:
-- Python (tested with v2.7.9).
-- Keras (tested with v2.0.8). Keras installation instructions are available [here](https://keras.io/#installation).
-- Tensorflow (tested with `tensorflow` v1.4.0 and `tensorflow-gpu` v1.3.0). Installation instructions are [here](https://www.tensorflow.org/install/).
-
-The following should be enough:
+On Debian Stretch:
 ```bash
-pip install keras tensorflow
+apt-get install -y git ssh tar gzip ca-certificates build-essential sqlite3 ffmpeg
 ```
-If you do not have pip [follow these instructions to install it](https://pip.pypa.io/en/stable/installing/).
+Note: works on Jessie, but installing ffmpeg is a bit painful. See [here](https://ffmpeg.org/download.html) and [there](https://superuser.com/questions/286675/how-to-install-ffmpeg-on-debian).
 
+##### Optional prerequisites:
+For best performance (~2x speedup) you should choose to do part of the computations with Python. Additional prerequisites are the following: Python (tested with v2.7.9), [Keras](https://keras.io/#installation) (tested with v2.0.8) and [Tensorflow](https://www.tensorflow.org/install/) (tested with CPU v1.4.0 and GPU v1.3.0).
 
-Then install this module:
+On Debian:
+```bash
+apt-get install python-dev portaudio19-dev
+pip install python_speech_features h5py numpy scipy keras tensorflow zerorpc sounddevice psutil
+```
+Note: if you do not have pip [follow these instructions to install it](https://pip.pypa.io/en/stable/installing/).
+
+##### Then install this module:
 ```bash
 git clone https://github.com/adblockradio/adblockradio.git
 cd adblockradio
