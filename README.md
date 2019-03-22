@@ -1,12 +1,17 @@
 # Adblock Radio
+
+![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
+
 An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
 
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
 Demo standalone player [available here](https://github.com/adblockradio/buffer-player).
 
-<a href="https://liberapay.com/asto/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+Build status:
+[![CircleCI](https://circleci.com/gh/adblockradio/adblockradio.svg?style=svg)](https://circleci.com/gh/adblockradio/adblockradio)
 
-![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
+Help the project grow:
+<a href="https://liberapay.com/asto/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 
 ## Overview
 A technical discussion is available [here](https://www.adblockradio.com/blog/2018/11/15/designing-audio-ad-block-radio-podcast/).
