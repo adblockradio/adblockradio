@@ -62,7 +62,6 @@ class Predictor {
 			saveAudio: true, // save stream audio data in segments on hard drive (saveDuration intervals)
 			saveAudioPath: process.cwd() + '/records', // root folder where audio and metadata are saved
 			fetchMetadata: true, // gather metadata from radio websites (saveDuration intervals)
-			waitAfterMlModelLoad: 0, // (ms) in CPU-bound systems, wait between ML model load and audio pipe to not overwhelm the system
 		}
 
 		// optional custom config
@@ -319,37 +318,6 @@ class Predictor {
 		} else {
 			this.mlPredictor = null;
 		}
-		//if (this.config.enablePredictorMl) {
-		//	await this.mlPredictor.load();
-			// we pipe decoder into mlPredictor later, once mlPredictor is ready to process data. the flag for this is mlPredictor.ready2
-			/*const self = this;
-			this.mlPredictor.ready2 = false;
-			this.mlPredictor.load(this.modelFile, function(err) {
-				if (err && ("" + err).indexOf("Lost remote after 30000ms") >= 0) {
-					log.warn(self.canonical + " lost remote Python worker. will restart it");
-					self.mlPredictor.destroy();
-					self.refreshPredictorMl();
-
-				} else if (err) {
-					return log.error(self.canonical + " could not load ML model. err=" + err);
-				}
-				setTimeout(function() {
-					if (self.config.enablePredictorMl && self.mlPredictor.ready && !self.mlPredictor.ready2) {
-						log.info(self.canonical + ": piping audio to mlPredictor");
-						self.decoder.stdout.pipe(self.mlPredictor);
-						self.mlPredictor.ready2 = true;
-					} else {
-						log.error(self.canonical + " refreshPredictorML config has changed during model loading!?");
-					}
-				}, self.config.waitAfterMlModelLoad); // to not overwhelm the CPU in CPU-bound systems
-			*/
-		/*} else {
-			if (this.mlPredictor) {
-				if (this.mlPredictor.ready2) this.decoder.stdout.unpipe(this.mlPredictor);
-				this.mlPredictor.destroy();
-				this.mlPredictor = null;
-			}
-		}*/
 	}
 
 	refreshMetadata() {
