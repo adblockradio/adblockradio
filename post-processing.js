@@ -536,7 +536,11 @@ class Analyser extends Readable {
 			var readData = await fs.readFile(path);//, function(err, readData) {
 			data = JSON.parse(readData);
 		} catch (e) {
-			log.debug("path " + path + " read err=" + JSON.stringify(e) + ". erase any previous metadata info");
+			if (e.code !== "ENOENT") {
+				log.debug("path " + path + " read err=" + JSON.stringify(e) + ". erase any previous metadata info");
+			} else {
+				// the file does not exist, will be created.
+			}
 		}
 
 		let outputData = Object.assign({}, obj);
