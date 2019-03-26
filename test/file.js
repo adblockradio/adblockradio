@@ -13,7 +13,7 @@ const MLJS = process.argv.includes('--mljs');
 
 if (cluster.isMaster) {
 
-	const TIMEOUT = 30000; // this must be at least the length of the audio tested
+	const TIMEOUT = 60000; // this must be at least the length of the audio tested
 
 	let cp = null;
 	let gotData = false;
