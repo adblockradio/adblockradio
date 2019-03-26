@@ -27,13 +27,16 @@ const consts = {
 	HOTLIST_CONFIDENCE_THRESHOLD: 0.5,
 	FINAL_CONFIDENCE_THRESHOLD: 0.40,
 
+	WEIGHT_ML: 1,         // in the final softmax computation, weight the contributions
+	WEIGHT_HOTLIST: 1.5,  // depending on their origin
+
 	MINIMUM_BUFFER: 2, // in seconds.
 	                   // Some radios have a very small buffer, down to zero.
 	                   // But browsers such as Firefox and Chrome only start playing after a 2 second buffer.
 	                   // So we artificially delay the predictions.
 	                   // VLC player, however, plays without such delay.
 
-	DOWNSTREAM_LATENCY: 500 // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
+	DOWNSTREAM_LATENCY: 500, // in milliseconds. broadcast the prediction result N ms before it should be applied by the players of the end users.
 }
 
 class PostProcessor extends Transform {
@@ -275,12 +278,12 @@ class PostProcessor extends Transform {
 		for (let i=0; i<4; i++) {
 			let count = 0;
 			if (mlOutput) {
-				finalSoftmax[i] += mlOutput.softmax[i];
-				count += 1;
+				finalSoftmax[i] += consts.WEIGHT_ML * mlOutput.softmax[i];
+				count += consts.WEIGHT_ML;
 			}
 			if (hotlistOutput) {
-				finalSoftmax[i] += hotlistOutput.softmax[i];
-				count += 1;
+				finalSoftmax[i] += consts.WEIGHT_HOTLIST * hotlistOutput.softmax[i];
+				count += consts.WEIGHT_HOTLIST;
 			}
 			if (count) finalSoftmax[i] /= count;
 			if (finalSoftmax[i] > maxSoftmax) {
