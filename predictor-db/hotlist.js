@@ -157,7 +157,13 @@ class Hotlist extends Writable {
 			"INNER JOIN tracks ON tracks.id = track_id " +
 			"WHERE finger IN " + inStr + ";", fingerVector, function(err, res) {
 
-			if (err) return log.error("onFingers: " + self.country + "_" + self.name + " query error=" + err);
+			if (err) {
+				// sometimes the hotlist is not fully written to disk when it is opened
+				// Error: SQLITE_ERROR: too many SQL variables
+				// softfail in such circumstances
+				if (callback) callback(null, consts.EMPTY_OUTPUT);
+				return log.error("onFingers: " + self.country + "_" + self.name + " query error=" + err);
+			}
 			if (!res || !res.length) {
 				//log.warn("onFingers: no results for a query of " + tcodes.length);
 				if (callback) callback(null, consts.EMPTY_OUTPUT);
