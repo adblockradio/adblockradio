@@ -306,8 +306,9 @@ class Predictor {
 		if (this.mlPredictor) {
 			this.decoder.stdout.unpipe(this.mlPredictor);
 			this.mlPredictor.destroy();
+			delete this.mlPredictor;
 		}
-		if (this.config.enablePredictorMl && !this.mlPredictor) {
+		if (this.config.enablePredictorMl) {
 			this.mlPredictor = new MlPredictor({
 				country: this.country,
 				name: this.name,

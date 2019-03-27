@@ -178,6 +178,12 @@ if (cluster.isMaster) {
 				}
 			}
 		});
+
+		it("should refresh ML model when requested");
+
+		it("should refresh hotlist db when requested");
+
+		it("should refresh metadata parser when requested");
 	});
 
 } else {
