@@ -645,20 +645,40 @@ class Analyser extends Readable {
 	}
 
 	refreshPredictorMl() {
+		if (this.config.file || this.config.records) {
+			log.warn("updating ML model is not possible when analysing files. skip.");
+			return false;
+		}
 		this.predictor.refreshPredictorMl();
+		return true;
 	}
 
 	refreshPredictorHotlist() {
+		if (this.config.file || this.config.records) {
+			log.warn("updating hotlist DB is not possible when analysing files. skip.");
+			return false;
+		}
 		this.predictor.refreshPredictorHotlist();
+		return true;
 	}
 
 	refreshMetadata() {
+		if (this.config.file || this.config.records) {
+			log.warn("updating hotlist DB is not possible when analysing files. skip.");
+			return false;
+		}
 		this.predictor.refreshMetadata();
+		return true;
 	}
 
 	stopDl() {
+		if (this.config.file || this.config.records) {
+			log.warn("not possible (yet?) to stop the processing of files. please kill the process instead.");
+			return false;
+		}
 		if (this.modelUpdatesInterval) clearInterval(this.modelUpdatesInterval);
 		if (this.predictor) this.predictor.stop();
+		return true;
 	}
 
 	_read() {

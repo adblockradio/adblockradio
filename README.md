@@ -2,7 +2,7 @@
 
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
-An adblocker for live radio streams and podcasts. Machine learning meets Shazam.
+A library to block ads on live radio streams and podcasts. Machine learning meets Shazam.
 
 Engine of [AdblockRadio.com](https://www.adblockradio.com).
 Demo standalone player [available here](https://github.com/adblockradio/buffer-player).
@@ -193,6 +193,18 @@ Property|Description|Default
 `country`|Country of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `name`|Name of the radio stream according to [radio-browser.info](http://www.radio-browser.info)|None
 `file`|File to analyse (optional, analyse the live stream otherwise)|None
+
+### Methods
+
+Acoustic model and hotlist files are refreshed automatically on startup. If you plan to continuously run the algo for a long time, you can trigger manual updates. Note those methods are only available in live stream analysis mode.
+
+Method|Parameters|Description
+------|----------|-----------
+`refreshPredictorMl`|None|Manually refresh the ML model (live stream only)
+`refreshPredictorHotlist`|None|Manually refresh the hotlist DB (live stream only)
+`refreshMetadata`|None|Manually refresh the [metadata scraper](https://github.com/adblockradio/webradio-metadata) (live stream only)
+`stopDl`|None|Stop Adblock Radio (live stream only)
+
 
 ### Optional configuration
 Properties marked with a `*` are meant to be used only with live radio stream analysis, not file analysis where they are ignored.

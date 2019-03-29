@@ -14,6 +14,7 @@ const MLJS = process.argv.includes('--mljs');
 
 if (cluster.isMaster) {
 
+	const REFRESH_DELAY = 8000;
 	const CLOSE_DELAY = 15000;
 	const TIMEOUT = 10000; // ms counted in addition to CLOSE_DELAY
 
@@ -26,10 +27,19 @@ if (cluster.isMaster) {
 	let exitCode = null;
 	let timeout = null;
 	let timedOut = false;
+	let refreshRequested = false;
+	let refreshOK = false;
 
 	let metaFiles = [];
 	let metaFilesContent = null;
 	let metaFilesSane = null;
+
+	setTimeout(function() {
+		log.info('refresh ML, hotlist and metadata modules');
+		refreshRequested = true;
+		cp.send({ action: 'refresh' });
+
+	}, REFRESH_DELAY);
 
 	setTimeout(function() {
 		log.info('stop the stream analysis');
@@ -56,6 +66,8 @@ if (cluster.isMaster) {
 					if (!metaFiles.includes(msg.data.metadataPath)) metaFiles.push(msg.data.metadataPath);
 				}
 			}
+		} else if (msg.type === 'refresh') {
+			refreshOK = !msg.hasError;
 		} else if (msg.type === 'end') {
 			finished = true;
 		}
@@ -144,7 +156,7 @@ if (cluster.isMaster) {
 
 					// ML module is usually not ready at startup of live stream analysis
 					if (TEST_ML && p.ml) {
-						assert(p.gain > 20 && p.gain < 100);
+						assert(p.gain > 0 && p.gain < 200);
 						assert(p.ml);
 						assert(['0-ads', '1-speech', '2-music', '9-unsure'].includes(p.ml.class));
 						assert(p.ml.softmaxraw);
@@ -179,11 +191,10 @@ if (cluster.isMaster) {
 			}
 		});
 
-		it("should refresh ML model when requested");
-
-		it("should refresh hotlist db when requested");
-
-		it("should refresh metadata parser when requested");
+		it("should refresh ML model, hotlist and metadata when requested", function() {
+			assert(refreshRequested);
+			assert(refreshOK);
+		});
 	});
 
 } else {
@@ -207,7 +218,7 @@ if (cluster.isMaster) {
 	abr.on("data", function(obj) {
 		obj.liveResult.audio = "[redacted]";
 		//log.info(obj.metadataPath);
-		log.info(JSON.stringify(obj.liveResult, null, "\t"));
+		//log.info(JSON.stringify(obj.liveResult, null, "\t"));
 		process.send({ type: 'data', data: obj });
 	});
 
@@ -220,6 +231,17 @@ if (cluster.isMaster) {
 	process.on('message', function(msg) {
 		if (msg && msg.action === 'stop') {
 			abr.stopDl();
+		} else if (msg && msg.action === 'refresh') {
+			try {
+				abr.refreshPredictorMl();
+				abr.refreshPredictorHotlist();
+				abr.refreshMetadata();
+				process.send({ type: 'refresh', hasError: false });
+				log.info('refresh OK');
+			} catch (e) {
+				log.error('refresh error: ' + e);
+				process.send({ type: 'refresh', hasError: true });
+			}
 		}
 	});
 }

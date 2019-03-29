@@ -25,6 +25,8 @@ if (cluster.isMaster) {
 	let timedOut = false;
 	let fileOutput = {};
 	let fileOutputIsSane = false;
+	let refreshCorrectlyHandled = false;
+	let refreshError = false;
 
 	const timer = setTimeout(function() {
 		log.error('analysis timed out or was too slow. kill it.');
@@ -44,6 +46,12 @@ if (cluster.isMaster) {
 				if (msg.data.blocksCleaned) {
 					gotBlocks = true;
 				}
+			} else if (msg.type === 'refresh') {
+				if (msg.hasError) {
+					refreshError = true;
+				}
+				refreshCorrectlyHandled = msg.result === false;
+
 			} else if (msg.type === 'end') {
 				finished = true;
 			}
@@ -90,6 +98,11 @@ if (cluster.isMaster) {
 			assert(finished);
 		});
 
+		it("should reject attempts to reload ML model, hotlist DB or metadata scraper during analysis.", function() {
+			assert.equal(refreshError, false);
+			assert(refreshCorrectlyHandled);
+		});
+
 		it("should not have thrown errors", function() {
 			assert(!hasErrors);
 		});
@@ -122,7 +135,7 @@ if (cluster.isMaster) {
 				assert(p);
 
 				if (TEST_ML) {
-					assert(p.gain > 20 && p.gain < 100);
+					assert(p.gain > 0 && p.gain < 200);
 					assert(p.ml);
 					assert(['0-ads', '1-speech', '2-music', '9-unsure'].includes(p.ml.class));
 					assert(p.ml.softmaxraw);
@@ -180,6 +193,19 @@ if (cluster.isMaster) {
 			JSPredictorMl: MLJS
 		}
 	});
+
+	try {
+		const result = abr.refreshPredictorMl() ||
+			abr.refreshPredictorHotlist() ||
+			abr.refreshMetadata() ||
+			abr.stopDl();
+
+		process.send({ type: 'refresh', result, hasError: false });
+		log.info('refresh attempted. result=' + result);
+	} catch (e) {
+		log.error('refresh attempt error: ' + e);
+		process.send({ type: 'refresh', hasError: true });
+	}
 
 	abr.on("data", function(obj) {
 		//log.info(JSON.stringify(obj, null, "\t"));
