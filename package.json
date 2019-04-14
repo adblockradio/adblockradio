@@ -24,17 +24,17 @@
     "mfcc": "git+https://git@github.com/adblockradio/node-mfcc.git",
     "sqlite3": "^4.0.6",
     "stream-audio-fingerprint": "^1.0.4",
-    "stream-tireless-baler": "^1.0.17",
+    "stream-tireless-baler": "^1.0.18",
     "tar": "^4.4.8",
     "zeromq": "^5.1.0",
     "zerorpc": "^0.9.8"
   },
   "devDependencies": {
-    "aws-sdk": "^2.434.0",
+    "aws-sdk": "^2.437.0",
     "electron-builder": "^20.39.0",
     "electron-prebuilt": "^1.4.13",
     "electron-rebuild": "^1.8.4",
-    "mocha": "^6.0.2",
+    "mocha": "^6.1.3",
     "wtfnode": "^0.8.0"
   }
 }
