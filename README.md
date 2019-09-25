@@ -167,7 +167,7 @@ Note that when analyzing audio files, you still need to provide the name of a ra
 
 ### Usage
 
-Below is a simple usage example. More throughout usage examples are available in the tests:
+Below is a simple usage example. More thorough usage examples are available in the tests:
 - file/podcast analysis: `test/file.js`
 - live stream analysis: `test/online.js`
 - record a live stream, analyse it later: `test/offline.js`
@@ -213,30 +213,30 @@ Properties marked with a `*` are meant to be used only with live radio stream an
 
 Property|Description|Default
 --------|-----------|-------
-`predInterval`|send stream status to listener every N seconds|`1`
-`saveDuration*`|if enabled, save audio file and metadata every N `predInterval` times|`10`
-`modelUpdatesInterval`|if enabled, update model files every N minutes|`60`
+`predInterval`|Send stream status to listener every N seconds|`1`
+`saveDuration*`|If enabled, save audio file and metadata every N `predInterval` times|`10`
+`modelUpdatesInterval`|If enabled, update model files every N minutes|`60`
 
 #### Switches
 
 Property|Description|Periodicity|Default
 --------|-----------|-----------|-------
-`enablePredictorMl`|perform machine learning inference|`predInterval`|`true`
-`JSPredictorMl`|use tfjs instead of Python for ML inference (slower)|`false`
-`enablePredictorHotlist`|compute audio fingerprints and search them in a DB|`predInterval`|`true`
-`saveAudio*`|save stream audio data in segments on hard drive|`saveDuration`|`true`
-`saveMetadata`|save a JSON with predictions|`saveDuration`|`true`
-`fetchMetadata*`|gather metadata from radio websites|`saveDuration`|`true`
-`modelUpdates`|keep ML and hotlist files up to date|`modelUpdatesInterval`|`true`
+`enablePredictorMl`|Perform machine learning inference|`predInterval`|`true`
+`JSPredictorMl`|Use tfjs instead of Python for ML inference (slower)|`false`
+`enablePredictorHotlist`|Compute audio fingerprints and search them in a DB|`predInterval`|`true`
+`saveAudio*`|Save stream audio data in segments on hard drive|`saveDuration`|`true`
+`saveMetadata`|Save a JSON with predictions|`saveDuration`|`true`
+`fetchMetadata*`|Gather metadata from radio websites|`saveDuration`|`true`
+`modelUpdates`|Keep ML and hotlist files up to date|`modelUpdatesInterval`|`true`
 
 #### Paths
 
 Property|Description|Default
 --------|-----------|-------
-`modelPath`|directory where ML models and hotlist DBs are stored|`process.cwd() + '/model'`
-`modelFile`|path of ML file relative to `modelPath`|`country + '_' + name + '/model.keras'`
-`hotlistFile`|path of the hotlist DB relative to `modelPath`|`country + '_' + name + '/hotlist.sqlite'`
-`saveAudioPath*`|root folder where audio and metadata are saved|`process.cwd() + '/records'`
+`modelPath`|Directory where ML models and hotlist DBs are stored|`process.cwd() + '/model'`
+`modelFile`|Path of ML file relative to `modelPath`|`country + '_' + name + '/model.keras'`
+`hotlistFile`|Path of the hotlist DB relative to `modelPath`|`country + '_' + name + '/hotlist.sqlite'`
+`saveAudioPath*`|Root folder where audio and metadata are saved|`process.cwd() + '/records'`
 
 ### Output
 
