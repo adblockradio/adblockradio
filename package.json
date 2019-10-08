@@ -16,25 +16,25 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@tensorflow/tfjs-node": "^0.3.2",
-    "abr-log": "^1.0.2",
-    "async": "^2.6.2",
-    "axios": "^0.18.0",
+    "abr-log": "^1.0.3",
+    "async": "^2.6.3",
+    "axios": "^0.18.1",
     "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
     "fs-extra": "^7.0.1",
     "mfcc": "git+https://git@github.com/adblockradio/node-mfcc.git",
-    "sqlite3": "^4.0.6",
+    "sqlite3": "^4.1.0",
     "stream-audio-fingerprint": "^1.0.4",
-    "stream-tireless-baler": "^1.0.18",
-    "tar": "^4.4.8",
+    "stream-tireless-baler": "^1.0.19",
+    "tar": "^4.4.13",
     "zeromq": "^5.1.0",
     "zerorpc": "^0.9.8"
   },
   "devDependencies": {
-    "aws-sdk": "^2.437.0",
-    "electron-builder": "^20.39.0",
+    "aws-sdk": "^2.543.0",
+    "electron-builder": "^20.44.4",
     "electron-prebuilt": "^1.4.13",
-    "electron-rebuild": "^1.8.4",
-    "mocha": "^6.1.3",
+    "electron-rebuild": "^1.8.6",
+    "mocha": "^6.2.1",
     "wtfnode": "^0.8.0"
   }
 }

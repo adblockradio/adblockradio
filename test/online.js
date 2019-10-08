@@ -141,7 +141,6 @@ if (cluster.isMaster) {
 
 				assert(!isNaN(c.streamInfo.bitrate));
 				assert(c.streamInfo.favicon);
-				assert(c.streamInfo.homepage);
 				assert(c.streamInfo.audioExt);
 
 				assert(c.predictions);
