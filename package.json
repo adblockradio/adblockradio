@@ -18,7 +18,7 @@
     "@tensorflow/tfjs-node": "^0.3.2",
     "abr-log": "^1.0.3",
     "async": "^2.6.3",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "dsp.js": "git+https://git@github.com/corbanbrook/dsp.js.git",
     "fs-extra": "^7.0.1",
     "mfcc": "git+https://git@github.com/adblockradio/node-mfcc.git",
