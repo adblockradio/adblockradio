@@ -1,4 +1,4 @@
-# Adblock Radio
+# Adblock Radio (project archived)
 
 ![Adblock Radio](https://www.adblockradio.com/assets/img/abr_buddha_v3_175.png)
 
